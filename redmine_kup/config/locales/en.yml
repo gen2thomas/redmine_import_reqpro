@@ -1,0 +1,19 @@
+# English strings go here for Rails i18n
+en:
+  activerecord:
+    errors:
+      messages:
+        to_kupissue_trace_error: "This is not a KUP issue - only KUP issues are allowed to link each other."
+        from_kupissue_trace_error: "Target is not a KUP issue - only KUP issues are allowed to link each other."
+        kupissue_relation_type_error: "Linking this KUP issues is not allowed."
+        want_bug_link_to: "Actual <Bug> can only be traced to an <Need>."
+        want_story_link_to: "Actual <Story> can only be traced to an <Need>."
+        want_need_link_to: "Actual <Need> can only be traced to <Story>, <Bug> or <Function>."
+        want_func_link_to: "Actual <Function> can only be traced to <Need>, <Feature>, <Specification> or <Testcase>."
+        want_feat_link_to: "Actual <Feature> can only be traced to <Function>."
+        want_spec_link_to: "Actual <Specification> can only be traced to <Function>."
+        want_testc_link_to: "Actual <Testcase> can only be traced to <Function>."
+        only_same_tracker: "<%{reltype}> only allowed between same tracker types."
+        only_different_tracker: "<%{reltype}> only allowed between different tracker types."
+  
+  label_kuprelated_issues: KUP issues

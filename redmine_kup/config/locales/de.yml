@@ -1,0 +1,21 @@
+# German translations
+
+de:      
+  activerecord:
+    errors:
+      messages:
+        to_kupissue_trace_error: "Dies ist kein KUP Ticket - nur KUP Tickets können miteinander verlinkt werden"
+        from_kupissue_trace_error: "Das Ziel ist kein KUP Ticket - nur KUP Tickets können miteinander verlinkt werden"
+        kupissue_relation_type_error: "Das verlinken dieser KUP Tickets wiederspricht den erlaubten Beziehungen"
+        want_bug_link_to: "aktueller Bug kann nur an Need gelinkt werden"
+        want_story_link_to: "aktuelle Story kann nur an Need gelinkt werden"
+        want_need_link_to: "aktueller Need kann nur an Story, Bug oder Function gelinkt werden"
+        want_func_link_to: "aktuelles Function kann nur an Need, Feature, Specification oder Testcase gelinkt werden"
+        want_feat_link_to: "aktuelles Feature kann nur an eine Function gelinkt werden"
+        want_spec_link_to: "aktuelle Specification kann nur an eine Function gelinkt werden"
+        want_testc_link_to: "aktueller Testcase kann nur an eine Function gelinkt werden"
+        only_same_tracker: "<%{reltype}> darf nur bei gleichen Tracker-Typen eingesetzt werden"
+        only_different_tracker: "<%{reltype}> darf nur bei unterschiedlichen Tracker-Typen eingesetzt werden"
+  
+  label_kuprelated_issues: KUP Tickets
+  
