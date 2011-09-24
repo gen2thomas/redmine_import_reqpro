@@ -1,34 +1,37 @@
 = redmine_kup
-DE:
+== DE:
 Redmine KUP ergänzt das Standard Redmine um einige Bedingungen zum Anlegen von Beziehungen (Traces).
-1.) Beim Anlegen von Unteraufgaben wird der gleiche Tracker-Typ wie die Hauptaufgabe automatisch erzwungen.
-2.) Alle Beziehungen, außer "Beziehung mit", sind nur zwischen gleichen Tracker-Typen zulässig.
-3.) "Beziehung mit" ist nur zwischen unterschiedlichen Tracker-Typen zulässig. 
-4.) Die Tracker "Story", "Bug", "Need", "Function", "Feature", "Specification", "Testcase", "Testspecification" werden für KUP-Beziehungen benutzt wie unten dargestellt.
+
+- Beim Anlegen von Unteraufgaben wird der gleiche Tracker-Typ wie die Hauptaufgabe automatisch erzwungen.
+- Alle Beziehungen, außer "Beziehung mit", sind nur zwischen gleichen Tracker-Typen zulässig.
+- "Beziehung mit" ist nur zwischen unterschiedlichen Tracker-Typen zulässig. 
+- Die Tracker "Story", "Bug", "Need", "Function", "Feature", "Specification", "Testcase", "Testspecification" werden für KUP-Beziehungen benutzt wie unten dargestellt.
 --> davon abweichende Beziehungen (Traces) werden abgelehnt
-5.) Die KUP-Tickets werden getrennt unter dem "Beziehungsfenster" dargestellt
+- Die KUP-Tickets werden getrennt unter dem "Beziehungsfenster" dargestellt
 
-EN:
-Redmine KUP adding some additional relation conditions to the standard redmine. 
-1.) Adding sub tasks will cause, automatically forced, in the same type of task like the main task.
-2.) All relations, other than "related to", are only valid between same tracker types.
-3.) The relation "related to" is only possible between different tracker types.
-4.) Trackers "Story", "Bug", "Need", "Function", "Feature", "Specification", "Testcase", "Testspecification" are used for KUP relations as shown below.
+== EN:
+Redmine KUP adding some additional relation conditions to the standard redmine.
+ 
+- Adding sub tasks will cause, automatically forced, in the same type of task like the main task.
+- All relations, other than "related to", are only valid between same tracker types.
+- The relation "related to" is only possible between different tracker types.
+- Trackers "Story", "Bug", "Need", "Function", "Feature", "Specification", "Testcase", "Testspecification" are used for KUP relations as shown below.
 --> other relations (traces) will be dismissed 
-5.) KUP tickets are viewed separately below the relation area. 
+- KUP tickets are viewed separately below the relation area. 
 
 
-Grafik für/graphic for 4.):
-"Product" (project)
-1!|-n!- "Project" (sub project)
-1?|-n!- "Story"/"Bug" 
-1!|-n!-- "Need"
-n!|-1?-- "Function"
-n!|-1?---- "Feature"
-n!|-1!---- "Specification"
-1!|-n!---- "Testcase"
-n!|-1!----- "Testspecification"
+== Grafik/graphic:
+* "Product" (project)
+* 1!|-n!- "Project" (sub project)
+* 1?|-n!- "Story"/"Bug" 
+* 1!|-n!-- "Need"
+* n!|-1?-- "Function"
+* n!|-1?---- "Feature"
+* n!|-1!---- "Specification"
+* 1!|-n!---- "Testcase"
+* n!|-1!----- "Testspecification"
 
 ToDo:
 1.) Die angegebene Anzahl (1, n) wird noch nicht geprüft.
 2.) EN-Übersetzungstexte fehlen
+3.) Ein Importplugin von "Rational ReqPro" soll entstehen (getrennt von redmine_kup)
