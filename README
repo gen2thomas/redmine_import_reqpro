@@ -1,5 +1,4 @@
 README von "Redmine_Plugins"
-110917 redmine_kup wird demnaechst hinzugefuegt
 ------------
 redmine_kup:
--plugin, welches angelehnt an RUP = "Rational Unified Process" ein paar Abhaengigkeiten zu redmine hinzufuegt
+-Plugin, welches angelehnt an RUP = "Rational Unified Process" ein paar Abhaengigkeiten zu redmine hinzufuegt s. README.rdoc im Verzeichnis
