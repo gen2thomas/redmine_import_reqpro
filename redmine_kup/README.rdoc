@@ -31,7 +31,7 @@ Redmine KUP adding some additional relation conditions to the standard redmine.
 * 1!|-n!---- "Testcase"
 * n!|-1!----- "Testspecification"
 
-ToDo:
+==ToDo:
 1. Die angegebene Anzahl (1, n) wird noch nicht geprüft.
 2. EN-Übersetzungstexte fehlen
 3. Ein Importplugin von "Rational ReqPro" soll entstehen (getrennt von redmine_kup)
