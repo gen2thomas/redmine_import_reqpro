@@ -1,6 +1,6 @@
 = redmine_kup
 DE:
-Redmine KUP ergänzt das standard Redmine um einige Bedingungen zum Anlegen von Beziehungen (Traces).
+Redmine KUP ergänzt das Standard Redmine um einige Bedingungen zum Anlegen von Beziehungen (Traces).
 1.) Beim Anlegen von Unteraufgaben wird der gleiche Tracker-Typ wie die Hauptaufgabe automatisch erzwungen.
 2.) Alle Beziehungen, außer "Beziehung mit", sind nur zwischen gleichen Tracker-Typen zulässig.
 3.) "Beziehung mit" ist nur zwischen unterschiedlichen Tracker-Typen zulässig. 
