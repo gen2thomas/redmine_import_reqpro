@@ -1,0 +1,31 @@
+label.tabular{
+	text-align: right;
+	width: 270px;
+	display: inline-block;
+}
+
+label.tabular2{
+	text-align: right;
+	width: 100px;
+	display: inline-block;
+}
+
+label.tabular3{
+	text-align: right;
+	width: 500px;
+	display: inline-block;
+}
+
+label.tabular4{
+	horizontal-align: top;
+	vertical-align:middle;
+	text-align: right;
+	display: inline-block;
+}
+
+label.tabular5{
+	horizontal-align: top;
+	vertical-align:middle;
+	text-align: right;
+	display: inline-block;
+}

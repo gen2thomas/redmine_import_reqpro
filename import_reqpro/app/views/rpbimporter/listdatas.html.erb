@@ -1,0 +1,30 @@
+<h2><%=l(:label_rpbimporter_project_overview)%></h2>
+
+<%= l(:label_importdescriptionfile, @original_filename) %>
+<table class="list">
+	<thead><tr>
+	    <% @headers.each do |column| %>
+	      <th><%= l(column) %></th>
+	    <% end %>
+	</tr></thead>
+	<tbody>
+	  <% @contents_of_projects.each do |project_content| %>
+	    <tr class="<%= cycle("odd", "even") %>">
+	      <% project_content.each do |column| %><td><%= column %></td><% end %>
+	    </tr>
+	  <% end %>
+	  <tr class="<%= cycle("odd", "even") %>">
+	    <% @headers.each do |column| %><td>...</td><% end %>
+	  </tr>
+	</tbody>
+</table>
+<%= l(:label_ext_prefix_description) %>
+
+<% form_tag({:action => 'matchtrackers'}, {:multipart => true}) do %>
+	<fieldset class="box"><legend><%= l(:label_req_type_checking_settings) %></legend>
+		<label><%= check_box_tag "deep_check_req_types", true, true %> <%= l(:label_deep_check_req_types) %> </label><br/>
+		<label><%= check_box_tag "conflate_req_types", true, true %> <%= l(:label_conflate_req_types) %> </label><br/>
+	</fieldset>
+	
+	<%= submit_tag l(:button_matchtrackers) %>
+<% end %>

@@ -1,0 +1,23 @@
+= Redmine importer for RequisitePro Baselines
+Influenced from (and started with) "https://github.com/leovitch/redmine_importer".
+Some usefull information at bugmail.rb from somewhere in the internet.
+ Thanks for the basics!
+
+Very first state! Use at your own risk!
+
+To install:
+- Prerequisites: 
+- Download the plugin to your vendors/plugins directory.  Be sure to maintain the correct folder name, 'import_reqpro'.
+- Run 'rake db:migrate_plugins'
+- Restart your redmine as appropriate
+- Go to the Admin/Projects/../Modules
+- Enable "Importer for ReqPro"
+
+en, de localizations included.
+
+ToDos:
+- de localization is not actual
+- child tracing not imported (Parent task/Subtasks)
+- traces between requirements not supported (related issues)
+- traces between external requirements not supported (related issues)
+- users not synchronized (not imported)

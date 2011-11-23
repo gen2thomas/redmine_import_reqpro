@@ -1,0 +1,28 @@
+<% content_for :header_tags do %>
+    <%= stylesheet_link_tag 'rpbimporter', :plugin => 'import_reqpro' %>
+<% end %>
+
+<h2><%= l(:label_match_attributes) %></h2>
+
+<% form_tag({:action => 'doconvert_and_result'}, {:multipart => true}) do %>
+	<legend><%= l(:label_matchattributes_select) %></legend>
+	<h3><%= l(:label_used_attributes) %></h3>
+	<table class="list">
+		<tbody>
+			<% @attributes_keys_sorted.each do |col_key| %>
+				<%column= @attributes_for_view[col_key]%>
+		    	<%matched = ''
+		          @attrs.each do |k| if k.to_s.casecmp(column[:attrlabel].to_s) == 0 then matched = k end end
+		        %>
+		        <tr class="<%= cycle("odd", "even") %>">
+				 	<td><%= column[:projects].to_a.join("/") %>.<%= column[:rtprefixes].to_a.join("/") %>.<%= column[:attrlabel] %>:</td>
+				 	<td><%= select_tag "fields_map_attribute[#{col_key}]", "<option value=\"\">#{l(:option_ignore)}</option>" + "<option value='#{column[:attrlabel]}'>+#{column[:attrlabel]}</option>" +
+						options_for_select(@attrs, matched) %></td>
+					<td>@<%= column[:datatypes] %>: <%= column[:itemtext].to_a.join(", ")%></td> 
+				</tr>
+			<% end %>
+		</tbody>
+	</table>
+	
+	<%= submit_tag l(:button_submit) %>
+<% end %>
