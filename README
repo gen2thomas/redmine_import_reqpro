@@ -2,3 +2,6 @@ README von "Redmine_Plugins"
 ------------
 redmine_kup:
 -Plugin, welches angelehnt an RUP = "Rational Unified Process" ein paar Abhaengigkeiten zu redmine hinzufuegt s. README.rdoc im Verzeichnis
+
+import_reqpro
+-Plugin, mit dem man Daten aus Requisite-Pro Baselines nach redmine importieren kann
