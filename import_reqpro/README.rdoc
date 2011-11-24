@@ -16,7 +16,6 @@ To install:
 en, de localizations included.
 
 ToDos:
-- de localization is not actual
 - child tracing not imported (Parent task/Subtasks)
 - traces between requirements not supported (related issues)
 - traces between external requirements not supported (related issues)
