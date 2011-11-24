@@ -551,7 +551,7 @@ private
         new_issue_custom_field.regexp = "" 
         new_issue_custom_field.is_for_all = "1"
         new_issue_custom_field.is_filter = "1"
-        #collect all trackers which need this custom field
+        #collect some trackers which need this custom field
         if attri[:rtprefixes] != nil
           attri[:rtprefixes].each do |prefix|
             tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
@@ -601,17 +601,30 @@ private
           debugger
         end
       else
-        #TODO: If not a custom field: IssueStatuses and IssuePriorities also updatable
-        # check for custom field to update itemlist
+        # already known attribute or custom field
+        # check for custom field to update itemlist and trackers
         if known_attributes[newkey][:custom_field_id] != "" and known_attributes[newkey][:custom_field_id] != nil
           issue_custom_field = IssueCustomField.find(known_attributes[newkey][:custom_field_id])
+          puts "Check for update attribute as custom field: " + issue_custom_field.name if @debug
+          isc_changed = false
           if issue_custom_field[:field_format] == "list"
             list_elements = issue_custom_field[:possible_values] # make the string to an array
             list_elements.push(attri[:itemlist]) #add new element
             list_elements.flatten!
             list_elements.uniq!
-            #write it back
-            #IssueCustomField.update(known_attributes[newkey][:custom_field_id],:possible_values=>list_elements)
+            isc_changed = true
+          end
+          #collect some further trackers which need this custom field
+          if attri[:rtprefixes] != nil
+            isc_changed = true
+            attri[:rtprefixes].each do |prefix|
+              tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
+              issue_custom_field.trackers.push(tracker)
+              issue_custom_field.trackers.uniq!
+            end
+          end
+          #write it back
+          if (isc_changed)
             if (issue_custom_field.save)
               @@import_results[:updated][:attributes] += 1
             else
@@ -621,6 +634,8 @@ private
               debugger
             end
           end
+        else
+          #TODO: If not a custom field: IssueStatuses and IssuePriorities also updatable
         end
       end
     end
@@ -682,13 +697,15 @@ private
   
   def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value)
     # check for customfield id to update
-    # if not a custom field update the existend attribute
+    # if not a custom field, update the existend attribute
     if customfield_id != ""
       #"custom_field_values"=>{"1"=>"ein text", "2"=>"15"}
       if new_issue.custom_field_values == nil
         new_issue.custom_field_values = Hash.new
       end
-      new_issue.custom_field_values = {customfield_id.to_s => value.to_s}
+      if value.to_s != ""
+        new_issue.custom_field_values = {customfield_id.to_s => value.to_s}
+      end
     else
       case mapping
       when l_or_humanize(:assigned_to, :prefix=>"field_")
