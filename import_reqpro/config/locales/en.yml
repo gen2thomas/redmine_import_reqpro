@@ -16,6 +16,18 @@ en:
   label_date: "Version Date"
   label_extproj_prefixes: "External Projects (Prefixes)"
   label_ext_prefix_description: "Description of extension for the external project prefixes: '+' available, '-' not available, '*' not needed, '?' not checked"
+  label_users_checking_settings: "Checking settings for users. Conflate the same users of all projects together using ..."
+  label_conflate_users_by_email: " Email (recommended)"
+  label_conflate_users_by_login: " Login"
+  label_conflate_users_by_name: " Name"
+  button_match_users: "Go on to 'Matching Users'"
+  
+  label_match_users: "Matching Users"
+  label_matchusers_select: "Select for each 'User' field the 'User' target. Choose '+Generate' to generate a new 'User' with specified name."
+  label_used_users: "Needed users in all projects to import."
+  option_ignore: "Ignore"
+  label_logins: "Used logins: "
+  label_names: "Used names: "
   label_req_type_checking_settings: "Checking settings for requirement types"
   label_deep_check_req_types: "Deep checking requirement types (recommended, but has long delay)"
   label_conflate_req_types: "Conflate the same requirement types of all projects together (recommended)"
@@ -37,6 +49,7 @@ en:
   
   label_rpbimport_result: "ReqPro Import Result"
   label_result_projectse: "%{success_count} projects successfully imported.  %{failed_count} projects failed to import."
+  label_result_userse: "%{success_count} users successfully imported.  %{failed_count} users failed to import."
   label_result_issuese: "%{success_count} issues successfully imported.  %{failed_count} issues failed to import."
   label_result_attributese: "%{success_count} attributes successfully imported.  %{failed_count} attributes failed to import."
   label_result_trackerse: "%{success_count} trackers successfully imported.  %{failed_count} trackers failed to import."
@@ -57,3 +70,5 @@ en:
 
   text_rmi_specify_unique_field_for_update: "Unique field must be specified because Update existing issues is on"
   text_rmi_specify_unique_field_for_column: "Unique field must be specified because the column %{column} needs to refer to other tasks" 
+
+  

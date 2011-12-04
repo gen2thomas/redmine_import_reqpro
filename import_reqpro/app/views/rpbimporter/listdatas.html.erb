@@ -20,11 +20,12 @@
 </table>
 <%= l(:label_ext_prefix_description) %>
 
-<% form_tag({:action => 'matchtrackers'}, {:multipart => true}) do %>
-	<fieldset class="box"><legend><%= l(:label_req_type_checking_settings) %></legend>
-		<label><%= check_box_tag "deep_check_req_types", true, true %> <%= l(:label_deep_check_req_types) %> </label><br/>
-		<label><%= check_box_tag "conflate_req_types", true, true %> <%= l(:label_conflate_req_types) %> </label><br/>
+<% form_tag({:action => 'matchusers'}, {:multipart => true}) do %>
+	<fieldset class="box"><legend><%= l(:label_users_checking_settings) %></legend>
+	    <%= radio_button_tag "conflate_users", 'email', true %><%= l(:label_conflate_users_by_email) %><br/>
+	    <%= radio_button_tag "conflate_users", 'login' %><%= l(:label_conflate_users_by_login) %><br/>
+	    <%= radio_button_tag "conflate_users", 'name' %><%= l(:label_conflate_users_by_name) %><br/>
 	</fieldset>
 	
-	<%= submit_tag l(:button_matchtrackers) %>
+	<%= submit_tag l(:button_match_users) %>
 <% end %>

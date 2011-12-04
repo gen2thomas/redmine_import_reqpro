@@ -4,6 +4,7 @@
 
 <h2><%= l(:label_rpbimport_result) %></h2>
 <%= l(:label_result_projectse, :success_count => (@import_results[:imported][:projects]), :failed_count => (@import_results[:failed][:projects])) %><br/>
+<%= l(:label_result_userse, :success_count => (@import_results[:imported][:users]), :failed_count => (@import_results[:failed][:users])) %><br/>
 <%= l(:label_result_issuese, :success_count => (@import_results[:imported][:issues]), :failed_count => (@import_results[:failed][:issues])) %><br/>
 <%= l(:label_result_trackerse, :success_count => (@import_results[:imported][:trackers]), :failed_count => (@import_results[:failed][:trackers])) %><br/>
 <%= l(:label_result_attributese, :success_count => (@import_results[:imported][:attributes]), :failed_count => (@import_results[:failed][:attributes])) %><br/>

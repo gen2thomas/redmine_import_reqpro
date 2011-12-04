@@ -4,6 +4,7 @@ require 'rexml/document'
 require File.dirname(__FILE__) + '/../../app/helpers/files_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/projects_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/ext_projects_helper'
+require File.dirname(__FILE__) + '/../../app/helpers/users_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/requirement_types_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/attributes_helper'
 
@@ -11,6 +12,7 @@ include REXML
 include FilesHelper
 include ProjectsHelper
 include ExtProjectsHelper
+include UsersHelper
 include RequirementTypesHelper
 include AttributesHelper
 
@@ -45,6 +47,7 @@ class RpbimporterController < ApplicationController
     #collect data pathes in an array
     collected_data_pathes = string_data_pathes_to_array(actual_data)
     #--------------------
+    debugger
     # generate the header for view
     @headers = Array.new
     @headers = ["label_number", "label_projectname", "label_description", "label_prefix", "label_date", "label_extproj_prefixes"]
@@ -54,9 +57,33 @@ class RpbimporterController < ApplicationController
     @contents_of_projects = collected_projects_to_content_array(@@some_projects) # need for view
   end
   
+  def matchusers
+    @@conflate_users = params[:conflate_users]
+    # collect users of all available projects
+    @@users = collect_users(@@some_projects)
+    # remap used users to "Project.Prefix" and take same prefixes of several projects together if conflating
+    # :usr_prefix => {:name => "name", :project=>["p_prefix1","p_prefix2"]}
+    @users_for_view = remap_users_to_project_prefix(@@users, @@conflate_users)
+    # entries in list fields 
+    @redmine_users = Array.new
+    User.find(:all).each do |usr|
+      case @@conflate_users
+      when "email"
+        @redmine_users.push(usr[:mail]) if usr[:mail].casecmp("@") == 1
+      when "login"
+        @redmine_users.push(usr[:login]) if usr[:login].length > 2
+      when "name"
+        @redmine_users.push(usr[:firstname] + " " + usr[:lastname]) if usr[:lastname].length > 2
+      end
+    end
+    #mapping now in variable "params[:fields_map_user]"
+  end
+  
   def matchtrackers
+    @@user_mapping = set_user_mapping(params[:fields_map_user])
     deep_check_req_types = params[:deep_check_req_types]
     conflate_req_types = params[:conflate_req_types]
+    @@users = update_users_for_map_needing(@@users, @@user_mapping, @@conflate_users)
     # collect req types of all available projects
     @@requirement_types = collect_requirement_types(@@some_projects, deep_check_req_types)
     # remap used req types to "Project.Prefix" and take same prefixes of several projects together if conflating
@@ -111,9 +138,11 @@ class RpbimporterController < ApplicationController
     attributes_mapping = set_attributes_mapping(params[:fields_map_attribute])
     #delete unused attributes
     @@attributes = update_attributes_for_map_needing(@@attributes, attributes_mapping)
-    @@import_results = {:imported => {:projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
-                        :updated =>  {:projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
-                        :failed =>   {:projects => 0, :issues => 0, :trackers => 0, :attributes => 0}}
+    @@import_results = {:imported => {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
+                        :updated =>  {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
+                        :failed =>   {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0}}
+    # users
+    @@user_mapping = create_all_users_and_update_mapping(@@users, @@user_mapping, @@conflate_users)
     # new requirement types (key is the ID):
     #@@requirement_types, @@tracker_mapping (:rt_prefix=> {:tr_name, :trid})
     @@tracker_mapping = create_all_trackers_and_update_mapping(@@tracker_mapping)
@@ -473,7 +502,17 @@ class RpbimporterController < ApplicationController
   end
 
 private
-
+  def set_user_mapping(user_map)
+    user_mapping = Hash.new
+    user_map.each do |new_user, redmine_user|
+      if redmine_user != ""
+        user_mapping[new_user]=Hash.new
+        user_mapping[new_user][:rm_user] = redmine_user
+      end 
+    end
+    return user_mapping
+  end
+  
   def set_tracker_mapping(tracker_map)
     tracker_mapping = Hash.new
     tracker_map.each do |rt_prefix,tr_name|
@@ -497,6 +536,48 @@ private
     return attributes_mapping
   end
 
+  def create_all_users_and_update_mapping(rp_users, user_mapping, conflate_users)
+    # create new redmine users from rp-users
+    # update user_mapping with "user id"
+    rp_users.each do |rp_key, rp_user|
+      newkey = rp_user[:mapping]
+        # check for user is mapped
+        if newkey != nil and newkey != ""
+          # check for user is existend
+          case conflate_users
+          when "email"
+            user = User.find_by_mail(newkey)
+          when "login"
+            user = User.find_by_login(newkey)
+          when "name"
+            user = User.find(:all, :conditions => ["firstname=? and lastname=?", newkey[:firstname], newkey[:lastname]])[0]
+          end
+          # check for user is not already known
+          if user == nil
+            new_user = User.new
+            new_user[:mail] = rp_user[:email]
+            new_user[:login] = rp_user[:login]
+            new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
+            new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
+            if new_user.save    
+              @@import_results[:imported][:users] += 1
+            else
+              @@import_results[:failed][:users] += 1
+              debugger
+              puts "Unable to import user: " + new_user[:mail]
+            end
+            user_mapping[rp_user[:conf_key]][:user_id] = new_user[:id]
+          else
+            puts "User already exist: " + user[:mail]  + " -> " + rp_user[:email] if @debug
+            user_mapping[rp_user[:conf_key]][:user_id] = user[:id]
+          end
+        else
+          puts "User not needed: " + rp_user[:email] if @debug
+        end
+      end
+    return user_mapping
+  end
+  
   def create_all_trackers_and_update_mapping(tracker_mapping)
     # create new trackers from requirement types
     # update tracker_mapping with "tracker id"
@@ -544,7 +625,7 @@ private
         new_issue_custom_field.default_value = attri[:default]
         new_issue_custom_field.min_length = "0"
         new_issue_custom_field.max_length = "0"
-        new_issue_custom_field.possible_values= ""
+        new_issue_custom_field.possible_values = ""
         new_issue_custom_field.trackers = Array.new
         new_issue_custom_field.searchable = "0"
         new_issue_custom_field.is_required = "0"
