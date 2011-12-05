@@ -15,4 +15,4 @@ ToDos:
 - child tracing not imported (Parent task/Subtasks)
 - traces between requirements not supported (related issues)
 - traces between external requirements not supported (related issues)
-- users not used after import
+- users not used after import inside issues
