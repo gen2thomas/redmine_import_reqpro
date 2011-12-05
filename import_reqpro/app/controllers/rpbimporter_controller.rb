@@ -47,7 +47,7 @@ class RpbimporterController < ApplicationController
     #collect data pathes in an array
     collected_data_pathes = string_data_pathes_to_array(actual_data)
     #--------------------
-    debugger
+    #debugger
     # generate the header for view
     @headers = Array.new
     @headers = ["label_number", "label_projectname", "label_description", "label_prefix", "label_date", "label_extproj_prefixes"]
@@ -152,7 +152,7 @@ class RpbimporterController < ApplicationController
     @@known_attributes = create_all_customfields(attributes_mapping, @@attributes, @@known_attributes, @@tracker_mapping)
     # new projects:
     #@@some_projects
-    create_all_projects(@@some_projects, @@tracker_mapping)
+    create_all_projects(@@some_projects, @@tracker_mapping, @@user_mapping)
     # now import all issues from each ReqPro project
     @@some_projects.each_value do |a_project| 
       import_all_issues(a_project, @@requirement_types, @@attributes, @@known_attributes)
@@ -541,40 +541,45 @@ private
     # update user_mapping with "user id"
     rp_users.each do |rp_key, rp_user|
       newkey = rp_user[:mapping]
-        # check for user is mapped
-        if newkey != nil and newkey != ""
-          # check for user is existend
-          case conflate_users
-          when "email"
-            user = User.find_by_mail(newkey)
-          when "login"
-            user = User.find_by_login(newkey)
-          when "name"
-            user = User.find(:all, :conditions => ["firstname=? and lastname=?", newkey[:firstname], newkey[:lastname]])[0]
-          end
-          # check for user is not already known
-          if user == nil
-            new_user = User.new
-            new_user[:mail] = rp_user[:email]
-            new_user[:login] = rp_user[:login]
-            new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
-            new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
-            if new_user.save    
-              @@import_results[:imported][:users] += 1
-            else
-              @@import_results[:failed][:users] += 1
-              debugger
-              puts "Unable to import user: " + new_user[:mail]
-            end
-            user_mapping[rp_user[:conf_key]][:user_id] = new_user[:id]
-          else
-            puts "User already exist: " + user[:mail]  + " -> " + rp_user[:email] if @debug
-            user_mapping[rp_user[:conf_key]][:user_id] = user[:id]
-          end
-        else
-          puts "User not needed: " + rp_user[:email] if @debug
+      # check for user is mapped
+      if newkey != nil and newkey != ""
+        # check for user is existend
+        case conflate_users
+        when "email"
+          new_user = User.find_by_mail(newkey)
+        when "login"
+          new_user = User.find_by_login(newkey)
+        when "name"
+          new_user = User.find(:all, :conditions => ["firstname=? and lastname=?", newkey[:firstname], newkey[:lastname]])[0]
         end
+        # check for user is not already known
+        if new_user == nil
+          new_user = User.new
+          new_user[:mail] = rp_user[:email]
+          new_user[:login] = rp_user[:login]
+          new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
+          new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
+          if new_user.save    
+            @@import_results[:imported][:users] += 1
+          else
+            @@import_results[:failed][:users] += 1
+            debugger
+            puts "Unable to import user: " + new_user[:mail]
+          end
+          
+        else
+          puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+        end
+        # update mapping
+        user_mapping[rp_user[:conf_key]][:user_id] = new_user[:id]
+        if user_mapping[rp_user[:conf_key]][:pr_prefix] == nil
+          user_mapping[rp_user[:conf_key]][:pr_prefix] = Array.new
+        end
+        user_mapping[rp_user[:conf_key]][:pr_prefix].push(rp_user[:project].downcase)
+      else
+        puts "User not needed: " + rp_user[:email] if @debug
       end
+    end
     return user_mapping
   end
   
@@ -723,7 +728,7 @@ private
     return known_attributes
   end
   
-  def create_all_projects(some_projects, tracker_mapping)
+  def create_all_projects(some_projects, tracker_mapping, user_mapping)
     # prepare some content of all new projects:
     # 1. trackers
     trackers = Array.new
@@ -751,6 +756,8 @@ private
         new_project.is_public = "0"
         if (new_project.save) 
           @@import_results[:imported][:projects] += 1
+          # 3. users
+          update_project_members_with_roles(new_project, user_mapping)         
         else
           @@import_results[:failed][:projects] += 1
           debugger
@@ -766,6 +773,7 @@ private
         new_project.trackers = trackers
         if (new_project.save) 
           @@import_results[:updated][:projects] += 1
+          update_project_members_with_roles(new_project, user_mapping)  
         else
           @@import_results[:failed][:projects] += 1
           debugger
@@ -774,6 +782,38 @@ private
         end
       end
     end
+  end
+  
+  def update_project_members_with_roles(project, user_mapping)
+    user_mapping.each_value do |a_user|
+      if a_user[:pr_prefix].include?(project[:identifier])
+        user = User.find_by_id(a_user[:user_id])
+        if user != nil
+          if Member.find(:all, :conditions => { :user_id => user[:id], :project_id => project.id })[0] == nil
+            new_member = Member.new
+            new_member.user = user
+            new_member.project = project 
+            new_member.mail_notification = false
+            new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
+            new_member.roles.uniq!
+            if !new_member.save()
+              debugger
+              puts "Unable to save project member: " + project[:identifier] + ", login:  " + user[:login]
+              debugger
+              return false
+            end
+          else
+            puts "Member already exist: " + user[:login] if @debug
+          end
+        else
+          debugger
+          puts "Requested user not found: " + a_user[:user_id]
+          debugger
+          return false
+        end
+      end
+    end
+    return true
   end
   
   def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value)
