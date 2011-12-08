@@ -1,4 +1,4 @@
-= Redmine importer for RequisitePro Baselines
+= Redmine importer for RequisitePro Baselines V01
 Influenced from (and started with) "https://github.com/leovitch/redmine_importer". Thanks for the basics!
 
 To install:
@@ -11,8 +11,9 @@ To install:
 
 en, de localizations included.
 
-ToDos:
-- child tracing not imported (Parent task/Subtasks)
-- traces between requirements not supported (related issues)
-- traces between external requirements not supported (related issues)
-- users not used after import inside issues
+ToDos (rp = ReqPro, rm = redmine):
+- Progress indicator while importing (not sure about possibility) --> planned for V02
+- child tracing not imported (Parent task/Subtasks) --> planned for V02
+- Assign rp's projects author to rm's manager role --> planned for V02
+- traces between requirements not supported (related issues) --> planned for V03
+- traces between external requirements not supported (related issues) --> planned for V04
