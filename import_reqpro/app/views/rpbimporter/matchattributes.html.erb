@@ -24,5 +24,9 @@
 		</tbody>
 	</table>
 	
+	<fieldset class="box"><legend><%= l(:label_issue_import_settings) %></legend>
+		<label><%= check_box_tag "issue_update_allowed", true, false %> <%= l(:label_issue_update_allowed) %> </label><br/>
+	</fieldset>
+	
 	<%= submit_tag l(:button_start_import) %>
 <% end %>

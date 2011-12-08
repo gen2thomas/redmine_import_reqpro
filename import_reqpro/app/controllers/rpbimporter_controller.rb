@@ -47,7 +47,6 @@ class RpbimporterController < ApplicationController
     #collect data pathes in an array
     collected_data_pathes = string_data_pathes_to_array(actual_data)
     #--------------------
-    #debugger
     # generate the header for view
     @headers = Array.new
     @headers = ["label_number", "label_projectname", "label_description", "label_prefix", "label_date", "label_extproj_prefixes"]
@@ -136,6 +135,7 @@ class RpbimporterController < ApplicationController
   
   def doconvert_and_result
     attributes_mapping = set_attributes_mapping(params[:fields_map_attribute])
+    update_allowed = params[:issue_update_allowed]
     #delete unused attributes
     @@attributes = update_attributes_for_map_needing(@@attributes, attributes_mapping)
     @@import_results = {:imported => {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
@@ -155,7 +155,7 @@ class RpbimporterController < ApplicationController
     create_all_projects(@@some_projects, @@tracker_mapping, @@user_mapping)
     # now import all issues from each ReqPro project
     @@some_projects.each_value do |a_project| 
-      import_all_issues(a_project, @@requirement_types, @@attributes, @@known_attributes)
+      import_all_issues(a_project, @@requirement_types, @@attributes, @@known_attributes, @@user_mapping, update_allowed)
     end
     @import_results = @@import_results #for view
   end
@@ -566,12 +566,12 @@ private
             debugger
             puts "Unable to import user: " + new_user[:mail]
           end
-          
         else
           puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
         end
         # update mapping
         user_mapping[rp_user[:conf_key]][:user_id] = new_user[:id]
+        user_mapping[rp_user[:conf_key]][:user_string] = rp_user[:firstname] + " " + rp_user[:lastname] # for issue generation
         if user_mapping[rp_user[:conf_key]][:pr_prefix] == nil
           user_mapping[rp_user[:conf_key]][:pr_prefix] = Array.new
         end
@@ -786,39 +786,48 @@ private
   
   def update_project_members_with_roles(project, user_mapping)
     user_mapping.each_value do |a_user|
-      if a_user[:pr_prefix].include?(project[:identifier])
-        user = User.find_by_id(a_user[:user_id])
-        if user != nil
-          if Member.find(:all, :conditions => { :user_id => user[:id], :project_id => project.id })[0] == nil
-            new_member = Member.new
-            new_member.user = user
-            new_member.project = project 
-            new_member.mail_notification = false
-            new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
-            new_member.roles.uniq!
-            if !new_member.save()
-              debugger
-              puts "Unable to save project member: " + project[:identifier] + ", login:  " + user[:login]
-              debugger
-              return false
+      if a_user[:pr_prefix] != nil
+        if a_user[:pr_prefix].include?(project[:identifier])
+          user = User.find_by_id(a_user[:user_id])
+          if user != nil
+            if Member.find(:all, :conditions => { :user_id => user[:id], :project_id => project.id })[0] == nil
+              new_member = Member.new
+              new_member.user = user
+              new_member.project = project 
+              new_member.mail_notification = false
+              new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
+              new_member.roles.uniq!
+              if !new_member.save()
+                debugger
+                puts "Unable to save project member: " + project[:identifier] + ", login:  " + user[:login]
+                debugger
+                return false
+              end
+            else
+              puts "Member already exist: " + user[:login] if @debug
             end
           else
-            puts "Member already exist: " + user[:login] if @debug
+            debugger
+            puts "Requested user not found: " + a_user[:user_id]
+            debugger
+            return false
           end
-        else
-          debugger
-          puts "Requested user not found: " + a_user[:user_id]
-          debugger
-          return false
         end
+      else
+        debugger
+        #TODO: bug#11155: Mapping to a user which is not inside rp project but exist already within redmine niO
+        # this bug was not reproducable
+        puts "User without project found: " + a_user[:login]
+        debugger
       end
     end
     return true
   end
   
-  def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value)
+  def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value, user_mapping, project)
     # check for customfield id to update
     # if not a custom field, update the existend attribute
+    # if the existend attribute deal with a user --> check the project members for this user
     if customfield_id != ""
       #"custom_field_values"=>{"1"=>"ein text", "2"=>"15"}
       if new_issue.custom_field_values == nil
@@ -830,11 +839,11 @@ private
     else
       case mapping
       when l_or_humanize(:assigned_to, :prefix=>"field_")
-        new_issue.assigned_to = User.find_by_lastname(value) || User.find_by_firstname(value) || User.find_by_login(value)
+        new_issue.assigned_to = find_user(value, user_mapping, project)
       when l_or_humanize(:author, :prefix=>"field_")
-        new_issue.author = User.find_by_lastname(value) || User.find_by_firstname(value) || User.find_by_login(value)
+        new_issue.author = find_user(value, user_mapping, project)
       when l_or_humanize(:watchers, :prefix=>"field_")
-        new_issue.watchers = User.find_by_lastname(value) || User.find_by_firstname(value) || User.find_by_login(value)
+        new_issue.watchers = find_user(value, user_mapping, project)
       when l_or_humanize(:category, :prefix=>"field_")
         new_issue.category = IssueCategory.find_by_name(value) || new_issue.category
       when l_or_humanize(:priority, :prefix=>"field_")
@@ -855,10 +864,84 @@ private
       end
     end
     return new_issue
-  end 
-
+  end
+   
+  def find_user(rp_user_string, user_mapping, project)
+    #user_string = "Firstname Lastname" inside ReqPro
+    # user_mapping[key] ={:user_string => "Firstname Lastname", :user_id => rm-user-id}
+    # if a user is found --> check the project members for this user 
+    rp_fullname = get_fullname(rp_user_string, nil)
+    user_id_found = nil
+    # best level:
+    user_mapping.each_value do |user_map|
+      if user_id_found == nil
+        map_fullname = get_fullname(user_map[:user_string], nil)
+        if (map_fullname[:firstname].downcase + map_fullname[:lastname].downcase) == (rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
+          user_id_found = user_map[:user_id]
+        end
+      else
+        break
+      end 
+    end
+    # second level:
+    user_mapping.each_value do |user_map|
+      if user_id_found == nil
+        map_fullname = get_fullname(user_map[:user_string], nil)
+        if map_fullname[:firstname].downcase.include?(rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
+           user_id_found = user_map[:user_id]
+         end
+      else
+        break
+      end
+    end
+    # third level:
+    user_mapping.each_value do |user_map|
+      if user_id_found == nil
+        map_fullname = get_fullname(user_map[:user_string], nil)
+        if map_fullname[:lastname].downcase == rp_fullname[:lastname].downcase
+           user_id_found = user_map[:user_id]
+         end
+      else
+        break
+      end
+    end
+    # found with known id from mapping
+    if user_id_found != nil
+      found_user = User.find_by_id(user_id_found)
+    end
+    # last levels without mapping
+    if found_user == nil
+      if rp_fullname[:firstname] != nil and rp_fullname[:lastname] != nil
+        found_user = User.find(:all, :conditions => {:lastname => rp_fullname[:lastname], :firstname => rp_fullname[:firstname]})[0]
+      end
+    end
+    if found_user == nil
+      if rp_fullname[:lastname] != nil
+        found_user = User.find_by_lastname(rp_fullname[:lastname]) || User.find_by_firstname(rp_fullname[:lastname]) || User.find_by_login(rp_fullname[:lastname])
+      end
+    end
+    if found_user == nil
+      if rp_fullname[:firstname] != nil
+        found_user = User.find_by_firstname(rp_fullname[:firstname]) || User.find_by_lastname(rp_fullname[:firstname]) || User.find_by_login(rp_fullname[:firstname])
+      end
+    end
+    #check for members of project
+    if found_user != nil
+      if Member.find(:all, :conditions => { :user_id => found_user[:id], :project_id => project.id })[0] == nil
+        puts "This user is not member of the project: " + found_user[:login] + "<-->" + project[:identifier] if @debug
+        found_user = nil # force user to nil because he is not allowed at this project
+      end
+    end
+    return found_user
+  end
   
-  def import_all_issues(a_project, requirement_types, attributes, known_attributes)
+  def import_all_issues(a_project, requirement_types, attributes, known_attributes, user_mapping, update_allowed)
+    #find project
+    project = Project.find_by_identifier(a_project[:prefix])
+    if(!project) 
+      puts "Unable to find project:" + a_project[:prefix] + "-->"+ a_project[:name]
+      return false
+    end
     # import only reqirements if the requiremnet type is available (mapped to a tracker)
     not_imported_issues = 0
     # to convert text
@@ -870,84 +953,103 @@ private
     all_files.each do |filename|
       xmldoc = open_xml_file(filepath,filename)
       xmldoc.elements.each("PROJECT/Pkg/Requirements/Req") do |req|
-        new_issue = Issue.new
-        # issue parameters
-        new_issue.status = IssueStatus.default
-        new_issue.priority = IssuePriority.default
-        new_issue.category = IssueCategory.find(:all)[0]
-        new_issue.author = User.find(:all)[0]
-        new_issue.done_ratio = 0
-        #find project
-        new_issue.project = Project.find_by_identifier(a_project[:prefix])
-        if(!new_issue.project) 
-          puts "Unable to find project:" + a_project[:prefix] + "-->"+ a_project[:name]
-          return false
-        end
-        # import requirement as issue if needed
-        if requirement_types.include?(req.elements["RTID"].text)
-          new_issue.tracker = Tracker.find_by_name(requirement_types[req.elements["RTID"].text][:mapping])
-        end
-        if new_issue.tracker != nil
-          new_issue.subject = ic.iconv(req.elements["RName"].text)
-          new_issue.description = ic.iconv(req.elements["RText"].text)
-          # import attributes:
-          if req.elements["FVs"] != nil
-            req.elements["FVs"].each do |fv|
-              if fv != nil #not empty
-                hash_key = fv.elements["FGUID"].text
-                value = fv.elements["FTxt"].text
-                if attributes[hash_key] != nil
-                  # import this attribute value
-                  new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value)
-                end
-              end
-            end
-          end
-          if req.elements["LVs"] != nil
-            req.elements["LVs"].each do |lv|
-              if lv != nil #not empty
-                hash_key = lv.elements["UDF"].text
-                value = lv.elements["LITxt"].text
-                if attributes[hash_key] != nil
-                  # import this attribute value
-                  puts "attribute with list element to update" if @debug
-                  new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value)
-                end
-              end
-            end
-          end
-          # attention! "due date" must be the same or greater than "start date"!
-          # "start date" its allowed to be "nil"
-          if new_issue.start_date != nil and new_issue.due_date != nil
-            if (new_issue.start_date.to_time > new_issue.due_date.to_time)
-              new_issue.start_date = new_issue.due_date
-            end
-          end
-          #Issue.find(:all, :conditions=> ["subject like ?", "%#{params[:query]}%"])
-          if Issue.find(:all, :conditions => { :project_id => new_issue.project[:id], :subject => new_issue.subject })[0] != nil
-            puts "Issue already exist: " + new_issue.project[:identifier] + ":" + new_issue.project[:name] + ":" + new_issue.subject if @debug
-          else
-            if new_issue == nil
-              debugger
-              new_issue.save
-              debugger
-            end
-            if(new_issue.save)
-              a_project[:imported_issues] += 1
-              @@import_results[:imported][:issues] += 1
-            else
-              @@import_results[:failed][:issues] += 1
-              debugger
-              puts "Failed to save new issue"
-              #exit 1
-              debugger
-            end
-          end
+        test_issue = Issue.new
+        test_issue.project = project
+        test_issue.subject = ic.iconv(req.elements["RName"].text)
+        test_issue.description = ic.iconv(req.elements["RText"].text)
+        # looking for ReqTyp ==> Tracker
+        req_type = req.elements["RTID"].text
+        if !(requirement_types.include?(req_type))
+          puts "Issue will not be imported - needed Requirement Type was not imported: " + test_issue.project[:identifier] + ":" + req_type + ":" + test_issue.subject if @debug
         else
-          puts "Issue: "+ req.elements["RTID"].text + "will not be imported."
-          not_imported_issues += 1
+          test_issue.tracker = Tracker.find_by_name(requirement_types[req_type][:mapping])
+          # import requirement as issue if needed
+          if test_issue.tracker == nil
+            puts "No Tracker found - Issue will not be imported: "+ req_type
+            not_imported_issues += 1
+          else
+            # looking for existend issue
+            import_new_issue = false
+            new_issue = Issue.find(:all, :conditions => { :project_id => test_issue.project[:id], :tracker_id => test_issue.tracker[:id], :subject => test_issue.subject })[0]
+            if (new_issue != nil) and !(update_allowed)
+              puts "Issue already exist but not updated: " + new_issue.project[:identifier] + ":" + new_issue.project[:name] + ":" + new_issue.subject if @debug
+            else
+              # update issue or new issue
+              if new_issue == nil
+                new_issue = test_issue
+                import_new_issue = true    
+              end
+              # further issue parameters
+              new_issue.status = IssueStatus.default
+              new_issue.priority = IssuePriority.default
+              new_issue.category = IssueCategory.find(:all)[0]
+              new_issue.author = User.current
+              new_issue.done_ratio = 0  
+              # import attributes:
+              if req.elements["FVs"] != nil
+                req.elements["FVs"].each do |fv|
+                  if fv != nil #not empty
+                    hash_key = fv.elements["FGUID"].text
+                    value = fv.elements["FTxt"].text
+                    if attributes[hash_key] != nil
+                      # import this attribute value
+                      new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
+                                    known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, user_mapping, project)
+                    end
+                  end
+                end
+              end
+              if req.elements["LVs"] != nil
+                req.elements["LVs"].each do |lv|
+                  if lv != nil #not empty
+                    hash_key = lv.elements["UDF"].text
+                    value = lv.elements["LITxt"].text
+                    if attributes[hash_key] != nil
+                      # import this attribute value
+                      puts "attribute with list element to update" if @debug
+                      new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
+                                    known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, user_mapping, project)
+                    end
+                  end
+                end
+              end
+              # attention! "due date" must be the same or greater than "start date"!
+              # "start date" its allowed to be "nil"
+              if new_issue.start_date != nil and new_issue.due_date != nil
+                if (new_issue.start_date.to_time > new_issue.due_date.to_time)
+                  new_issue.start_date = new_issue.due_date
+                end
+              end
+              # try to save
+              #TODO: new_issue.save force "assigned_to" to a user (only while first save), how and why?
+              user_before = new_issue.assigned_to # workarround step 1 for "assigned_to" bug
+              if(new_issue.save)
+                # workarround step 2 for "assigned_to"
+                if user_before != new_issue.assigned_to
+                  puts "Assignee changed while saving! --> Force reset" if @debug
+                  new_issue.assigned_to = user_before
+                  new_issue.save
+                end
+                # workarround check for "assigned_to"
+                if user_before != new_issue.assigned_to
+                  debugger
+                  puts "Assignee changed while saving again!"
+                  debugger
+                end
+                if (import_new_issue)
+                  a_project[:imported_issues] += 1
+                  @@import_results[:imported][:issues] += 1
+                else
+                  @@import_results[:updated][:issues] += 1
+                end
+              else
+                @@import_results[:failed][:issues] += 1
+                debugger
+                puts "Failed to save new issue"
+                debugger
+              end            
+            end
+          end
         end
       end
     end    

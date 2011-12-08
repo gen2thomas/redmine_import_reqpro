@@ -73,25 +73,31 @@ module UsersHelper
     return users
   end  
     
-private
   def get_fullname(fullname_old, email)
     # firstname and lastname are in the same string
-    # case1: space is the delimiter "Firstname lastname"
-    # case2: uppercase letters are the signs "FirstnameLastname"
     fullname = Hash.new
     fullname[:firstname] = nil
     fullname[:lastname] = nil
     # try to split
-    splitname = fullname_old.split(/([A-Z][a-z]*)/)
-    if splitname.length == 4
-      fullname[:firstname] = splitname[1]
-      fullname[:lastname] = splitname[3]      
+    # case 1: space is the delimiter "firstname lastname"
+    splitname = fullname_old.split(/\s/)
+    if splitname.length == 2
+      fullname[:firstname] = splitname[0]
+      fullname[:lastname] = splitname[1]      
+    end
+    # case 2: uppercase letters are the signs "FirstnameLastname" or "Firstname lastname"
+    if fullname[:firstname] == nil
+      splitname = fullname_old.split(/([A-Z][a-z]*)/)
+      if splitname.length == 4
+        fullname[:firstname] = splitname[1]
+        fullname[:lastname] = splitname[3]      
+      end
     end
     # check against errors and use mail
-    # case 1: Firstname.Lastname@... or firstname.lastname@...
+    # case 3: Firstname.Lastname@... or firstname.lastname@...
     #      or FirstnameLastname@... or firstnameLastname@...
     if fullname[:firstname] == nil
-      if splitname.length < 4
+      if splitname.length < 4 and email != nil
         email1 = email.split(/[@]/) # ["firstname.lastname","gmx.de"]
         splitname = email1[0].split(/([A-Z]?[a-z]*)([.]?)/) # ["", "firstname", "", "", "Lastname"]
         if splitname.length == 5
@@ -100,10 +106,16 @@ private
         end 
       end
     end
-    # case 3: firstname@lastname...
+    # case 4: find login inside email
+    #TODO: not done yet
+    # case 5: firstname@lastname...
     if email1 != nil
-      fullname[:firstname] = email1[0]
-      fullname[:lastname] = email1[1]
+      if fullname[:firstname] == nil
+        fullname[:firstname] = email1[0]
+      end
+      if fullname[:lastname] == nil
+        fullname[:lastname] = email1[1]
+      end
     end
     # last way out:
     if fullname[:firstname] == nil
@@ -114,7 +126,8 @@ private
     end
     return fullname
   end
-
+  
+private
   def collect_users_fast(some_projects)
     #get an data path to open an ProjectStructure file
     #collect all prefixes and guids to an array of hash
