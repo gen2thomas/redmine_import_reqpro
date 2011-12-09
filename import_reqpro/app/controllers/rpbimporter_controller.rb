@@ -57,32 +57,43 @@ class RpbimporterController < ApplicationController
   end
   
   def matchusers
-    @@conflate_users = params[:conflate_users]
-    # collect users of all available projects
-    @@users = collect_users(@@some_projects)
-    # remap used users to "Project.Prefix" and take same prefixes of several projects together if conflating
-    # :usr_prefix => {:name => "name", :project=>["p_prefix1","p_prefix2"]}
-    @users_for_view = remap_users_to_project_prefix(@@users, @@conflate_users)
-    # entries in list fields 
-    @redmine_users = Array.new
+    # collect users of all available projects and add conflation key
+    @@rpusers = collect_rpusers(@@some_projects, params[:conflate_users])
+    # remap used users to :conf_key (conflation key)
+    @rpusers_for_view = remap_users_to_conflationkey(@@rpusers)
+    # entries in list fields for already existend redmine users 
+    @@redmine_users = Hash.new
+    @@redmine_users[:rmusers] = Array.new
+    @@redmine_users[:key_for_view] = Array.new
     User.find(:all).each do |usr|
-      case @@conflate_users
+      case params[:conflate_users]
       when "email"
-        @redmine_users.push(usr[:mail]) if usr[:mail].casecmp("@") == 1
+        if usr[:mail].casecmp("@") == 1
+          @@redmine_users[:key_for_view].push(usr[:mail])
+          @@redmine_users[:rmusers].push(usr)
+        end
       when "login"
-        @redmine_users.push(usr[:login]) if usr[:login].length > 2
+        if usr[:login].length > 2
+          @@redmine_users[:key_for_view].push(usr[:login])
+          @@redmine_users[:rmusers].push(usr)
+        end
       when "name"
-        @redmine_users.push(usr[:firstname] + " " + usr[:lastname]) if usr[:lastname].length > 2
+        if usr[:lastname].length > 2
+          @@redmine_users[:key_for_view].push(usr[:firstname] + " " + usr[:lastname]) 
+          @@redmine_users[:rmusers].push(usr)
+        end
       end
     end
+    @rmusers_for_view = @@redmine_users[:key_for_view]
     #mapping now in variable "params[:fields_map_user]"
   end
   
   def matchtrackers
-    @@user_mapping = set_user_mapping(params[:fields_map_user])
+    #TODO: loeschen @@user_mapping = set_user_mapping(params[:fields_map_user])
     deep_check_req_types = params[:deep_check_req_types]
     conflate_req_types = params[:conflate_req_types]
-    @@users = update_users_for_map_needing(@@users, @@user_mapping, @@conflate_users)
+    # delete unused rpusers, add equivalent rmuser  
+    @@rpusers = update_rpusers_for_map_needing(@@rpusers, @@redmine_users, params[:fields_map_user], @debug)
     # collect req types of all available projects
     @@requirement_types = collect_requirement_types(@@some_projects, deep_check_req_types)
     # remap used req types to "Project.Prefix" and take same prefixes of several projects together if conflating
@@ -142,7 +153,7 @@ class RpbimporterController < ApplicationController
                         :updated =>  {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
                         :failed =>   {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0}}
     # users
-    @@user_mapping = create_all_users_and_update_mapping(@@users, @@user_mapping, @@conflate_users)
+    @@rpusers = create_all_users_and_update(@@rpusers)
     # new requirement types (key is the ID):
     #@@requirement_types, @@tracker_mapping (:rt_prefix=> {:tr_name, :trid})
     @@tracker_mapping = create_all_trackers_and_update_mapping(@@tracker_mapping)
@@ -151,11 +162,10 @@ class RpbimporterController < ApplicationController
     #new attributes for requirements - remapped to key = :project+:attrlabel+:status (or without :project):
     @@known_attributes = create_all_customfields(attributes_mapping, @@attributes, @@known_attributes, @@tracker_mapping)
     # new projects:
-    #@@some_projects
-    create_all_projects(@@some_projects, @@tracker_mapping, @@user_mapping)
+    create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers)
     # now import all issues from each ReqPro project
     @@some_projects.each_value do |a_project| 
-      import_all_issues(a_project, @@requirement_types, @@attributes, @@known_attributes, @@user_mapping, update_allowed)
+      import_all_issues(a_project, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed)
     end
     @import_results = @@import_results #for view
   end
@@ -536,51 +546,29 @@ private
     return attributes_mapping
   end
 
-  def create_all_users_and_update_mapping(rp_users, user_mapping, conflate_users)
+  def create_all_users_and_update(rp_users)
     # create new redmine users from rp-users
-    # update user_mapping with "user id"
     rp_users.each do |rp_key, rp_user|
-      newkey = rp_user[:mapping]
-      # check for user is mapped
-      if newkey != nil and newkey != ""
-        # check for user is existend
-        case conflate_users
-        when "email"
-          new_user = User.find_by_mail(newkey)
-        when "login"
-          new_user = User.find_by_login(newkey)
-        when "name"
-          new_user = User.find(:all, :conditions => ["firstname=? and lastname=?", newkey[:firstname], newkey[:lastname]])[0]
-        end
-        # check for user is not already known
-        if new_user == nil
-          new_user = User.new
-          new_user[:mail] = rp_user[:email]
-          new_user[:login] = rp_user[:login]
-          new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
-          new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
-          if new_user.save    
-            @@import_results[:imported][:users] += 1
-          else
-            @@import_results[:failed][:users] += 1
-            debugger
-            puts "Unable to import user: " + new_user[:mail]
-          end
+      new_user = rp_user[:rmuser]
+      if new_user == nil
+        new_user = User.new
+        new_user[:mail] = rp_user[:email]
+        new_user[:login] = rp_user[:login]
+        new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
+        new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
+        if new_user.save    
+          @@import_results[:imported][:users] += 1
+          rp_user[:rmuser] = new_user # update mapping
         else
-          puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+          @@import_results[:failed][:users] += 1
+          debugger
+          puts "Unable to import user: " + new_user[:mail]
         end
-        # update mapping
-        user_mapping[rp_user[:conf_key]][:user_id] = new_user[:id]
-        user_mapping[rp_user[:conf_key]][:user_string] = rp_user[:firstname] + " " + rp_user[:lastname] # for issue generation
-        if user_mapping[rp_user[:conf_key]][:pr_prefix] == nil
-          user_mapping[rp_user[:conf_key]][:pr_prefix] = Array.new
-        end
-        user_mapping[rp_user[:conf_key]][:pr_prefix].push(rp_user[:project].downcase)
       else
-        puts "User not needed: " + rp_user[:email] if @debug
+        puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
       end
     end
-    return user_mapping
+    return rp_users
   end
   
   def create_all_trackers_and_update_mapping(tracker_mapping)
@@ -728,7 +716,7 @@ private
     return known_attributes
   end
   
-  def create_all_projects(some_projects, tracker_mapping, user_mapping)
+  def create_all_projects(some_projects, tracker_mapping, rpusers)
     # prepare some content of all new projects:
     # 1. trackers
     trackers = Array.new
@@ -741,14 +729,14 @@ private
     EnabledModule.find(:all).each {|m| enabled_module_names.push(m[:name])}
     enabled_module_names.uniq!
     #enabled_module_names = ["issue_tracking", "time_tracking", "wiki"]
-    some_projects.each do |key, project|
-      new_project = Project.find_by_name(project[:name])
+    some_projects.each do |key, a_project|
+      new_project = Project.find_by_name(a_project[:name])
       if new_project == nil
         new_project = Project.new
         #generate new project
-        new_project.description="Description: " + project[:description] + "\n\nRequisitePro project created: " + project[:date] + "\nImported: " + Time.now.to_s + "\nPID: " + key
-        new_project.identifier = project[:prefix].downcase # only lower cases allowed
-        new_project.name = project[:name]
+        new_project.description="Description: " + a_project[:description] + "\n\nRequisitePro project created: " + a_project[:date] + "\nImported: " + Time.now.to_s + "\nPID: " + key
+        new_project.identifier = a_project[:prefix].downcase # only lower cases allowed
+        new_project.name = a_project[:name]
         new_project.trackers = trackers
         new_project.enabled_module_names = enabled_module_names
         new_project.issue_custom_field_ids= [""]
@@ -757,58 +745,62 @@ private
         if (new_project.save) 
           @@import_results[:imported][:projects] += 1
           # 3. users
-          update_project_members_with_roles(new_project, user_mapping)         
+          update_project_members_with_roles(new_project, rpusers, a_project[:author_rpid])         
         else
           @@import_results[:failed][:projects] += 1
           debugger
-          puts "Unable to import project" + project[:name]
+          puts "Unable to import project" + a_project[:name]
           debugger
         end
       else
         # project already exist
-        puts "Existing project found: " + project[:name] if @debug
+        puts "Existing project found: " + a_project[:name] if @debug
         # new trackers are possible --> update actual list
         trackers.concat(new_project.trackers)
         trackers.uniq!
         new_project.trackers = trackers
         if (new_project.save) 
           @@import_results[:updated][:projects] += 1
-          update_project_members_with_roles(new_project, user_mapping)  
+          update_project_members_with_roles(new_project, rpusers, a_project[:author_rpid])  
         else
           @@import_results[:failed][:projects] += 1
           debugger
-          puts "Unable to update project" + project[:name]
+          puts "Unable to update project" + a_project[:name]
           debugger
         end
       end
     end
   end
   
-  def update_project_members_with_roles(project, user_mapping)
-    user_mapping.each_value do |a_user|
-      if a_user[:pr_prefix] != nil
-        if a_user[:pr_prefix].include?(project[:identifier])
-          user = User.find_by_id(a_user[:user_id])
-          if user != nil
-            if Member.find(:all, :conditions => { :user_id => user[:id], :project_id => project.id })[0] == nil
+  def update_project_members_with_roles(rmproject, rpusers, rpproject_author_rpid)
+    rpusers.each do |a_rpid, a_rpuser|
+      if a_rpuser[:project] != nil
+        if a_rpuser[:project].downcase == rmproject[:identifier]
+          rmuser = a_rpuser[:rmuser]
+          if rmuser != nil
+            if Member.find(:all, :conditions => { :user_id => rmuser[:id], :project_id => rmproject.id })[0] == nil
               new_member = Member.new
-              new_member.user = user
-              new_member.project = project 
+              new_member.user = rmuser
+              new_member.project = rmproject 
               new_member.mail_notification = false
-              new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
+              if a_rpid == rpproject_author_rpid
+                new_member.roles.push(Role.find_by_name("Manager")) # use Manager for Project author
+              else
+                new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
+              end
               new_member.roles.uniq!
               if !new_member.save()
                 debugger
-                puts "Unable to save project member: " + project[:identifier] + ", login:  " + user[:login]
+                puts "Unable to save project member: " + rmproject[:identifier] + ", login:  " + rmuser[:login]
                 debugger
                 return false
               end
             else
-              puts "Member already exist: " + user[:login] if @debug
+              puts "Member already exist: " + rmuser[:login] if @debug
             end
           else
             debugger
-            puts "Requested user not found: " + a_user[:user_id]
+            puts "Requested user not found: " + a_rpuser[:user_id]
             debugger
             return false
           end
@@ -817,14 +809,14 @@ private
         debugger
         #TODO: bug#11155: Mapping to a user which is not inside rp project but exist already within redmine niO
         # this bug was not reproducable
-        puts "User without project found: " + a_user[:login]
+        puts "User without project found: " + a_rpuser[:login]
         debugger
       end
     end
     return true
   end
   
-  def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value, user_mapping, project)
+  def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value, rpusers, project)
     # check for customfield id to update
     # if not a custom field, update the existend attribute
     # if the existend attribute deal with a user --> check the project members for this user
@@ -839,11 +831,11 @@ private
     else
       case mapping
       when l_or_humanize(:assigned_to, :prefix=>"field_")
-        new_issue.assigned_to = find_user(value, user_mapping, project)
+        new_issue.assigned_to = find_user(value, rpusers, project)
       when l_or_humanize(:author, :prefix=>"field_")
-        new_issue.author = find_user(value, user_mapping, project)
+        new_issue.author = find_user(value, rpusers, project)
       when l_or_humanize(:watchers, :prefix=>"field_")
-        new_issue.watchers = find_user(value, user_mapping, project)
+        new_issue.watchers = find_user(value, rpusers, project)
       when l_or_humanize(:category, :prefix=>"field_")
         new_issue.category = IssueCategory.find_by_name(value) || new_issue.category
       when l_or_humanize(:priority, :prefix=>"field_")
@@ -866,48 +858,41 @@ private
     return new_issue
   end
    
-  def find_user(rp_user_string, user_mapping, project)
+  def find_user(rp_user_string, rpusers, project)
     #user_string = "Firstname Lastname" inside ReqPro
-    # user_mapping[key] ={:user_string => "Firstname Lastname", :user_id => rm-user-id}
+    # rpusers[key] ={:firstname => "Firstname", :lastname => "Lastname", :rmuser => rm-user}
     # if a user is found --> check the project members for this user 
     rp_fullname = get_fullname(rp_user_string, nil)
-    user_id_found = nil
+    found_user = nil
     # best level:
-    user_mapping.each_value do |user_map|
-      if user_id_found == nil
-        map_fullname = get_fullname(user_map[:user_string], nil)
-        if (map_fullname[:firstname].downcase + map_fullname[:lastname].downcase) == (rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
-          user_id_found = user_map[:user_id]
+    rpusers.each_value do |a_rpuser|
+      if found_user == nil
+        if (a_rpuser[:firstname].downcase + a_rpuser[:lastname].downcase) == (rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
+          found_user = a_rpuser[:rmuser]
         end
       else
         break
       end 
     end
     # second level:
-    user_mapping.each_value do |user_map|
-      if user_id_found == nil
-        map_fullname = get_fullname(user_map[:user_string], nil)
-        if map_fullname[:firstname].downcase.include?(rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
-           user_id_found = user_map[:user_id]
+    rpusers.each_value do |a_rpuser|
+      if found_user == nil
+        if a_rpuser[:firstname].downcase.include?(rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
+          found_user = a_rpuser[:rmuser]
          end
       else
         break
       end
     end
     # third level:
-    user_mapping.each_value do |user_map|
-      if user_id_found == nil
-        map_fullname = get_fullname(user_map[:user_string], nil)
-        if map_fullname[:lastname].downcase == rp_fullname[:lastname].downcase
-           user_id_found = user_map[:user_id]
+    rpusers.each_value do |a_rpuser|
+      if found_user == nil
+        if a_rpuser[:lastname].downcase == rp_fullname[:lastname].downcase
+          found_user = a_rpuser[:rmuser]
          end
       else
         break
       end
-    end
-    # found with known id from mapping
-    if user_id_found != nil
-      found_user = User.find_by_id(user_id_found)
     end
     # last levels without mapping
     if found_user == nil
@@ -935,7 +920,7 @@ private
     return found_user
   end
   
-  def import_all_issues(a_project, requirement_types, attributes, known_attributes, user_mapping, update_allowed)
+  def import_all_issues(a_project, requirement_types, attributes, known_attributes, rpusers, update_allowed)
     #find project
     project = Project.find_by_identifier(a_project[:prefix])
     if(!project) 
@@ -994,7 +979,7 @@ private
                     if attributes[hash_key] != nil
                       # import this attribute value
                       new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                    known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, user_mapping, project)
+                                    known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
                     end
                   end
                 end
@@ -1008,7 +993,7 @@ private
                       # import this attribute value
                       puts "attribute with list element to update" if @debug
                       new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                    known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, user_mapping, project)
+                                    known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
                     end
                   end
                 end

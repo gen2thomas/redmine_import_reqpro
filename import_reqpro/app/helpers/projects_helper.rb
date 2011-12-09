@@ -37,7 +37,7 @@ private
         available_projects[hash_key] = Hash.new
         available_projects[hash_key] [:prefix] = xmldocmain.elements["Project"].attributes["Prefix"]
         available_projects[hash_key] [:path] = data_path
-        available_projects[hash_key] [:prefix] = xmldocmain.elements["Project"].attributes["Prefix"]
+        available_projects[hash_key] [:author_rpid] = xmldocmain.elements["Project"].attributes["AuthorGUID"]
         available_projects[hash_key] [:name] = xmldocmain.elements["Project"].attributes["Name"]
         available_projects[hash_key] [:description] = xmldocmain.elements["Project"].attributes["Description"]
         available_projects[hash_key] [:prefix] = xmldocmain.elements["Project"].attributes["Prefix"]

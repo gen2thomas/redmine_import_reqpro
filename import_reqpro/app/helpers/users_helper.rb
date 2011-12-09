@@ -1,27 +1,15 @@
 module UsersHelper
   
-  def collect_users(some_projects)
-    users = collect_users_fast(some_projects)
+  def collect_rpusers(some_projects, conflate_users)
+    users = collect_users_fast(some_projects, conflate_users)
     return users
   end
   
-  def remap_users_to_project_prefix(users, conflate_users)
-    # remap prefixes to key: .project+:prefix
-    # if conflation is allowed, project is not used for key (all projects have (nearly) the same users)
-    # take same prefixes of several projects together
-    # fill in only needed or not tested req types (status = "+" or "?")
+  def remap_users_to_conflationkey(users)
+    # remap prefixes to key: ":conf_key"
     remaped_users = Hash.new
     users.each_pair do |usr_key,usr_type|
-      case conflate_users
-      when "email"
-        hash_key = usr_type[:email]
-      when "login"
-        hash_key = usr_type[:login]
-      when "name"
-        hash_key = usr_type[:firstname] + " " + usr_type[:lastname]
-      else
-        hash_key = usr_type[:project] + "." + usr_type[:login] + "." + usr_type[:email]
-      end 
+      hash_key = usr_type[:conf_key]
       if remaped_users[hash_key] == nil # not existand
         remaped_users[hash_key] = Hash.new
         remaped_users[hash_key][:projects] = Array.new
@@ -48,31 +36,30 @@ module UsersHelper
     end
     return remaped_users
   end
-  
-  def update_users_for_map_needing(users, user_mapping, conflate_users)
+    
+  def update_rpusers_for_map_needing(rpusers, rmusers, user_mapping, debug)
     #call after manual mapping in view
     # delete not mapped (means not used) users
-    # add :mapping target if needed      
-    users.each do |key, usr|
-      #generate conflation dependent key 
-      case conflate_users
-      when "email"
-        usr[:conf_key] = usr[:email]
-      when "login"
-        usr[:conf_key] = usr[:login]
-      when "name"
-        usr[:conf_key] = usr[:firstname] + " " + usr[:lastname]
-      end
-      # update
-      if user_mapping[usr[:conf_key]] == nil
-        users.delete(key) # entry not used 
+    # add mapping target (:rmuser) if needed
+    rpusers.each do |rpuser_id, rpuser_value|
+      rmuser_key = user_mapping[rpuser_value[:conf_key]]
+      if  rmuser_key != "" and rmuser_key != nil  
+        # search for and include rmuser as mapping
+        idx = rmusers[:key_for_view].index(rmuser_key)
+        if idx != nil
+          #add existing user        
+          rpuser_value[:rmuser] = rmusers[:rmusers][idx]
+        else
+          puts "New user for import found: " + rpuser_value[:email] if debug
+        end
       else
-        usr[:mapping] = user_mapping[usr[:conf_key]][:rm_user]
-      end   
+        # delete unused rpuser
+        rpusers.delete(rpuser_id)
+      end
     end
-    return users
+    return rpusers
   end  
-    
+  
   def get_fullname(fullname_old, email)
     # firstname and lastname are in the same string
     fullname = Hash.new
@@ -128,9 +115,10 @@ module UsersHelper
   end
   
 private
-  def collect_users_fast(some_projects)
+  def collect_users_fast(some_projects, conflate_users)
     #get an data path to open an ProjectStructure file
     #collect all prefixes and guids to an array of hash
+    # add a possible ":conf_key" (conflation-key)
     users = Hash.new
     some_projects.each_value do |a_project|
       xmldoc = open_xml_file(a_project[:path],"ProjectUserGroups.XML")
@@ -154,6 +142,17 @@ private
             users[hash_key] [:project].push(a_project[:prefix])
             users[hash_key] [:project].uniq!
             users[hash_key] [:project].sort!
+          end
+          case conflate_users
+          when "email"
+            users[hash_key][:conf_key] = users[hash_key][:email]
+          when "login"
+            users[hash_key][:conf_key] = users[hash_key][:login]
+          when "name"
+            users[hash_key][:conf_key] = users[hash_key][:firstname] + " " + users[hash_key][:lastname]
+          else
+            #most uniq key without conflation
+            users[hash_key][:conf_key] = users[hash_key][:project] + "." + users[hash_key][:login] + "." + users[hash_key][:email]
           end
         end 
       end

@@ -20,6 +20,7 @@ en:
   label_conflate_users_by_email: " Email (recommended)"
   label_conflate_users_by_login: " Login"
   label_conflate_users_by_name: " Name"
+  label_conflate_users_by_none: " No conflation"
   button_match_users: "Go on to 'Matching Users'"
   
   label_match_users: "Matching Users"

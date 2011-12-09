@@ -9,9 +9,9 @@
 	<h3><%= l(:label_used_users) %></h3>
 	<table class="list">
 		<tbody>
-			<% @users_for_view.each_pair do |col_key,column| %>
+			<% @rpusers_for_view.each_pair do |col_key,column| %>
 				<%  matched = ''	
-					@redmine_users.each do |k|	if k.to_s.casecmp(col_key.to_s) == 0 then matched = k end	end 
+					@rmusers_for_view.each do |k|	if k.to_s.casecmp(col_key.to_s) == 0 then matched = k end	end 
 				%>
 				<tr class="<%= cycle("odd", "even") %>">
 					<% if @conflate_users == "email" %>
@@ -22,7 +22,7 @@
 					<td><%= col_key %></td>
 					<td><%= select_tag "fields_map_user[#{col_key}]",
 					  "<option value=\"\">#{l(:option_ignore)}</option>" + "<option value=#{col_key}>+#{col_key}</option>" +
-					  options_for_select( @redmine_users, matched ) %></td>
+					  options_for_select( @rmusers_for_view, matched ) %></td>
 					<% if @conflate_users != "name" %>
 					  <td><%= l(:label_names)%><%= column[:names].to_a.join("/") %></td>
 					<% else %>
