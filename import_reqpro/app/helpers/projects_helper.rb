@@ -24,6 +24,16 @@ module ProjectsHelper
     return some_projects_content
   end
   
+  def update_projects_for_needing(some_projects, needed_projects)
+    # delete not needed projects
+    some_projects.each do |p_key, p_value|
+      if needed_projects.index(p_value[:prefix]) == nil
+        some_projects.delete(p_key)
+      end
+    end
+    return some_projects
+  end
+  
 private
 
   def collect_available_projects(data_pathes)

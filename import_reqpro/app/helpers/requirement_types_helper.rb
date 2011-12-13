@@ -8,11 +8,10 @@ module RequirementTypesHelper
     return requirement_types
   end
   
+  # remap prefixes to key: .project+:prefix
+  # fill in only needed or not tested req types (status = "+" or "?")
+  # * conflate_req_types == true --> project is not used for key (all projects have (nearly) the same req_types)
   def remap_req_types_to_project_prefix(requirement_types, conflate_req_types)
-    # remap prefixes to key: .project+:prefix
-    # if conflation is allowed, project is not used for key (all projects have (nearly) the same req_types)
-    # take same prefixes of several projects together
-    # fill in only needed or not tested req types (status = "+" or "?")
     remaped_req_types = Hash.new
     requirement_types.each_pair do |req_key,req_type|
       if conflate_req_types
@@ -32,10 +31,10 @@ module RequirementTypesHelper
     return remaped_req_types
   end
   
+  # call after manual mapping in view
+  # delete not mapped (means not used) requirements
+  # add :mapping target if needed      
   def update_requ_types_for_map_needing(requirement_types, tracker_mapping)
-    #call after manual mapping in view
-    # delete not mapped (means not used) requirements
-    # add :mapping target if needed      
     requirement_types.each do |key,rq|
       if  tracker_mapping[rq[:prefix]] == nil
         requirement_types.delete(key) # entry not used 
@@ -61,9 +60,9 @@ module RequirementTypesHelper
     
 private
 
+  #get an data path to open an ProjectStructure file
+  #collect all prefixes and guids to an array of hash
   def collect_requirement_types_fast(some_projects)
-    #get an data path to open an ProjectStructure file
-    #collect all prefixes and guids to an array of hash
     requirement_types = Hash.new
     some_projects.each_value do |a_project|
       xmldoc = open_xml_file(a_project[:path],"ProjectStructure.XML")  
@@ -99,9 +98,9 @@ private
     return requirement_types
   end
   
-  def update_requ_types_for_reqpro_needing(requirement_types, some_projects)
-    #search inside all files of all projects for using of requ types
-    # change status for found req type to "+" (needed and available)
+  # search inside all files of all projects for using of requ types
+  # change status for found req type to "+" (needed and available)
+  def update_requ_types_for_reqpro_needing(requirement_types, some_projects)  
     some_projects.each_value do |a_project|
       filepath = a_project[:path] # this is the main path of project
       all_files = collect_all_data_files(filepath)
