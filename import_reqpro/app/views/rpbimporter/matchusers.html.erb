@@ -3,8 +3,8 @@
 <% end %>
 
 <h2><%= l(:label_match_users) %></h2>
-
 <% form_tag({:action => 'matchtrackers'}, {:multipart => true}) do %>
+	<%= render :partial => "progress_bar" %><br/>
 	<legend><%= l(:label_matchusers_select) %></legend>
 	<h3><%= l(:label_used_users) %></h3>
 	<table class="list">

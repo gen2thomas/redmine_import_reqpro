@@ -1,7 +1,7 @@
 <h2><%=l(:label_rpbimporter_start)%></h2>
 
-<% form_tag({:action => 'listdatas'}, {:multipart => true}) do %>
-  	
+<% form_tag({:action => 'listprojects'}, {:multipart => true}) do %>
+  	<%= render :partial => "progress_bar" %><br/>
 	<p><label><%=l(:label_rpbupload_notice)%></label><br/>
 	<%= file_field_tag 'file', :size => 60%></p>
 

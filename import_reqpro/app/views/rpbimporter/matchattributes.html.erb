@@ -3,8 +3,8 @@
 <% end %>
 
 <h2><%= l(:label_match_attributes) %></h2>
-
-<% form_tag({:action => 'doconvert_and_result'}, {:multipart => true}) do %>
+<% form_tag({:action => 'do_import_and_result'}, {:multipart => true}) do %>
+	<%= render :partial => "progress_bar" %><br/>
 	<legend><%= l(:label_matchattributes_select) %></legend>
 	<h3><%= l(:label_used_attributes) %></h3>
 	<table class="list">
