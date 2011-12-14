@@ -1,29 +1,32 @@
-<h2><%=l(:label_rpbimporter_project_overview)%></h2>
-<% form_tag({:action => 'matchusers'}, {:multipart => true}) do %>
-	<%= render :partial => "progress_bar" %><br/>
-	<%= l(:label_importdescriptionfile, @original_filename) %>
-	<table class="list">
-		<thead><tr>
-		    <% @headers.each do |column| %>
-		      <th><%= l(column) %></th>
-		    <% end %>
-		</tr></thead>
-		<tbody>
-		  <% @contents_of_projects.each do |project_content| %>
-		    <tr class="<%= cycle("odd", "even") %>">
-		      <td><%= check_box_tag "import_this_projects[]", "#{project_content[3]}", true %></td><% project_content.each do |column| %><td><%= column %></td><% end %>
-		    </tr>
-		  <% end %>
-		</tbody>
-	</table>
-	<%= l(:label_ext_prefix_description) %>
-
-	<fieldset class="box"><legend><%= l(:label_users_checking_settings) %></legend>
-	    <%= radio_button_tag "conflate_users", 'email', true %><%= l(:label_conflate_users_by_email) %><br/>
-	    <%= radio_button_tag "conflate_users", 'login' %><%= l(:label_conflate_users_by_login) %><br/>
-	    <%= radio_button_tag "conflate_users", 'name' %><%= l(:label_conflate_users_by_name) %><br/>
-	    <%= radio_button_tag "conflate_users", 'none' %><%= l(:label_conflate_users_by_none) %><br/>
-	</fieldset>
+<% if !flash[:error] %>
+	<h2><%=l(:label_rpbimporter_project_overview)%></h2>
+	<% form_tag({:action => 'matchusers'}, {:multipart => true}) do %>
+		<%= render :partial => "progress_bar" %><br/>
+		<%= l(:label_importdescriptionfile, @original_filename) %>
+		<table class="list">
+			<thead><tr>
+			    <% @headers.each do |column| %>
+			      <th><%= l(column) %></th>
+			    <% end %>
+			</tr></thead>
+			<tbody>
+			  <% @contents_of_projects.each do |project_content| %>
+			    <tr class="<%= cycle("odd", "even") %>">
+			      <td><%= check_box_tag "import_this_projects[]", "#{project_content[3]}", true %></td><% project_content.each do |column| %><td><%= column %></td><% end %>
+			    </tr>
+			  <% end %>
+			</tbody>
+		</table>
+		<%= l(:label_ext_prefix_description) %>
 	
-	<%= submit_tag l(:button_match_users) %>
+		<fieldset class="box"><legend><%= l(:label_users_checking_settings) %></legend>
+		    <%= radio_button_tag "conflate_users", 'email', true %><%= l(:label_conflate_users_by_email) %><br/>
+		    <%= radio_button_tag "conflate_users", 'login' %><%= l(:label_conflate_users_by_login) %><br/>
+		    <%= radio_button_tag "conflate_users", 'name' %><%= l(:label_conflate_users_by_name) %><br/>
+		    <%= radio_button_tag "conflate_users", 'none' %><%= l(:label_conflate_users_by_none) %><br/>
+		</fieldset>
+		
+		<%= submit_tag l(:button_match_users) %>
+	<% end %>
 <% end %>
+<hr/>
