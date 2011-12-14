@@ -36,13 +36,13 @@ class RpbimporterController < ApplicationController
     
   ISSUE_ATTRS = [:assigned_to, :author, :category, :priority, :status,
       :start_date, :due_date, :done_ratio, :estimated_hours, :watchers]
-    
+
   def initialize
     @debug = true
   end
   
   def index
-    @a_value = 0.1
+    @a_value = 0.0
   end
 
   def listprojects
@@ -50,6 +50,10 @@ class RpbimporterController < ApplicationController
     #--------------------
     # read a textfile witch include all the project directories with path
     # at the local machine
+    if params[:file] == nil
+      flash.now[:error] = l_or_humanize("label_no_file")
+      return false
+    end
     @original_filename = params[:file].original_filename # need for view
     actual_data = params[:file].read
     deep_check_ext_projects = params[:deep_check_ext_projects]
@@ -62,14 +66,25 @@ class RpbimporterController < ApplicationController
     #--------------------
     # generate the projects content
     @@some_projects = collect_projects(collected_data_pathes, deep_check_ext_projects)
+    if @@some_projects == nil
+      flash.now[:error] = l_or_humanize("label_no_project")
+      return false
+    end
     @contents_of_projects = collected_projects_to_content_array(@@some_projects) # need for view
     @a_value = 0.2
-    #dynamic_progress_bar("MyPrBar2", @a_value)
   end
   
   def matchusers
     # collect users of all available projects and add conflation key
+    if @@some_projects == nil # need this test because browser back key
+      flash.now[:error] = l_or_humanize("label_no_project_to_import_go_to_file_dialog")
+      return false
+    end
     @@some_projects = update_projects_for_needing(@@some_projects, params[:import_this_projects])
+    if @@some_projects == nil
+      flash.now[:error] = l_or_humanize("label_no_project_to_import")
+      return false
+    end
     @@rpusers = collect_rpusers(@@some_projects, params[:conflate_users])
     # remap used users to :conf_key (conflation key)
     @rpusers_for_view = remap_users_to_conflationkey(@@rpusers)
@@ -102,7 +117,6 @@ class RpbimporterController < ApplicationController
   end
   
   def matchtrackers
-    #TODO: loeschen @@user_mapping = set_user_mapping(params[:fields_map_user])
     deep_check_req_types = params[:deep_check_req_types]
     conflate_req_types = params[:conflate_req_types]
     # delete unused rpusers, add equivalent rmuser  
@@ -125,6 +139,10 @@ class RpbimporterController < ApplicationController
   
   def matchattributes
     @@tracker_mapping = set_tracker_mapping(params[:fields_map_tracker])
+    if @@tracker_mapping.empty?
+      flash.now[:error] = l_or_humanize("label_no_trackermapping")
+      return false
+    end
     deep_check_attributes = params[:deep_check_attributes]
     conflate_attributes = params[:conflate_attributes]
     @@requirement_types = update_requ_types_for_map_needing(@@requirement_types, @@tracker_mapping)
@@ -135,8 +153,10 @@ class RpbimporterController < ApplicationController
     # remap to "Project.AttrLabel" and take same prefixes of several projects together if conflating
     # needing: ":attrlabel", ":project"=>[], ":rtprefix"=>[], ":datatype", ":itemtext"=>[]
     @attributes_for_view = remap_attributes_to_label(@@attributes, conflate_attributes)
-    #for displaying in alphabethical order
-    @attributes_keys_sorted = @attributes_for_view.keys.sort
+    if @attributes_for_view != nil
+      #for displaying in alphabethical order
+      @attributes_keys_sorted = @attributes_for_view.keys.sort
+    end
     # search for all known attributes
     @@known_attributes = Hash.new
     @attrs = Array.new
@@ -179,10 +199,10 @@ class RpbimporterController < ApplicationController
     # new projects:
     create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers)
     # now import all issues from each ReqPro project 
-    @@rp_req_unique_names = create_all_issues(@@some_projects, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed)
+    @rp_req_unique_names = create_all_issues(@@some_projects, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed)
     # update parents
     puts "Wait for update parents" if @debug
-    update_issue_parents(@@rp_req_unique_names)
+    update_issue_parents(@rp_req_unique_names)
     #TODO update internal traces 
     #TODO update external traces
     @import_results = @@import_results #for view
@@ -531,16 +551,6 @@ class RpbimporterController < ApplicationController
   end
 
 private
-  def set_user_mapping(user_map)
-    user_mapping = Hash.new
-    user_map.each do |new_user, redmine_user|
-      if redmine_user != ""
-        user_mapping[new_user]=Hash.new
-        user_mapping[new_user][:rm_user] = redmine_user
-      end 
-    end
-    return user_mapping
-  end
   
   def set_tracker_mapping(tracker_map)
     tracker_mapping = Hash.new
@@ -555,36 +565,40 @@ private
   
   def set_attributes_mapping(attributes_map)
     attributes_mapping = Hash.new
-    attributes_map.each do |reqproattr_prefix,attr_name|
-      if attr_name != ""
-        attributes_mapping[reqproattr_prefix]=Hash.new
-        #attributes_mapping[reqproattr_prefix][:attr_name]=attr_name.gsub(/[^\w\s\'\-]/,"_") # replace all non ok characters with "_"
-        attributes_mapping[reqproattr_prefix][:attr_name]=attr_name
-      end 
+    if attributes_map != nil
+      attributes_map.each do |reqproattr_prefix,attr_name|
+        if attr_name != ""
+          attributes_mapping[reqproattr_prefix]=Hash.new
+          #attributes_mapping[reqproattr_prefix][:attr_name]=attr_name.gsub(/[^\w\s\'\-]/,"_") # replace all non ok characters with "_"
+          attributes_mapping[reqproattr_prefix][:attr_name]=attr_name
+        end 
+      end
     end
     return attributes_mapping
   end
-
+  
+  # create new redmine users from rp-users
   def create_all_users_and_update(rp_users)
-    # create new redmine users from rp-users
-    rp_users.each do |rp_key, rp_user|
-      new_user = rp_user[:rmuser]
-      if new_user == nil
-        new_user = User.new
-        new_user[:mail] = rp_user[:email]
-        new_user[:login] = rp_user[:login]
-        new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
-        new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
-        if new_user.save    
-          @@import_results[:imported][:users] += 1
-          rp_user[:rmuser] = new_user # update mapping
+    if rp_users != nil
+      rp_users.each do |rp_key, rp_user|
+        new_user = rp_user[:rmuser]
+        if new_user == nil
+          new_user = User.new
+          new_user[:mail] = rp_user[:email]
+          new_user[:login] = rp_user[:login]
+          new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
+          new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
+          if new_user.save    
+            @@import_results[:imported][:users] += 1
+            rp_user[:rmuser] = new_user # update mapping
+          else
+            @@import_results[:failed][:users] += 1
+            debugger
+            puts "Unable to import user: " + new_user[:mail]
+          end
         else
-          @@import_results[:failed][:users] += 1
-          debugger
-          puts "Unable to import user: " + new_user[:mail]
+          puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
         end
-      else
-        puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
       end
     end
     return rp_users
@@ -624,111 +638,113 @@ private
   end
   
   def create_all_customfields(attributes_mapping, attributes, known_attributes, tracker_mapping)
-    fieldformat_mapping = {"Text" => "string", "MultiSelect" => "list", "List"=>"list", "Integer"=>"int", "Real"=>"float", "Date"=>"date"}
-    attributes.each do |key,attri|
-      # check for "custom field" or "redmine attribute" is already existend
-      newkey = attri[:mapping]
-      if !known_attributes.include?(newkey) and !known_attributes.include?(newkey.gsub(/[^\w\s\'\-]/,"_"))
-        # not known --> create a custom field for this attribute
-        new_issue_custom_field = IssueCustomField.new 
-        # --> .gsub(/[^\w\s\'\-]/,"_") # replace all non ok characters with "_"
-        new_issue_custom_field.name = newkey.gsub(/[^\w\s\'\-]/,"_")
-        new_issue_custom_field.field_format = fieldformat_mapping[attri[:datatype]]
-        new_issue_custom_field.default_value = attri[:default]
-        new_issue_custom_field.min_length = "0"
-        new_issue_custom_field.max_length = "0"
-        new_issue_custom_field.possible_values = ""
-        new_issue_custom_field.trackers = Array.new
-        new_issue_custom_field.searchable = "0"
-        new_issue_custom_field.is_required = "0"
-        new_issue_custom_field.regexp = "" 
-        new_issue_custom_field.is_for_all = "1"
-        new_issue_custom_field.is_filter = "1"
-        #collect some trackers which need this custom field
-        if attri[:rtprefixes] != nil
-          attri[:rtprefixes].each do |prefix|
-            tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
-            new_issue_custom_field.trackers.push(tracker)
-          end
-        end
-        # create now the right custom field for issue
-        case new_issue_custom_field.field_format            
-        when "int"
-          new_issue_custom_field.min_length = "1"
-          new_issue_custom_field.max_length = "999"
-          if new_issue_custom_field.default_value == "" or new_issue_custom_field.default_value.to_i < new_issue_custom_field.min_length.to_i
-            new_issue_custom_field.default_value = new_issue_custom_field.min_length
-          end
-          if new_issue_custom_field.default_value.to_i > new_issue_custom_field.max_length.to_i
-            new_issue_custom_field.default_value = new_issue_custom_field.max_length
-          end
-          new_issue_custom_field.default_value = new_issue_custom_field.default_value.to_s
-        when "float" 
-          new_issue_custom_field.max_length = "999.9"
-          if new_issue_custom_field.default_value == "" or new_issue_custom_field.default_value.to_f < new_issue_custom_field.min_length.to_f
-            new_issue_custom_field.default_value = new_issue_custom_field.min_length
-          end
-          if new_issue_custom_field.default_value.to_f > new_issue_custom_field.max_length.to_f
-            new_issue_custom_field.default_value = new_issue_custom_field.max_length
-          end
-          new_issue_custom_field.default_value = new_issue_custom_field.default_value.to_s
-        when "date"
-          new_issue_custom_field.default_value = new_issue_custom_field.default_value.to_s 
-        when "list"
-          new_issue_custom_field.possible_values = attri[:itemlist]
-          new_issue_custom_field.searchable = "1"
-        else
-          # handle the rest as "string"
-          new_issue_custom_field.field_format = "string"
-          new_issue_custom_field.possible_values = attri[:itemlist].to_s + attri[:itemtext]
-          new_issue_custom_field.searchable = "1"            
-        end
-        if (new_issue_custom_field.save)
-          known_attributes[newkey] = Hash.new
-          known_attributes[newkey][:custom_field_id] = new_issue_custom_field[:id] 
-          @@import_results[:imported][:attributes] += 1
-        else
-          @@import_results[:failed][:attributes] += 1
-          debugger
-          puts "Unable to import attribute as custom field" + newkey
-          debugger
-        end
-      else
-        # already known attribute or custom field
-        # check for custom field to update itemlist and trackers
-        if known_attributes[newkey][:custom_field_id] != "" and known_attributes[newkey][:custom_field_id] != nil
-          issue_custom_field = IssueCustomField.find(known_attributes[newkey][:custom_field_id])
-          puts "Check for update attribute as custom field: " + issue_custom_field.name if @debug
-          isc_changed = false
-          if issue_custom_field[:field_format] == "list"
-            list_elements = issue_custom_field[:possible_values] # make the string to an array
-            list_elements.push(attri[:itemlist]) #add new element
-            list_elements.flatten!
-            list_elements.uniq!
-            isc_changed = true
-          end
-          #collect some further trackers which need this custom field
+    if attributes != nil and !attributes_mapping.empty?
+      fieldformat_mapping = {"Text" => "string", "MultiSelect" => "list", "List"=>"list", "Integer"=>"int", "Real"=>"float", "Date"=>"date"}
+      attributes.each do |key,attri|
+        # check for "custom field" or "redmine attribute" is already existend
+        newkey = attri[:mapping]
+        if !known_attributes.include?(newkey) and !known_attributes.include?(newkey.gsub(/[^\w\s\'\-]/,"_"))
+          # not known --> create a custom field for this attribute
+          new_issue_custom_field = IssueCustomField.new 
+          # --> .gsub(/[^\w\s\'\-]/,"_") # replace all non ok characters with "_"
+          new_issue_custom_field.name = newkey.gsub(/[^\w\s\'\-]/,"_")
+          new_issue_custom_field.field_format = fieldformat_mapping[attri[:datatype]]
+          new_issue_custom_field.default_value = attri[:default]
+          new_issue_custom_field.min_length = "0"
+          new_issue_custom_field.max_length = "0"
+          new_issue_custom_field.possible_values = ""
+          new_issue_custom_field.trackers = Array.new
+          new_issue_custom_field.searchable = "0"
+          new_issue_custom_field.is_required = "0"
+          new_issue_custom_field.regexp = "" 
+          new_issue_custom_field.is_for_all = "1"
+          new_issue_custom_field.is_filter = "1"
+          #collect some trackers which need this custom field
           if attri[:rtprefixes] != nil
-            isc_changed = true
             attri[:rtprefixes].each do |prefix|
               tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
-              issue_custom_field.trackers.push(tracker)
-              issue_custom_field.trackers.uniq!
+              new_issue_custom_field.trackers.push(tracker)
             end
           end
-          #write it back
-          if (isc_changed)
-            if (issue_custom_field.save)
-              @@import_results[:updated][:attributes] += 1
-            else
-              @@import_results[:failed][:attributes] += 1
-              debugger
-              puts "Unable to update attribute as custom field: " + newkey
-              debugger
+          # create now the right custom field for issue
+          case new_issue_custom_field.field_format            
+          when "int"
+            new_issue_custom_field.min_length = "1"
+            new_issue_custom_field.max_length = "999"
+            if new_issue_custom_field.default_value == "" or new_issue_custom_field.default_value.to_i < new_issue_custom_field.min_length.to_i
+              new_issue_custom_field.default_value = new_issue_custom_field.min_length
             end
+            if new_issue_custom_field.default_value.to_i > new_issue_custom_field.max_length.to_i
+              new_issue_custom_field.default_value = new_issue_custom_field.max_length
+            end
+            new_issue_custom_field.default_value = new_issue_custom_field.default_value.to_s
+          when "float" 
+            new_issue_custom_field.max_length = "999.9"
+            if new_issue_custom_field.default_value == "" or new_issue_custom_field.default_value.to_f < new_issue_custom_field.min_length.to_f
+              new_issue_custom_field.default_value = new_issue_custom_field.min_length
+            end
+            if new_issue_custom_field.default_value.to_f > new_issue_custom_field.max_length.to_f
+              new_issue_custom_field.default_value = new_issue_custom_field.max_length
+            end
+            new_issue_custom_field.default_value = new_issue_custom_field.default_value.to_s
+          when "date"
+            new_issue_custom_field.default_value = new_issue_custom_field.default_value.to_s 
+          when "list"
+            new_issue_custom_field.possible_values = attri[:itemlist]
+            new_issue_custom_field.searchable = "1"
+          else
+            # handle the rest as "string"
+            new_issue_custom_field.field_format = "string"
+            new_issue_custom_field.possible_values = attri[:itemlist].to_s + attri[:itemtext]
+            new_issue_custom_field.searchable = "1"            
+          end
+          if (new_issue_custom_field.save)
+            known_attributes[newkey] = Hash.new
+            known_attributes[newkey][:custom_field_id] = new_issue_custom_field[:id] 
+            @@import_results[:imported][:attributes] += 1
+          else
+            @@import_results[:failed][:attributes] += 1
+            debugger
+            puts "Unable to import attribute as custom field" + newkey
+            debugger
           end
         else
-          #TODO: If not a custom field: IssueStatuses and IssuePriorities also updatable
+          # already known attribute or custom field
+          # check for custom field to update itemlist and trackers
+          if known_attributes[newkey][:custom_field_id] != "" and known_attributes[newkey][:custom_field_id] != nil
+            issue_custom_field = IssueCustomField.find(known_attributes[newkey][:custom_field_id])
+            puts "Check for update attribute as custom field: " + issue_custom_field.name if @debug
+            isc_changed = false
+            if issue_custom_field[:field_format] == "list"
+              list_elements = issue_custom_field[:possible_values] # make the string to an array
+              list_elements.push(attri[:itemlist]) #add new element
+              list_elements.flatten!
+              list_elements.uniq!
+              isc_changed = true
+            end
+            #collect some further trackers which need this custom field
+            if attri[:rtprefixes] != nil
+              isc_changed = true
+              attri[:rtprefixes].each do |prefix|
+                tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
+                issue_custom_field.trackers.push(tracker)
+                issue_custom_field.trackers.uniq!
+              end
+            end
+            #write it back
+            if (isc_changed)
+              if (issue_custom_field.save)
+                @@import_results[:updated][:attributes] += 1
+              else
+                @@import_results[:failed][:attributes] += 1
+                debugger
+                puts "Unable to update attribute as custom field: " + newkey
+                debugger
+              end
+            end
+          else
+            #TODO: If not a custom field: IssueStatuses and IssuePriorities also updatable
+          end
         end
       end
     end
@@ -792,44 +808,46 @@ private
   end
   
   def update_project_members_with_roles(rmproject, rpusers, rpproject_author_rpid)
-    rpusers.each do |a_rpid, a_rpuser|
-      if a_rpuser[:project] != nil
-        if a_rpuser[:project].downcase == rmproject[:identifier]
-          rmuser = a_rpuser[:rmuser]
-          if rmuser != nil
-            if Member.find(:all, :conditions => { :user_id => rmuser[:id], :project_id => rmproject.id })[0] == nil
-              new_member = Member.new
-              new_member.user = rmuser
-              new_member.project = rmproject 
-              new_member.mail_notification = false
-              if a_rpid == rpproject_author_rpid
-                new_member.roles.push(Role.find_by_name("Manager")) # use Manager for Project author
+    if rpusers != nil
+      rpusers.each do |a_rpid, a_rpuser|
+        if a_rpuser[:project] != nil
+          if a_rpuser[:project].downcase == rmproject[:identifier]
+            rmuser = a_rpuser[:rmuser]
+            if rmuser != nil
+              if Member.find(:all, :conditions => { :user_id => rmuser[:id], :project_id => rmproject.id })[0] == nil
+                new_member = Member.new
+                new_member.user = rmuser
+                new_member.project = rmproject 
+                new_member.mail_notification = false
+                if a_rpid == rpproject_author_rpid
+                  new_member.roles.push(Role.find_by_name("Manager")) # use Manager for Project author
+                else
+                  new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
+                end
+                new_member.roles.uniq!
+                if !new_member.save()
+                  debugger
+                  puts "Unable to save project member: " + rmproject[:identifier] + ", login:  " + rmuser[:login]
+                  debugger
+                  return false
+                end
               else
-                new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
-              end
-              new_member.roles.uniq!
-              if !new_member.save()
-                debugger
-                puts "Unable to save project member: " + rmproject[:identifier] + ", login:  " + rmuser[:login]
-                debugger
-                return false
+                puts "Member already exist: " + rmuser[:login] if @debug
               end
             else
-              puts "Member already exist: " + rmuser[:login] if @debug
+              debugger
+              puts "Requested user not found: " + a_rpuser[:user_id]
+              debugger
+              return false
             end
-          else
-            debugger
-            puts "Requested user not found: " + a_rpuser[:user_id]
-            debugger
-            return false
           end
+        else
+          debugger
+          #TODO: bug#11155: Mapping to a user which is not inside rp project but exist already within redmine niO
+          # this bug was not reproducable
+          puts "User without project found: " + a_rpuser[:login]
+          debugger
         end
-      else
-        debugger
-        #TODO: bug#11155: Mapping to a user which is not inside rp project but exist already within redmine niO
-        # this bug was not reproducable
-        puts "User without project found: " + a_rpuser[:login]
-        debugger
       end
     end
     return true
@@ -948,7 +966,7 @@ private
       project = Project.find_by_identifier(a_project[:prefix])
       if(!project) 
         puts "Unable to find project:" + a_project[:prefix] + "-->"+ a_project[:name]
-        return false
+        next #take next project
       end
       # import only reqirements if the requiremnet type is available (mapped to a tracker)
       not_imported_issues = 0
@@ -964,102 +982,110 @@ private
           test_issue = Issue.new
           test_issue.project = project
           test_issue.subject = ic.iconv(req.elements["RName"].text)
-          test_issue.description = ic.iconv(req.elements["RText"].text)
           # looking for ReqTyp ==> Tracker
           req_type = req.elements["RTID"].text
           if !(requirement_types.include?(req_type))
             puts "Issue will not be imported - needed Requirement Type was not imported: " + test_issue.project[:identifier] + ":" + req_type + ":" + test_issue.subject if @debug
-          else
-            test_issue.tracker = Tracker.find_by_name(requirement_types[req_type][:mapping])
-            # import requirement as issue if needed
-            if test_issue.tracker == nil
-              puts "No Tracker found - Issue will not be imported: "+ req_type
-              not_imported_issues += 1
-            else
-              # looking for existend issue
-              import_new_issue = false
-              new_issue = Issue.find(:all, :conditions => { :project_id => test_issue.project[:id], :tracker_id => test_issue.tracker[:id], :subject => test_issue.subject })[0]
-              if (new_issue != nil) and !(update_allowed)
-                puts "Issue already exist but not updated: " + new_issue.project[:identifier] + ":" + new_issue.project[:name] + ":" + new_issue.subject if @debug
-              else
-                # update issue or new issue
-                if new_issue == nil
-                  new_issue = test_issue
-                  import_new_issue = true    
-                end
-                # further issue parameters
-                new_issue.status = IssueStatus.default
-                new_issue.priority = IssuePriority.default
-                new_issue.category = IssueCategory.find(:all)[0]
-                new_issue.author = User.current
-                new_issue.done_ratio = 0
-                # import attributes:
-                if req.elements["FVs"] != nil
-                  req.elements["FVs"].each do |fv|
-                    if fv != nil #not empty
-                      hash_key = fv.elements["FGUID"].text
-                      value = fv.elements["FTxt"].text
-                      if attributes[hash_key] != nil
-                        # import this attribute value
-                        new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                      known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
-                      end
-                    end
+            next #take next requirement
+          end
+          test_issue.tracker = Tracker.find_by_name(requirement_types[req_type][:mapping])
+          # import requirement as issue if needed
+          if test_issue.tracker == nil
+            puts "No Tracker found - Issue will not be imported: "+ req_type
+            not_imported_issues += 1
+            next #take next requirement
+          end
+          # looking for existend issue
+          import_new_issue = false
+          new_issue = Issue.find(:all, :conditions => { :project_id => test_issue.project[:id], :tracker_id => test_issue.tracker[:id], :subject => test_issue.subject })[0]
+          if (new_issue != nil) and !(update_allowed)
+            puts "Issue already exist but not updated: " + new_issue.project[:identifier] + ":" + new_issue.project[:name] + ":" + new_issue.subject if @debug
+            next #take next requirement
+          end
+          # update issue or new issue
+          if new_issue == nil
+            new_issue = test_issue
+            import_new_issue = true    
+          end
+          #further issue parameters
+          # don't use a "." to join "prefix" and "RPre"!
+          unique_name = a_project[:prefix] + "|" + req.elements["RPre"].text
+          new_issue.description = "ReqPro-Prefix: " + unique_name + "\n\n" + ic.iconv(req.elements["RText"].text)
+          new_issue.status = IssueStatus.default
+          new_issue.priority = IssuePriority.default
+          new_issue.category = IssueCategory.find(:all)[0]
+          new_issue.author = User.current
+          new_issue.done_ratio = 0
+          if attributes != nil
+            # import attributes:
+            if req.elements["FVs"] != nil
+              req.elements["FVs"].each do |fv|
+                if fv != nil #not empty
+                  hash_key = fv.elements["FGUID"].text
+                  value = fv.elements["FTxt"].text
+                  if attributes[hash_key] != nil
+                    # import this attribute value
+                    new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
+                                  known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
                   end
                 end
-                if req.elements["LVs"] != nil
-                  req.elements["LVs"].each do |lv|
-                    if lv != nil #not empty
-                      hash_key = lv.elements["UDF"].text
-                      value = lv.elements["LITxt"].text
-                      if attributes[hash_key] != nil
-                        # import this attribute value
-                        puts "attribute with list element to update" if @debug
-                        new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                      known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
-                      end
-                    end
-                  end
-                end
-                # attention! "due date" must be the same or greater than "start date"!
-                # "start date" its allowed to be "nil"
-                if new_issue.start_date != nil and new_issue.due_date != nil
-                  if (new_issue.start_date.to_time > new_issue.due_date.to_time)
-                    new_issue.start_date = new_issue.due_date
-                  end
-                end
-                # try to save
-                #TODO: new_issue.save force "assigned_to" to a user (only while first save), how and why?
-                user_before = new_issue.assigned_to # workarround step 1 for "assigned_to" bug
-                if(new_issue.save)
-                  # workarround step 2 for "assigned_to"
-                  if user_before != new_issue.assigned_to
-                    puts "Assignee changed while saving! --> Force reset" if @debug
-                    new_issue.assigned_to = user_before
-                    new_issue.save
-                  end
-                  # workarround check for "assigned_to"
-                  if user_before != new_issue.assigned_to
-                    debugger
-                    puts "Assignee changed while saving again!"
-                    debugger
-                  end
-                  if (import_new_issue)
-                    a_project[:imported_issues] += 1
-                    @@import_results[:imported][:issues] += 1
-                      # don't use a "." to join "prefix" and "RPre"!
-                    rp_req_unique_names[(a_project[:prefix] + "|" + req.elements["RPre"].text).downcase] = new_issue[:id]
-                  else
-                    @@import_results[:updated][:issues] += 1
-                  end
-                else
-                  @@import_results[:failed][:issues] += 1
-                  debugger
-                  puts "Failed to save new issue"
-                  debugger
-                end            
               end
             end
+            if req.elements["LVs"] != nil
+              req.elements["LVs"].each do |lv|
+                if lv != nil #not empty
+                  hash_key = lv.elements["UDF"].text
+                  value = lv.elements["LITxt"].text
+                  if attributes[hash_key] != nil
+                    # import this attribute value
+                    puts "attribute with list element to update" if @debug
+                    new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
+                                  known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
+                  end
+                end
+              end
+            end
+          end
+          # attention! "due date" must be the same or greater than "start date"!
+          # "start date" its allowed to be "nil"
+          if new_issue.start_date != nil and new_issue.due_date != nil
+            if (new_issue.start_date.to_time > new_issue.due_date.to_time)
+              new_issue.start_date = new_issue.due_date
+            end
+          end
+          # try to save
+          #TODO: new_issue.save force "assigned_to" to a user (only while first save), how and why?
+          user_before = new_issue.assigned_to # workarround step 1 for "assigned_to" bug
+          if !(new_issue.save)
+            @@import_results[:failed][:issues] += 1
+            debugger
+            puts "Failed to save new issue"
+            debugger
+            next #take next requirement
+          end
+          # workarround step 2 for "assigned_to"
+          if user_before != new_issue.assigned_to
+            puts "Assignee changed while saving! --> Force reset" if @debug
+            new_issue.assigned_to = user_before
+            if !new_issue.save
+              debugger
+              puts "Failed to save new issue at second save"
+              debugger
+              next #take next requirement
+            end
+          end
+          # workarround check for "assigned_to"
+          if user_before != new_issue.assigned_to
+            debugger
+            puts "Assignee changed while saving again!"
+            debugger
+          end
+          if (import_new_issue)
+            a_project[:imported_issues] += 1
+            @@import_results[:imported][:issues] += 1
+            rp_req_unique_names[unique_name.downcase] = new_issue[:id]
+          else
+            @@import_results[:updated][:issues] += 1
           end
         end
       end
