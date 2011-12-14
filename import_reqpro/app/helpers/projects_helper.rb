@@ -26,9 +26,15 @@ module ProjectsHelper
   
   def update_projects_for_needing(some_projects, needed_projects)
     # delete not needed projects
-    some_projects.each do |p_key, p_value|
-      if needed_projects.index(p_value[:prefix]) == nil
-        some_projects.delete(p_key)
+    if needed_projects == nil
+      #no project is needed
+      some_projects=nil
+    else
+      some_projects.each do |p_key, p_value|
+        next if p_value == nil or p_key == nil
+        if needed_projects.index(p_value[:prefix]) == nil
+          some_projects.delete(p_key)
+        end
       end
     end
     return some_projects

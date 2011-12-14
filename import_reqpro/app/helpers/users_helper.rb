@@ -7,32 +7,35 @@ module UsersHelper
   
   def remap_users_to_conflationkey(users)
     # remap prefixes to key: ":conf_key"
-    remaped_users = Hash.new
-    users.each_pair do |usr_key,usr_type|
-      hash_key = usr_type[:conf_key]
-      if remaped_users[hash_key] == nil # not existand
-        remaped_users[hash_key] = Hash.new
-        remaped_users[hash_key][:projects] = Array.new
-        remaped_users[hash_key][:emails] = Array.new
-        remaped_users[hash_key][:logins] = Array.new
-        remaped_users[hash_key][:names] = Array.new
-        remaped_users[hash_key][:groups] = Array.new
+    remaped_users = nil
+    if users != nil
+      remaped_users = Hash.new
+      users.each_pair do |usr_key,usr_type|
+        hash_key = usr_type[:conf_key]
+        if remaped_users[hash_key] == nil # not existand
+          remaped_users[hash_key] = Hash.new
+          remaped_users[hash_key][:projects] = Array.new
+          remaped_users[hash_key][:emails] = Array.new
+          remaped_users[hash_key][:logins] = Array.new
+          remaped_users[hash_key][:names] = Array.new
+          remaped_users[hash_key][:groups] = Array.new
+        end
+        remaped_users[hash_key][:emails].push(usr_type[:email])
+        remaped_users[hash_key][:emails].uniq!
+        remaped_users[hash_key][:emails].sort!
+        remaped_users[hash_key][:logins].push(usr_type[:login])
+        remaped_users[hash_key][:logins].uniq!
+        remaped_users[hash_key][:logins].sort!
+        remaped_users[hash_key][:projects].push(usr_type[:project])
+        remaped_users[hash_key][:projects].uniq!
+        remaped_users[hash_key][:projects].sort!
+        remaped_users[hash_key][:names].push(usr_type[:firstname] + " " + usr_type[:lastname])
+        remaped_users[hash_key][:names].uniq!
+        remaped_users[hash_key][:names].sort!
+        remaped_users[hash_key][:groups].push(usr_type[:group])
+        remaped_users[hash_key][:groups].uniq!
+        remaped_users[hash_key][:groups].sort!
       end
-      remaped_users[hash_key][:emails].push(usr_type[:email])
-      remaped_users[hash_key][:emails].uniq!
-      remaped_users[hash_key][:emails].sort!
-      remaped_users[hash_key][:logins].push(usr_type[:login])
-      remaped_users[hash_key][:logins].uniq!
-      remaped_users[hash_key][:logins].sort!
-      remaped_users[hash_key][:projects].push(usr_type[:project])
-      remaped_users[hash_key][:projects].uniq!
-      remaped_users[hash_key][:projects].sort!
-      remaped_users[hash_key][:names].push(usr_type[:firstname] + " " + usr_type[:lastname])
-      remaped_users[hash_key][:names].uniq!
-      remaped_users[hash_key][:names].sort!
-      remaped_users[hash_key][:groups].push(usr_type[:group])
-      remaped_users[hash_key][:groups].uniq!
-      remaped_users[hash_key][:groups].sort!
     end
     return remaped_users
   end
@@ -41,20 +44,22 @@ module UsersHelper
     #call after manual mapping in view
     # delete not mapped (means not used) users
     # add mapping target (:rmuser) if needed
-    rpusers.each do |rpuser_id, rpuser_value|
-      rmuser_key = user_mapping[rpuser_value[:conf_key]]
-      if  rmuser_key != "" and rmuser_key != nil  
-        # search for and include rmuser as mapping
-        idx = rmusers[:key_for_view].index(rmuser_key)
-        if idx != nil
-          #add existing user        
-          rpuser_value[:rmuser] = rmusers[:rmusers][idx]
+    if rpusers != nil
+      rpusers.each do |rpuser_id, rpuser_value|
+        rmuser_key = user_mapping[rpuser_value[:conf_key]]
+        if  rmuser_key != "" and rmuser_key != nil  
+          # search for and include rmuser as mapping
+          idx = rmusers[:key_for_view].index(rmuser_key)
+          if idx != nil
+            #add existing user        
+            rpuser_value[:rmuser] = rmusers[:rmusers][idx]
+          else
+            puts "New user for import found: " + rpuser_value[:email] if debug
+          end
         else
-          puts "New user for import found: " + rpuser_value[:email] if debug
+          # delete unused rpuser
+          rpusers.delete(rpuser_id)
         end
-      else
-        # delete unused rpuser
-        rpusers.delete(rpuser_id)
       end
     end
     return rpusers

@@ -12,50 +12,53 @@ module AttributesHelper
     # if conflation is allowed, project is not used for key (all projects have (nearly) the same attributes)
     # take same prefixes of several projects together
     # needing: ":attrlabel", ":project"=>[], ":rtprefix"=>[], ":datatype", ":itemtext"=>[]
-    remaped_attributes = Hash.new
-    attributes.each_pair do |attr_key,attr_type|
-      if conflate_attributes
-        hash_key = attr_type[:attrlabel]
-      else
-        hash_key = attr_type[:project] + "." + attr_type[:attrlabel]
+    remaped_attributes = nil
+    if attributes != nil
+      remaped_attributes = Hash.new
+      attributes.each_pair do |attr_key,attr_type|
+        if conflate_attributes
+          hash_key = attr_type[:attrlabel]
+        else
+          hash_key = attr_type[:project] + "." + attr_type[:attrlabel]
+        end
+        if remaped_attributes[hash_key] == nil # not existend
+          remaped_attributes[hash_key] = Hash.new
+          remaped_attributes[hash_key][:projects] = Array.new
+          remaped_attributes[hash_key][:datatypes] = Array.new
+          remaped_attributes[hash_key][:rtprefixes] = Array.new
+          remaped_attributes[hash_key][:itemtext] = Array.new
+        end
+        #attrlabel (use always the last one)
+        remaped_attributes[hash_key][:attrlabel] = attr_type[:attrlabel]
+        #projects  
+        remaped_attributes[hash_key][:projects].push(attr_type[:project])
+        remaped_attributes[hash_key][:projects].uniq!
+        remaped_attributes[hash_key][:projects].sort!
+        #datatypes  
+        remaped_attributes[hash_key][:datatypes].push(attr_type[:datatype])
+        remaped_attributes[hash_key][:datatypes].uniq!
+        remaped_attributes[hash_key][:datatypes].sort!
+        #rtprefixes
+        if attr_type[:rtprefixes] != nil #there is a new entry for the list
+          remaped_attributes[hash_key][:rtprefixes].push(attr_type[:rtprefixes])
+          remaped_attributes[hash_key][:rtprefixes].uniq!
+          remaped_attributes[hash_key][:rtprefixes].sort!
+        end
+        #itemtext
+        if attr_type[:itemtext] != nil #there is a new entry for the list
+          remaped_attributes[hash_key][:itemtext].push(attr_type[:itemtext])
+          remaped_attributes[hash_key][:itemtext].uniq!
+          remaped_attributes[hash_key][:itemtext].sort!
+        end
+        #itemlist to itemtext for viewing
+        if attr_type[:itemlist] != nil #there is a new entry for the list
+          remaped_attributes[hash_key][:itemtext].concat(attr_type[:itemlist])
+          #remaped_attributes[hash_key][:itemtext].flatten!
+          remaped_attributes[hash_key][:itemtext].uniq!
+          remaped_attributes[hash_key][:itemtext].sort!
+          remaped_attributes[hash_key][:itemtext].delete("")
+        end        
       end
-      if remaped_attributes[hash_key] == nil # not existend
-        remaped_attributes[hash_key] = Hash.new
-        remaped_attributes[hash_key][:projects] = Array.new
-        remaped_attributes[hash_key][:datatypes] = Array.new
-        remaped_attributes[hash_key][:rtprefixes] = Array.new
-        remaped_attributes[hash_key][:itemtext] = Array.new
-      end
-      #attrlabel (use always the last one)
-      remaped_attributes[hash_key][:attrlabel] = attr_type[:attrlabel]
-      #projects  
-      remaped_attributes[hash_key][:projects].push(attr_type[:project])
-      remaped_attributes[hash_key][:projects].uniq!
-      remaped_attributes[hash_key][:projects].sort!
-      #datatypes  
-      remaped_attributes[hash_key][:datatypes].push(attr_type[:datatype])
-      remaped_attributes[hash_key][:datatypes].uniq!
-      remaped_attributes[hash_key][:datatypes].sort!
-      #rtprefixes
-      if attr_type[:rtprefixes] != nil #there is a new entry for the list
-        remaped_attributes[hash_key][:rtprefixes].push(attr_type[:rtprefixes])
-        remaped_attributes[hash_key][:rtprefixes].uniq!
-        remaped_attributes[hash_key][:rtprefixes].sort!
-      end
-      #itemtext
-      if attr_type[:itemtext] != nil #there is a new entry for the list
-        remaped_attributes[hash_key][:itemtext].push(attr_type[:itemtext])
-        remaped_attributes[hash_key][:itemtext].uniq!
-        remaped_attributes[hash_key][:itemtext].sort!
-      end
-      #itemlist to itemtext for viewing
-      if attr_type[:itemlist] != nil #there is a new entry for the list
-        remaped_attributes[hash_key][:itemtext].concat(attr_type[:itemlist])
-        #remaped_attributes[hash_key][:itemtext].flatten!
-        remaped_attributes[hash_key][:itemtext].uniq!
-        remaped_attributes[hash_key][:itemtext].sort!
-        remaped_attributes[hash_key][:itemtext].delete("")
-      end        
     end
     return remaped_attributes
   end
