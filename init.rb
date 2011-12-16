@@ -1,13 +1,14 @@
 require 'redmine'
+require 'admin_menu_hooks'
 
-Redmine::Plugin.register :import_reqpro do
+Redmine::Plugin.register :redmine_import_reqpro do
   name 'RequisistePro Importer'
   author 'Thomas Kohler'
   description 'Redmine plugin for importing RequisistePro Baselines.'
-  version '0.1'
+  version '0.2'
 
-  project_module :rpbimporter do
-    permission :rpbimport, :rpbimporter => :index
+  project_module :reqproimporter do
+    permission :reqproimporter, :reqproimporter => :index
   end
-  menu :project_menu, :rpbimporter, { :controller => 'rpbimporter', :action => 'index' }, :caption => :label_rpbimport, :before => :settings, :param => :project_id
+  menu :admin_menu, :reqproimporter, { :controller => 'reqproimporter', :action => 'index' }, :caption => :label_reqproimporter, :after => :projects, :html => { :class => 'icon icon-import-reqpro' }
 end
