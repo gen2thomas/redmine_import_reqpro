@@ -8,8 +8,6 @@ require File.dirname(__FILE__) + '/../../app/helpers/users_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/requirement_types_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/attributes_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/requirements_issues_helper'
-require File.dirname(__FILE__) + '/../../app/helpers/my_progress_bar_helper'
-require 'action_view/helpers/asset_tag_helper'
 
 include REXML
 include FilesHelper
@@ -19,11 +17,6 @@ include UsersHelper
 include RequirementTypesHelper
 include AttributesHelper
 include RequirementsIssuesHelper
-include MyProgressBarHelper
-include ActionView::Helpers::AssetTagHelper
-include ActionView::Helpers::TagHelper
-include ActionView::Helpers::AssetTagHelper
-include ActionView::Helpers::JavaScriptHelper
 
 class MultipleIssuesForUniqueValue < Exception
 end
@@ -42,7 +35,7 @@ class RpbimporterController < ApplicationController
   end
   
   def index
-    @a_value = 0.0
+    @progress_percent = [0,0]
   end
 
   def listprojects
@@ -71,7 +64,7 @@ class RpbimporterController < ApplicationController
       return false
     end
     @contents_of_projects = collected_projects_to_content_array(@@some_projects) # need for view
-    @a_value = 0.2
+    @progress_percent = [0, 20]
   end
   
   def matchusers
@@ -112,7 +105,7 @@ class RpbimporterController < ApplicationController
       end
     end
     @rmusers_for_view = @@redmine_users[:key_for_view]
-    @a_value = 0.4
+    @progress_percent = [0, 40]
     #mapping now in variable "params[:fields_map_user]"
   end
   
@@ -134,7 +127,7 @@ class RpbimporterController < ApplicationController
       @trackers.push(tr[:name])
     end
     #mapping now in variable "params[:fields_map_tracker]"
-    @a_value = 0.6
+    @progress_percent = [0, 60]
   end
   
   def matchattributes
@@ -176,7 +169,7 @@ class RpbimporterController < ApplicationController
     @attrs.uniq!
     @attrs.sort!
     #mapping now in variable "params[:fields_map_attribute]"
-    @a_value = 0.8
+    @progress_percent = [0, 80]
   end
   
   def do_import_and_result
@@ -206,7 +199,7 @@ class RpbimporterController < ApplicationController
     #TODO update internal traces 
     #TODO update external traces
     @import_results = @@import_results #for view
-    @a_value = 1.0
+    @progress_percent = [100, 100]
   end
   
   def match_org
