@@ -1,6 +1,8 @@
 en:
   label_rpbimport: "ReqPro Import"
   label_issue_rpbimporter: "RequisitePro Importer"
+  label_imported: "imported"
+  label_prepared: "prepared"
   
   label_rpbimporter_start: "Start Page - RequisitePro Importer"
   label_rpbupload_notice: "Select a file including the ReqPro import description."
@@ -21,7 +23,6 @@ en:
   label_prefix: "Prefix"
   label_date: "Version Date"
   label_extproj_prefixes: "External Projects (Prefixes)"
-  label_import_this_project: ""
   label_ext_prefix_description: "Description of extension for the external project prefixes: '+' available, '-' not available, '*' not needed, '?' not checked"
   label_users_checking_settings: "Checking settings for users. Conflate the same users of all projects together using ..."
   label_conflate_users_by_email: " Email (recommended)"
@@ -82,7 +83,4 @@ en:
   label_update_other_project: "Allow updating issues from other projects"
   label_ignore_non_exist: "Ignore non-existant issues"
   label_rule_name: "Input rule name"
-
-  text_rmi_specify_unique_field_for_update: "Unique field must be specified because Update existing issues is on"
-  text_rmi_specify_unique_field_for_column: "Unique field must be specified because the column %{column} needs to refer to other tasks" 
   
