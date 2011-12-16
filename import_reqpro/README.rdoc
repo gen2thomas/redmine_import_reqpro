@@ -1,4 +1,4 @@
-= Redmine importer for RequisitePro Baselines V01
+= Redmine importer for RequisitePro Baselines V02
 Influenced from (and started with) "https://github.com/leovitch/redmine_importer". Thanks for the basics!
 
 To install:
