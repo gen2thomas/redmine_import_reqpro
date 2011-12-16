@@ -35,6 +35,7 @@ class RpbimporterController < ApplicationController
   end
   
   def index
+    debugger
     @progress_percent = [0,0]
   end
 
@@ -572,25 +573,39 @@ private
   
   # create new redmine users from rp-users
   def create_all_users_and_update(rp_users)
+    # looking for existend users because while importing multiple projects
+    # can cause double users which will cause an error while save the user
     if rp_users != nil
       rp_users.each do |rp_key, rp_user|
         new_user = rp_user[:rmuser]
-        if new_user == nil
-          new_user = User.new
-          new_user[:mail] = rp_user[:email]
-          new_user[:login] = rp_user[:login]
-          new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
-          new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
-          if new_user.save    
-            @@import_results[:imported][:users] += 1
-            rp_user[:rmuser] = new_user # update mapping
-          else
-            @@import_results[:failed][:users] += 1
-            debugger
-            puts "Unable to import user: " + new_user[:mail]
-          end
-        else
+        if new_user != nil
           puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+          next
+        end
+        new_user = User.find_by_mail(rp_user[:email])
+        if new_user != nil
+          puts "User found via mail: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+          rp_user[:rmuser] = new_user # update mapping
+          next
+        end
+        new_user = User.find_by_login(rp_user[:login])
+        if new_user != nil
+          puts "User found via login: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+          rp_user[:rmuser] = new_user # update mapping
+          next
+        end
+        new_user = User.new
+        new_user[:mail] = rp_user[:email]
+        new_user[:login] = rp_user[:login]
+        new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
+        new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
+        if new_user.save    
+          @@import_results[:imported][:users] += 1
+          rp_user[:rmuser] = new_user # update mapping
+        else
+          @@import_results[:failed][:users] += 1
+          debugger
+          puts "Unable to import user: " + new_user[:mail]
         end
       end
     end
@@ -846,6 +861,22 @@ private
     return true
   end
   
+  #find member in actual project using name string in an attribute
+  #1.) looking for name string inside rpusers
+  #2.) looking for rpuser inside redmine users
+  #3.) looking for membership inside the actual project
+  def find_project_rpmember(value, rpusers, project)
+    found_user = find_user_by_string(value, rpusers) 
+    #check for members of project
+    if found_user != nil
+      if Member.find(:all, :conditions => { :user_id => found_user[:id], :project_id => project.id })[0] == nil
+        puts "This user is not member of the project: " + found_user[:login] + "<-->" + project[:identifier] if @debug
+        found_user = nil # force user to nil because he is not allowed at this project
+      end
+    end
+    return found_user
+  end
+  
   def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value, rpusers, project)
     # check for customfield id to update
     # if not a custom field, update the existend attribute
@@ -861,11 +892,11 @@ private
     else
       case mapping
       when l_or_humanize(:assigned_to, :prefix=>"field_")
-        new_issue.assigned_to = find_user(value, rpusers, project)
+        new_issue.assigned_to = find_project_rpmember(value, rpusers, project)
       when l_or_humanize(:author, :prefix=>"field_")
-        new_issue.author = find_user(value, rpusers, project)
+        new_issue.author = find_project_rpmember(value, rpusers, project)
       when l_or_humanize(:watchers, :prefix=>"field_")
-        new_issue.watchers = find_user(value, rpusers, project)
+        new_issue.watchers = find_project_rpmember(value, rpusers, project)
       when l_or_humanize(:category, :prefix=>"field_")
         new_issue.category = IssueCategory.find_by_name(value) || new_issue.category
       when l_or_humanize(:priority, :prefix=>"field_")
@@ -886,68 +917,6 @@ private
       end
     end
     return new_issue
-  end
-   
-  def find_user(rp_user_string, rpusers, project)
-    #user_string = "Firstname Lastname" inside ReqPro
-    # rpusers[key] ={:firstname => "Firstname", :lastname => "Lastname", :rmuser => rm-user}
-    # if a user is found --> check the project members for this user 
-    rp_fullname = get_fullname(rp_user_string, nil)
-    found_user = nil
-    # best level:
-    rpusers.each_value do |a_rpuser|
-      if found_user == nil
-        if (a_rpuser[:firstname].downcase + a_rpuser[:lastname].downcase) == (rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
-          found_user = a_rpuser[:rmuser]
-        end
-      else
-        break
-      end 
-    end
-    # second level:
-    rpusers.each_value do |a_rpuser|
-      if found_user == nil
-        if a_rpuser[:firstname].downcase.include?(rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
-          found_user = a_rpuser[:rmuser]
-         end
-      else
-        break
-      end
-    end
-    # third level:
-    rpusers.each_value do |a_rpuser|
-      if found_user == nil
-        if a_rpuser[:lastname].downcase == rp_fullname[:lastname].downcase
-          found_user = a_rpuser[:rmuser]
-         end
-      else
-        break
-      end
-    end
-    # last levels without mapping
-    if found_user == nil
-      if rp_fullname[:firstname] != nil and rp_fullname[:lastname] != nil
-        found_user = User.find(:all, :conditions => {:lastname => rp_fullname[:lastname], :firstname => rp_fullname[:firstname]})[0]
-      end
-    end
-    if found_user == nil
-      if rp_fullname[:lastname] != nil
-        found_user = User.find_by_lastname(rp_fullname[:lastname]) || User.find_by_firstname(rp_fullname[:lastname]) || User.find_by_login(rp_fullname[:lastname])
-      end
-    end
-    if found_user == nil
-      if rp_fullname[:firstname] != nil
-        found_user = User.find_by_firstname(rp_fullname[:firstname]) || User.find_by_lastname(rp_fullname[:firstname]) || User.find_by_login(rp_fullname[:firstname])
-      end
-    end
-    #check for members of project
-    if found_user != nil
-      if Member.find(:all, :conditions => { :user_id => found_user[:id], :project_id => project.id })[0] == nil
-        puts "This user is not member of the project: " + found_user[:login] + "<-->" + project[:identifier] if @debug
-        found_user = nil # force user to nil because he is not allowed at this project
-      end
-    end
-    return found_user
   end
   
   # create all issues by importing requirements from each project
