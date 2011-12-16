@@ -119,6 +119,56 @@ module UsersHelper
     return fullname
   end
   
+  #user_string = "Firstname Lastname" inside ReqPro
+  # rpusers[key] ={:firstname => "Firstname", :lastname => "Lastname", :rmuser => rm-user}
+  # if a rpuser is found --> check the rmusers for existenz
+  def find_user_by_string(rp_user_string, rpusers)
+    rp_fullname = get_fullname(rp_user_string, nil)
+    found_user = nil
+    # best level:
+    rpusers.each_value do |a_rpuser|
+      if (a_rpuser[:firstname].downcase + a_rpuser[:lastname].downcase) == (rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
+        found_user = a_rpuser[:rmuser]
+        break
+      end 
+    end
+    # second level:
+    if found_user == nil
+      rpusers.each_value do |a_rpuser|
+        if a_rpuser[:firstname].downcase.include?(rp_fullname[:firstname].downcase + rp_fullname[:lastname].downcase)
+          found_user = a_rpuser[:rmuser]
+          break
+         end
+      end
+    end
+    # third level:
+    if found_user == nil
+      rpusers.each_value do |a_rpuser|
+        if a_rpuser[:lastname].downcase == rp_fullname[:lastname].downcase
+          found_user = a_rpuser[:rmuser]
+          break
+        end
+      end
+    end
+    # last levels without mapping
+    if found_user == nil
+      if rp_fullname[:firstname] != nil and rp_fullname[:lastname] != nil
+        found_user = User.find(:all, :conditions => {:lastname => rp_fullname[:lastname], :firstname => rp_fullname[:firstname]})[0]
+      end
+    end
+    if found_user == nil
+      if rp_fullname[:lastname] != nil
+        found_user = User.find_by_lastname(rp_fullname[:lastname]) || User.find_by_firstname(rp_fullname[:lastname]) || User.find_by_login(rp_fullname[:lastname])
+      end
+    end
+    if found_user == nil
+      if rp_fullname[:firstname] != nil
+        found_user = User.find_by_firstname(rp_fullname[:firstname]) || User.find_by_lastname(rp_fullname[:firstname]) || User.find_by_login(rp_fullname[:firstname])
+      end
+    end
+    return found_user
+  end
+  
 private
   def collect_users_fast(some_projects, conflate_users)
     #get an data path to open an ProjectStructure file
