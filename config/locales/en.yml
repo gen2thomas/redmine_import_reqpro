@@ -64,13 +64,14 @@ en:
   button_start_import: "Start importing all (projects, users, trackers and attributes)"
   
   label_reqproimport_result: "Result - RequisitePro Importer"
-  label_result_projectse: "%{isuccess_count} (%{usuccess_count}) projects successfully imported (updated).  %{failed_count} projects failed."
-  label_result_userse: "%{isuccess_count} (%{usuccess_count}) users successfully imported (updated).  %{failed_count} users failed."
-  label_result_issuese: "%{isuccess_count} (%{usuccess_count}) issues successfully imported (updated).  %{failed_count} issues failed."
-  label_result_attributese: "%{isuccess_count} (%{usuccess_count}) attributes successfully imported (updated).  %{failed_count} attributes failed."
-  label_result_trackerse: "%{isuccess_count} (%{usuccess_count}) trackers successfully imported (updated).  %{failed_count} trackers failed."
-    
-  label_import_ext_projects: "Importing external projects"
+  label_header_users: "Users"
+  label_header_projects: "Projects"
+  label_header_issues: "Issues"
+  label_header_trackers: "Trackers"
+  label_header_attributes: "Attributes"
+  label_header_imported: "Imported (%{icount})"
+  label_header_updated: "Updated (%{icount})"
+  label_header_failed: "Failed (%{icount})"
   
   label_match_columns: "Matching Columns"
   label_match_select: "Select field to set from each column:"

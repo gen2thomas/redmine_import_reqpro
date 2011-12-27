@@ -64,13 +64,14 @@ de:
   button_start_import: "Jetzt alles importieren (Projekte, Nutzer, Tracker und Attribute)"
   
   label_reqproimport_result: "Zusammenfassung - RequisitePro Importer"
-  label_result_projectse: "%{isuccess_count} (%{usuccess_count}) Projekte erfolgreich importiert (updated).  %{failed_count} Projekt-Importe fehlgeschlagen."
-  label_result_userse: "%{isuccess_count} (%{usuccess_count}) Nutzer erfolgreich importiert (updated).  %{failed_count} Nutzer-Importe fehlgeschlagen."
-  label_result_issuese: "%{isuccess_count} (%{usuccess_count}) Tickets erfolgreich importiert (updated).  %{failed_count} Ticket-Importe fehlgeschlagen."
-  label_result_attributese: "%{isuccess_count} (%{usuccess_count}) Attribute erfolgreich importiert (updated).  %{failed_count} Attribut-Importe fehlgeschlagen."
-  label_result_trackerse: "%{isuccess_count} (%{usuccess_count}) Tracker erfolgreich importiert (updated).  %{failed_count} Tracker-Importe fehlgeschlagen."
-    
-  label_import_ext_projects: "Importiere externe Projekte"
+  label_header_users: "Nutzer"
+  label_header_projects: "Projekte"
+  label_header_issues: "Tickets"
+  label_header_trackers: "Tracker"
+  label_header_attributes: "Attribute"
+  label_header_imported: "Importiert (%{icount})"
+  label_header_updated: "Aktualisiert (%{icount})"
+  label_header_failed: "Fehlgeschlagen (%{icount})"
   
   label_match_columns: "Zuordnung der Spalten"
   label_match_select: "Auswahl passender Felder"

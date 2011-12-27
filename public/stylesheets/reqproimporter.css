@@ -1,0 +1,20 @@
+.icon-import-reqpro { background-image: url(../images/reqpro-icon3.png); }
+
+label.tabular{
+	text-align: right;
+	width: 270px;
+	display: inline-block;
+}
+
+table.tab_center{
+	text-align: center;
+	display: inline-block;
+}
+
+th.th_firstcolumn{
+	text-align: right;
+}
+
+td.td_content{
+	width: 100px;
+}

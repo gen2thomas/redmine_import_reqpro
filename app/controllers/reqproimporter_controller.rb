@@ -35,7 +35,6 @@ class ReqproimporterController < ApplicationController
   end
   
   def index
-    debugger
     @progress_percent = [0,0]
   end
 
@@ -180,7 +179,7 @@ class ReqproimporterController < ApplicationController
     @@attributes = update_attributes_for_map_needing(@@attributes, attributes_mapping)
     @@import_results = {:imported => {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
                         :updated =>  {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
-                        :failed =>   {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0}}
+                        :failed =>   {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0}}                          
     # users
     @@rpusers = create_all_users_and_update(@@rpusers)
     # new requirement types (key is the ID):
@@ -197,9 +196,17 @@ class ReqproimporterController < ApplicationController
     # update parents
     puts "Wait for update parents" if @debug
     update_issue_parents(@rp_req_unique_names)
-    #TODO update internal traces 
+    #TODO update internal traces
     #TODO update external traces
-    @import_results = @@import_results #for view
+    # make the content for table
+    @imp_res_sum = Hash.new
+    @@import_results.each_key do |group_key|
+      @imp_res_sum[group_key] = 0
+      @@import_results[group_key].each do |a_key, a_value|
+        @imp_res_sum[group_key] += a_value
+      end
+    end
+    @imp_res = @@import_results
     @progress_percent = [100, 100]
   end
   
@@ -543,7 +550,7 @@ class ReqproimporterController < ApplicationController
     # Garbage prevention: clean up iips older than 3 days
     ReqproimportInProgress.delete_all(["created < ?",Time.new - 3*24*60*60])
   end
-
+  
 private
   
   def set_tracker_mapping(tracker_map)
