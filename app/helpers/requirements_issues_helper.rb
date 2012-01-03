@@ -11,6 +11,31 @@ module RequirementsIssuesHelper
     end
   end
   
+  # add internal traces as issue relations
+  def update_internal_traces(rpid_issue_rmid, rp_internal_relation_list, import_results, debug)
+    rp_internal_relation_list.each do |rpid, intern_rel_list|
+      issue_to_change = Issue.find_by_id(rpid_issue_rmid[rpid].to_i)
+      intern_rel_list.each do |int_rel|
+        if rpid_issue_rmid[int_rel] == nil
+          puts "related issue not imported, take next" if debug
+          next
+        end
+        issue_relation_new = IssueRelation.new
+        issue_relation_new.issue_from = issue_to_change
+        issue_relation_new.issue_to = Issue.find_by_id(rpid_issue_rmid[int_rel].to_i)
+        issue_relation_new.relation_type = "relates"
+        if !(issue_relation_new.save)
+          # failed relation is normal for installed KUP-Plugin
+          import_results[:failed][:issue_internal_relations] += 1
+          puts "Failed to save new internal issue relation." if debug
+        else
+          import_results[:imported][:issue_internal_relations] += 1
+        end
+      end
+    end
+    return import_results
+  end
+  
   private
   
   def set_parent_from_child(rp_req_unique_names, rp_req_unique_name_key)

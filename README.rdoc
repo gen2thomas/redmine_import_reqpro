@@ -12,6 +12,6 @@ To install:
 en, de localizations included.
 
 ToDos (rp = ReqPro, rm = redmine):
-- Dynamic progress indicator while importing issues (not sure about possibility) --> planned for V03
-- traces between requirements not supported (related issues) --> planned for V03
 - traces between external requirements not supported (related issues) --> planned for V04
+- add versions if needed --> planned for V04
+- Dynamic progress indicator while importing issues (not sure about possibility) --> planned for V04

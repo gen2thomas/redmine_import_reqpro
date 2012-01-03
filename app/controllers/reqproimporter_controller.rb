@@ -177,9 +177,9 @@ class ReqproimporterController < ApplicationController
     update_allowed = params[:issue_update_allowed]
     #delete unused attributes
     @@attributes = update_attributes_for_map_needing(@@attributes, attributes_mapping)
-    @@import_results = {:imported => {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
-                        :updated =>  {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0},
-                        :failed =>   {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0}}                          
+    @@import_results = {:imported => {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0, :issue_internal_relations => 0, :issue_external_relations => 0},
+                        :updated =>  {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0, :issue_internal_relations => 0, :issue_external_relations => 0},
+                        :failed =>   {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0, :issue_internal_relations => 0, :issue_external_relations => 0}}
     # users
     @@rpusers = create_all_users_and_update(@@rpusers)
     # new requirement types (key is the ID):
@@ -192,12 +192,15 @@ class ReqproimporterController < ApplicationController
     # new projects:
     create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers)
     # now import all issues from each ReqPro project 
-    @rp_req_unique_names = create_all_issues(@@some_projects, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed)
+    return_hash_from_issues = create_all_issues(@@some_projects, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed)
     # update parents
     puts "Wait for update parents" if @debug
-    update_issue_parents(@rp_req_unique_names)
-    #TODO update internal traces
+    update_issue_parents(return_hash_from_issues[:rp_req_unique_names])
+    #update internal traces
+    puts "Wait for update internal traces" if @debug
+    @@import_results = update_internal_traces(return_hash_from_issues[:rpid_issue_rmid], return_hash_from_issues[:rp_internal_relation_list], @@import_results, @debug)
     #TODO update external traces
+    puts "Wait for update external traces" if @debug
     # make the content for table
     @imp_res_sum = Hash.new
     @@import_results.each_key do |group_key|
@@ -927,9 +930,13 @@ private
   end
   
   # create all issues by importing requirements from each project
+  # generate "rpid_issue_rmid" list for further using (Reqpro-id to redmine issue id)
   # generate "rp_req_unique_names" list for further using (parent-child-import)
+  # generate "rp_internal_relation_list" list for further using (internal relations to import)
   def create_all_issues(some_projects, requirement_types, attributes, known_attributes, rpusers, update_allowed)
+    rpid_issue_rmid = Hash.new # reqpro reqirement ids --> redmine issue ids
     rp_req_unique_names = Hash.new
+    rp_internal_relation_list = Hash.new
     some_projects.each_value do |a_project|
       #find project
       project = Project.find_by_identifier(a_project[:prefix])
@@ -976,8 +983,9 @@ private
             new_issue = test_issue
             import_new_issue = true    
           end
+          rpid = req.elements["GUID"].text # this id
           #further issue parameters
-          # don't use a "." to join "prefix" and "RPre"!
+          # don't use a "." to join "prefix" and "RPre"! --> actualy a "|" is used
           unique_name = a_project[:prefix] + "|" + req.elements["RPre"].text
           new_issue.description = "ReqPro-Prefix: " + unique_name + "\n\n" + ic.iconv(req.elements["RText"].text)
           new_issue.status = IssueStatus.default
@@ -1016,11 +1024,25 @@ private
             end
           end
           # attention! "due date" must be the same or greater than "start date"!
-          # "start date" its allowed to be "nil"
+          # "start date" is allowed to be "nil"
           if new_issue.start_date != nil and new_issue.due_date != nil
             if (new_issue.start_date.to_time > new_issue.due_date.to_time)
               new_issue.start_date = new_issue.due_date
             end
+          end
+          # generate a relations-list for internal traces
+          # "rpid" comes from "req.elements["GUID"].text" some lines above
+          # we use only TTo because:
+          # TFrom is the same information like TTo f.e.:
+          # (STRQ1 "TTo" NEED1) is the same like (NEED1 "TFrom" STRQ1)  
+          if (req.elements["TTo"] != nil)
+            rp_internal_relation_list[rpid] = Array.new
+            req.elements["TTo"].each do |treq|
+              if treq != nil #not empty
+                rp_internal_relation_list[rpid].push(treq.elements["TRID"].text) # to id
+              end
+            end
+            rp_internal_relation_list[rpid].uniq!
           end
           # try to save
           #TODO: new_issue.save force "assigned_to" to a user (only while first save), how and why?
@@ -1056,10 +1078,15 @@ private
           else
             @@import_results[:updated][:issues] += 1
           end
+          rpid_issue_rmid[rpid] = new_issue[:id]
         end
       end
     end
-    return rp_req_unique_names    
+    return_hash_from_issues = Hash.new
+    return_hash_from_issues[:rpid_issue_rmid] = rpid_issue_rmid
+    return_hash_from_issues[:rp_req_unique_names] = rp_req_unique_names
+    return_hash_from_issues[:rp_internal_relation_list] = rp_internal_relation_list
+    return return_hash_from_issues
   end
 
   def find_project
