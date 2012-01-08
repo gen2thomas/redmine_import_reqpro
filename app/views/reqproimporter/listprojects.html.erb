@@ -1,10 +1,11 @@
 <% if !flash[:error] %>
-	<h2><%=l(:label_reqproimporter_project_overview)%></h2>
+	<h2><%=l(:label_reqproimporter_project_overview)%> (<%= @original_filename %>)</h2>
 	<% form_tag({:action => 'matchusers'}, {:multipart => true}) do %>
 		<%= render :partial => "progress_bar" %><br/>
-		<%= l(:label_importdescriptionfile, @original_filename) %>
+		<h3><%= l(:label_choose_projects_headline) %></h3>
+		<%= l(:label_choose_projects) %><br/><br/>
 		<table class="list">
-			<thead><tr>
+			<thead class="text_left"><tr>
 			    <% @headers.each do |column| %>
 			      <th><%= l(column) %></th>
 			    <% end %>
@@ -17,8 +18,8 @@
 			  <% end %>
 			</tbody>
 		</table>
-		<%= l(:label_ext_prefix_description) %><br/><br/>
-	
+		<br/>
+		<h3><%= l(:label_users_checking_settings_headline) %></h3>
 		<fieldset class="box"><legend><%= l(:label_users_checking_settings) %></legend>
 		    <%= radio_button_tag "conflate_users", 'email', true %><%= l(:label_conflate_users_by_email) %><br/>
 		    <%= radio_button_tag "conflate_users", 'login' %><%= l(:label_conflate_users_by_login) %><br/>
@@ -26,7 +27,8 @@
 		    <%= radio_button_tag "conflate_users", 'none' %><%= l(:label_conflate_users_by_none) %><br/>
 		</fieldset>
 		
-		<%= submit_tag l(:button_match_users) %>
+		<%= submit_tag l(:button_match_users) %><br/><hr/>
+		<%= l(:label_ext_prefix_description) %><br/><br/>
+		<%= l(:label_users_checking_settings_description) %>
 	<% end %>
 <% end %>
-<hr/>

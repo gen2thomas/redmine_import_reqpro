@@ -1,5 +1,9 @@
 .icon-import-reqpro { background-image: url(../images/reqpro-icon3.png); }
 
+thead.text_left{
+	text-align: left;
+}
+
 label.tabular{
 	text-align: right;
 	width: 270px;
@@ -9,6 +13,28 @@ label.tabular{
 table.tab_center{
 	text-align: center;
 	display: inline-block;
+}
+
+table.trackerlist{
+	width: 550px;
+}
+
+td.dropdown_column_user{
+	width: 350px;
+}
+
+td.first_column_tracker{
+	width: 350px;
+}
+td.dropdown_column_tracker{
+	width: 200px;
+}
+
+td.first_column_attribute{
+	width: 250px;
+}
+td.dropdown_column_attribute{
+	width: 210px;
 }
 
 th.th_firstcolumn{

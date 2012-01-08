@@ -1,14 +1,23 @@
-<h2><%=l(:label_reqproimporter_start)%></h2>
+<h2><%= l(:label_reqproimporter_start) %></h2>
 
 <% form_tag({:action => 'listprojects'}, {:multipart => true}) do %>
   	<%= render :partial => "progress_bar" %><br/>
-	<p><label><%=l(:label_reqproupload_notice)%></label><br/>
-	<%= file_field_tag 'file', :size => 60%></p>
+  	<h3><%= l(:label_intro_headline) %></h3>
+  	<%= l(:label_reqproimporter_introduction) %><br/><br/>
+  	<%= l(:label_reqproimporter_introduction2) %><br/><br/>
+  	<h3><%= l(:label_upload_headline) %></h3>
+	<%= l(:label_reqproupload_notice) %><br/>
+	<%= file_field_tag 'file', :size => 60 %></p>
 
 	<fieldset class="box"><legend><%= l(:label_checking_settings) %></legend>
 		     <label><%= check_box_tag "deep_check_ext_projects", true, true %> <%= l(:label_deep_check_ext_projects) %> </label><br/>
 	</fieldset>
 	
-	<%= submit_tag l(:button_upload) %>
+	<%= submit_tag l(:button_upload) %><br/><hr/>
+	
+	<%= l(:label_importdescriptionfile_line1) %><br/><br/>
+	<%= l(:label_importdescriptionfile_line2) %><br/>
+	<%= l(:label_importdescriptionfile_line3) %><br/><br/>
+	<%= l(:label_projectcheckingsettings_line1) %>
 <% end %>
 

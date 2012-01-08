@@ -4,24 +4,26 @@
 
 <h2><%= l(:label_reqproimport_result) %></h2>
 <%= render :partial => "progress_bar" %><br/>
-
+<%= l(:label_conclution_line1) %><br/>
+<br/>
 <table class="tab_center">
 	<thead><tr>
 		<th>&nbsp;</th>
 	    <% @imp_res[:imported].each_key do |a_header| %>
-	      <th><%= l_or_humanize(a_header.to_s, :prefix => "label_header_") %></th>
+	      <th><%= l_or_humanize(a_header.to_s, :prefix => "label_header_") %> (<%= @imp_res_sum_row[a_header] %>)</th>
 	    <% end %>
 	</tr></thead>
 	<tbody>
 	  <% @imp_res.each do |result_key, result_content| %>
 	    <tr class="<%= cycle("odd", "even") %>">
-	    	<th class="th_firstcolumn"><%= l("#{"label_header_"}#{result_key.to_s}", :icount => @imp_res_sum[result_key]) %></th>
+	    	<th class="th_firstcolumn"><%= l("#{"label_header_"}#{result_key.to_s}", :icount => @imp_res_sum_column[result_key]) %></th>
 	      <% result_content.each_value do |column| %><td class="td_content"><%= column %></td><% end %>
 	    </tr>
 	  <% end %>
 	</tbody>
 </table>
-
+<br/>
 <hr/>
+<%= l(:label_internalrelations_failed_line1) %><br/>
 
 

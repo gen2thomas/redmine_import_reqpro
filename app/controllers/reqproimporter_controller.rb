@@ -47,7 +47,8 @@ class ReqproimporterController < ApplicationController
       flash.now[:error] = l_or_humanize("label_no_file")
       return false
     end
-    @original_filename = params[:file].original_filename # need for view
+    @@original_filename = params[:file].original_filename
+    @original_filename = @@original_filename # need for view
     actual_data = params[:file].read
     deep_check_ext_projects = params[:deep_check_ext_projects]
     #collect data pathes in an array
@@ -68,6 +69,7 @@ class ReqproimporterController < ApplicationController
   end
   
   def matchusers
+    @original_filename = @@original_filename # need for view
     # collect users of all available projects and add conflation key
     if @@some_projects == nil # need this test because browser back key
       flash.now[:error] = l_or_humanize("label_no_project_to_import_go_to_file_dialog")
@@ -78,6 +80,9 @@ class ReqproimporterController < ApplicationController
       flash.now[:error] = l_or_humanize("label_no_project_to_import")
       return false
     end
+    # generate the default header for view
+    @headers = Array.new
+    @headers = ["label_prefixed_login", "label_user_email", "label_mapped_user_email", "label_more_info"]
     @@rpusers = collect_rpusers(@@some_projects, params[:conflate_users])
     # remap used users to :conf_key (conflation key)
     @rpusers_for_view = remap_users_to_conflationkey(@@rpusers)
@@ -85,8 +90,9 @@ class ReqproimporterController < ApplicationController
     @@redmine_users = Hash.new
     @@redmine_users[:rmusers] = Array.new
     @@redmine_users[:key_for_view] = Array.new
+    @conflate_users = params[:conflate_users] #used for view
     User.find(:all).each do |usr|
-      case params[:conflate_users]
+      case @conflate_users
       when "email"
         if usr[:mail].casecmp("@") == 1
           @@redmine_users[:key_for_view].push(usr[:mail])
@@ -97,11 +103,13 @@ class ReqproimporterController < ApplicationController
           @@redmine_users[:key_for_view].push(usr[:login])
           @@redmine_users[:rmusers].push(usr)
         end
+        @headers = ["label_prefixed_email", "label_user_login", "label_mapped_user_login", "label_more_info"]
       when "name"
         if usr[:lastname].length > 2
           @@redmine_users[:key_for_view].push(usr[:firstname] + " " + usr[:lastname]) 
           @@redmine_users[:rmusers].push(usr)
         end
+        @headers = ["label_prefixed_email", "label_user_name", "label_mapped_user_name", "label_more_info"]
       end
     end
     @rmusers_for_view = @@redmine_users[:key_for_view]
@@ -110,12 +118,16 @@ class ReqproimporterController < ApplicationController
   end
   
   def matchtrackers
+    @original_filename = @@original_filename # need for view
     deep_check_req_types = params[:deep_check_req_types]
     conflate_req_types = params[:conflate_req_types]
     # delete unused rpusers, add equivalent rmuser  
     @@rpusers = update_rpusers_for_map_needing(@@rpusers, @@redmine_users, params[:fields_map_user], @debug)
     # collect req types of all available projects
     @@requirement_types = collect_requirement_types(@@some_projects, deep_check_req_types)
+    # generate the header for view
+    @headers = Array.new
+    @headers = ["label_prefixed_reqtype", "label_mapped_reqtype"]
     # remap used req types to "Project.Prefix" and take same prefixes of several projects together if conflating
     # :rt_prefix => {:name => "name", :project=>["p_prefix1","p_prefix2"]}
     @req_types_for_view = remap_req_types_to_project_prefix(@@requirement_types, conflate_req_types)
@@ -131,6 +143,7 @@ class ReqproimporterController < ApplicationController
   end
   
   def matchattributes
+    @original_filename = @@original_filename # need for view
     @@tracker_mapping = set_tracker_mapping(params[:fields_map_tracker])
     if @@tracker_mapping.empty?
       flash.now[:error] = l_or_humanize("label_no_trackermapping")
@@ -143,6 +156,8 @@ class ReqproimporterController < ApplicationController
     used_attributes_in_rts = make_attr_list_from_requirement_types(@@requirement_types)
     # collect attributes of all available projects
     @@attributes = collect_attributes(@@some_projects, @@requirement_types, used_attributes_in_rts, deep_check_attributes)
+    @headers = Array.new
+    @headers = ["label_prefixed_attributes", "label_mapped_attributes", "label_datatype_values"]
     # remap to "Project.AttrLabel" and take same prefixes of several projects together if conflating
     # needing: ":attrlabel", ":project"=>[], ":rtprefix"=>[], ":datatype", ":itemtext"=>[]
     @attributes_for_view = remap_attributes_to_label(@@attributes, conflate_attributes)
@@ -173,8 +188,11 @@ class ReqproimporterController < ApplicationController
   end
   
   def do_import_and_result
+    @original_filename = @@original_filename # need for view
     attributes_mapping = set_attributes_mapping(params[:fields_map_attribute])
     update_allowed = params[:issue_update_allowed]
+    import_internal_relations = params[:import_internal_relation_allowed]
+    import_external_relations = params[:import_external_relation_allowed]
     #delete unused attributes
     @@attributes = update_attributes_for_map_needing(@@attributes, attributes_mapping)
     @@import_results = {:imported => {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0, :issue_internal_relations => 0, :issue_external_relations => 0},
@@ -197,16 +215,26 @@ class ReqproimporterController < ApplicationController
     puts "Wait for update parents" if @debug
     update_issue_parents(return_hash_from_issues[:rp_req_unique_names])
     #update internal traces
-    puts "Wait for update internal traces" if @debug
-    @@import_results = update_internal_traces(return_hash_from_issues[:rpid_issue_rmid], return_hash_from_issues[:rp_internal_relation_list], @@import_results, @debug)
+    if import_internal_relations == true
+      puts "Wait for update internal traces" if @debug
+      @@import_results = update_internal_traces(return_hash_from_issues[:rpid_issue_rmid], return_hash_from_issues[:rp_internal_relation_list], @@import_results, @debug)
+    end
     #TODO update external traces
-    puts "Wait for update external traces" if @debug
+    if import_external_relations == true
+      puts "Wait for update external traces" if @debug
+    end
     # make the content for table
-    @imp_res_sum = Hash.new
+    @imp_res_sum_column = Hash.new
+    @imp_res_sum_row = Hash.new
     @@import_results.each_key do |group_key|
-      @imp_res_sum[group_key] = 0
+      @imp_res_sum_column[group_key] = 0
       @@import_results[group_key].each do |a_key, a_value|
-        @imp_res_sum[group_key] += a_value
+        @imp_res_sum_column[group_key] += a_value
+        if @imp_res_sum_row[a_key] == nil
+          @imp_res_sum_row[a_key] = a_value
+        else
+          @imp_res_sum_row[a_key] += a_value
+        end
       end
     end
     @imp_res = @@import_results
