@@ -93,11 +93,6 @@ class ReqproimporterController < ApplicationController
     @conflate_users = params[:conflate_users] #used for view
     User.find(:all).each do |usr|
       case @conflate_users
-      when "email"
-        if usr[:mail].casecmp("@") == 1
-          @@redmine_users[:key_for_view].push(usr[:mail])
-          @@redmine_users[:rmusers].push(usr)
-        end
       when "login"
         if usr[:login].length > 2
           @@redmine_users[:key_for_view].push(usr[:login])
@@ -110,6 +105,12 @@ class ReqproimporterController < ApplicationController
           @@redmine_users[:rmusers].push(usr)
         end
         @headers = ["label_prefixed_email", "label_user_name", "label_mapped_user_name", "label_more_info"]
+      else
+        #default for "email" and "none" 
+        if usr[:mail].casecmp("@") == 1
+          @@redmine_users[:key_for_view].push(usr[:mail])
+          @@redmine_users[:rmusers].push(usr)
+        end
       end
     end
     @rmusers_for_view = @@redmine_users[:key_for_view]
