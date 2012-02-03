@@ -7,4 +7,3 @@
 
 # Can also ignore all directories and files in a directory.
 #tmp/**/* 
-/README.rdoc
