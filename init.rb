@@ -5,10 +5,10 @@ Redmine::Plugin.register :redmine_import_reqpro do
   name 'RequisistePro Importer'
   author 'Thomas Kohler'
   description 'Redmine plugin for importing RequisistePro Baselines.'
-  version '0.2'
+  version '0.4'
 
   project_module :reqproimporter do
     permission :reqproimporter, :reqproimporter => :index
   end
-  menu :admin_menu, :reqproimporter, { :controller => 'reqproimporter', :action => 'index' }, :caption => :label_reqproimporter, :after => :projects, :html => { :class => 'icon icon-import-reqpro' }
+  menu :admin_menu, :reqproimporter, { :controller => 'reqproimporter', :action => 'index' }, :caption => :label_reqproimport, :after => :projects, :html => { :class => 'icon icon-import-reqpro' }
 end

@@ -1,5 +1,6 @@
 module ProjectsHelper
   
+  # collect all available projects from the given path
   def collect_projects(data_pathes, deep_check_ext_projects)
     # generate the projects content
     available_projects = collect_available_projects(data_pathes)
@@ -14,6 +15,7 @@ module ProjectsHelper
     return available_projects
   end
   
+  # make an array for the view
   def collected_projects_to_content_array(some_projects)
     some_projects_content = Array.new
     idx = 0
@@ -21,6 +23,7 @@ module ProjectsHelper
       some_projects_content.push([idx,project[:name],project[:description], project[:prefix], project[:date],project[:extprefixes]])
       idx += 1
     end
+    # TODO: sort the array by project name and change the index
     return some_projects_content
   end
   
@@ -38,6 +41,108 @@ module ProjectsHelper
       end
     end
     return some_projects
+  end
+  
+  #find member in actual project using name string in an attribute
+  #1.) looking for name string inside rpusers
+  #2.) looking for rpuser inside redmine users
+  #3.) looking for membership inside the actual project
+  def find_project_rpmember(value, rpuser, project, debug)
+    found_user = find_user_by_string(value, rpuser) 
+    #check for members of project
+    if found_user != nil
+      if Member.find(:all, :conditions => { :user_id => found_user[:id], :project_id => project.id })[0] == nil
+        puts "This user is not member of the project: " + found_user[:login] + "<-->" + project[:identifier] if debug
+        found_user = nil # force user to nil because he is not allowed at this project
+      end
+    end
+    return found_user
+  end
+  
+  def update_project_members_with_roles(rmproject, rpusers, rpproject_author_rpid)
+    if rpusers != nil
+      rpusers.each do |a_rpid, a_rpuser|
+        if a_rpuser[:project] != nil
+          if a_rpuser[:project].downcase == rmproject[:identifier]
+            rmuser = a_rpuser[:rmuser]
+            if rmuser != nil
+              if Member.find(:all, :conditions => { :user_id => rmuser[:id], :project_id => rmproject.id })[0] == nil
+                new_member = Member.new
+                new_member.user = rmuser
+                new_member.project = rmproject 
+                new_member.mail_notification = false
+                if a_rpid == rpproject_author_rpid
+                  new_member.roles.push(Role.find_by_name("Manager")) # use Manager for Project author
+                else
+                  new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
+                end
+                new_member.roles.uniq!
+                if !new_member.save()
+                  debugger
+                  puts "Unable to save project member: " + rmproject[:identifier] + ", login:  " + rmuser[:login]
+                  debugger
+                  return false
+                end
+              else
+                puts "Member already exist: " + rmuser[:login] if @debug
+              end
+            else
+              debugger
+              puts "Requested user not found: " + a_rpuser[:user_id]
+              debugger
+              return false
+            end
+          end
+        else
+          debugger
+          #TODO: bug#11155: Mapping to a user which is not inside rp project but exist already within redmine niO
+          # this bug was not reproducable
+          puts "User without project found: " + a_rpuser[:login]
+          debugger
+        end
+      end
+    end
+    return true
+  end
+  
+  # create project custom field for RPUID
+  def create_project_custom_field_for_rpuid(the_name)
+    new_project_custom_field = ProjectCustomField.find_by_name(the_name)
+    if new_project_custom_field == nil
+      new_project_custom_field = ProjectCustomField.new 
+      new_project_custom_field.name = the_name
+      new_project_custom_field.field_format = "string"
+      new_project_custom_field.default_value = ""
+      new_project_custom_field.min_length = "0"
+      new_project_custom_field.max_length = "0"
+      new_project_custom_field.possible_values = ""
+      new_project_custom_field.searchable = "1"
+      new_project_custom_field.is_required = "0"
+      new_project_custom_field.regexp = ""
+      new_project_custom_field.visible = "1"
+      if !new_project_custom_field.save
+        debugger
+        puts "Unable to create project custom field for RPUID"
+        debugger
+      end
+    else
+      puts "Project custom field for RPUID already exist."
+    end
+    return new_project_custom_field
+  end
+  
+  # each project have to have an "RPUID" custom field
+  # the corresponding redmine project is given back
+  def project_find_by_rpuid(rpuid, debug)
+    custom_value = CustomValue.find_by_value(rpuid)
+    if custom_value == nil
+      return nil
+    end
+    if custom_value.customized_type != "Project"
+      puts "This is not an project-RPUID: " + rpuid + "type is an " + custom_value.customized_type if debug
+      return nil
+    end
+    return Project.find_by_id(custom_value.customized_id)
   end
   
 private

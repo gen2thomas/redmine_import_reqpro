@@ -7,11 +7,11 @@ module AttributesHelper
     return attributes
   end
   
+  # remap attributes to the key :project+_+:attrlabel
+  # if conflation is allowed, project is not used for key (all projects have (nearly) the same attributes)
+  # take same prefixes of several projects together
+  # needing: ":attrlabel", ":project"=>[], ":rtprefix"=>[], ":datatype", ":itemtext"=>[]
   def remap_attributes_to_label(attributes, conflate_attributes)
-    # remap attributes to the key :project+:attrlabel
-    # if conflation is allowed, project is not used for key (all projects have (nearly) the same attributes)
-    # take same prefixes of several projects together
-    # needing: ":attrlabel", ":project"=>[], ":rtprefix"=>[], ":datatype", ":itemtext"=>[]
     remaped_attributes = nil
     if attributes != nil
       remaped_attributes = Hash.new
@@ -19,7 +19,7 @@ module AttributesHelper
         if conflate_attributes
           hash_key = attr_type[:attrlabel]
         else
-          hash_key = attr_type[:project] + "." + attr_type[:attrlabel]
+          hash_key = attr_type[:project].downcase + "_" + attr_type[:attrlabel]
         end
         if remaped_attributes[hash_key] == nil # not existend
           remaped_attributes[hash_key] = Hash.new
@@ -28,8 +28,6 @@ module AttributesHelper
           remaped_attributes[hash_key][:rtprefixes] = Array.new
           remaped_attributes[hash_key][:itemtext] = Array.new
         end
-        #attrlabel (use always the last one)
-        remaped_attributes[hash_key][:attrlabel] = attr_type[:attrlabel]
         #projects  
         remaped_attributes[hash_key][:projects].push(attr_type[:project])
         remaped_attributes[hash_key][:projects].uniq!
@@ -63,20 +61,159 @@ module AttributesHelper
     return remaped_attributes
   end
   
-  def update_attributes_for_map_needing(attributes,attributes_mapping)
-    #call after manual mapping in view
-    # delete not mapped (means not used) requirements
-    # add :mapping target if needed      
-    attributes.each do |key,attri|      
-      if  attributes_mapping[attri[:attrlabel]] == nil
-        attributes.delete(key) # entry not used
-      else
+  #call after manual mapping in view
+  # delete not mapped (means not used) requirements
+  # add :mapping target if needed
+  def update_attributes_for_map_needing(attributes, attributes_mapping)
+    attributes.each do |key,attri|
+      if  attributes_mapping[attri[:attrlabel]] != nil
         attri[:mapping] = attributes_mapping[attri[:attrlabel]][:attr_name]
+      else
+        # in case of not conflated attributes
+        if  attributes_mapping[attri[:project].downcase + "_" + attri[:attrlabel]] != nil
+          attri[:mapping] = attributes_mapping[attri[:project].downcase + "_" + attri[:attrlabel]][:attr_name]
+        end  
+      end
+      # delete unused entry
+      if attri[:mapping] == nil
+        attributes.delete(key) # entry not used
       end
     end
     return attributes
   end
   
+  # force value into custom field values (test after save issue)
+  def update_custom_value_in_issue(a_issue, a_custom_field, the_value, debug)
+    a_issue.custom_field_values={a_custom_field.id => the_value.to_s}
+    if !a_issue.save
+      puts "Error while save the issue within custom value update"
+      debugger
+    else
+      if a_issue.custom_values.find_by_custom_field_id(a_custom_field.id) == nil
+        puts "No custom value field is available for custom value, try to add an value field" if debug
+        # add value as custom field
+        new_custom_value = CustomValue.new
+        new_custom_value.custom_field_id = a_custom_field.id
+        new_custom_value.value = the_value.to_s
+        new_custom_value.customized_id = a_issue.id
+        new_custom_value.customized_type = "Issue"
+        if !new_custom_value.save
+         puts "Error while save the issue within custom value update. After push custom value"
+         debugger
+        else
+          if a_issue.custom_values.find_by_custom_field_id(a_custom_field.id) == nil
+            puts "After add an value field the value is not available!"
+            debugger
+          end
+        end
+      end
+    end
+    return a_issue
+  end 
+  
+  # update issue custom field with project and tracker
+  def update_issue_custom_field(issue_custom_field, new_tracker, new_project, debug)
+    if !issue_custom_field
+      puts "Issue custom field not exist at update with project and tracker."
+      debugger
+    else
+      if new_tracker != nil
+        if !issue_custom_field.trackers.include?(new_tracker)
+          issue_custom_field.trackers.push(new_tracker)
+          if !issue_custom_field.save
+            debugger
+            puts "Unable to update issue custom field with new tracker."
+            debugger
+          end
+        end
+      end
+      if new_project != nil
+        if !issue_custom_field.projects.include?(new_project)
+          issue_custom_field.projects.push(new_project)
+          if !issue_custom_field.save
+            debugger
+            puts "Unable to update issue custom field with new project."
+            debugger
+          end
+        end
+      end
+    end
+    return issue_custom_field
+  end
+  
+  # create custom field for RPUID
+  def create_issue_custom_field_for_rpuid(the_name, debug)
+    new_issue_custom_field = IssueCustomField.find_by_name(the_name)
+    if new_issue_custom_field == nil
+      new_issue_custom_field = IssueCustomField.new 
+      new_issue_custom_field.name = the_name
+      new_issue_custom_field.field_format = "string"
+      new_issue_custom_field.default_value = ""
+      new_issue_custom_field.min_length = "0"
+      new_issue_custom_field.max_length = "0"
+      new_issue_custom_field.possible_values = ""
+      new_issue_custom_field.trackers = Array.new
+      new_issue_custom_field.searchable = "1"
+      new_issue_custom_field.is_required = "0"
+      new_issue_custom_field.regexp = ""
+      new_issue_custom_field.is_for_all = "0"
+      new_issue_custom_field.is_filter = "1"
+      if !new_issue_custom_field.save
+        debugger
+        puts "Unable to create issue custom field for RPUID"
+        debugger
+      end
+    else
+      puts "Issue custom field for RPUID already exist." if debug
+    end
+    return new_issue_custom_field
+  end
+  
+  def update_attribute_or_custom_field_with_value(a_issue, mapping, customfield_id, value, rpusers, debug)
+    # check for customfield id to update
+    # if not a custom field, update the existend attribute
+    # if the existend attribute deal with a user --> check the project members for this user
+    if customfield_id != ""
+      if value.to_s != ""
+        a_issue_custom_field = IssueCustomField.find_by_id(customfield_id)
+        #update project using this custom field
+        a_issue_custom_field = update_issue_custom_field(a_issue_custom_field, a_issue.tracker, a_issue.project, debug)
+        # set value
+        a_issue = update_custom_value_in_issue(a_issue, a_issue_custom_field, value, debug)
+      else
+        puts "Value for custom field was empty!" if debug
+      end
+    else
+      case mapping
+      when l_or_humanize(:assigned_to, :prefix=>"field_")
+        a_issue.assigned_to = find_project_rpmember(value, rpusers, a_issue.project, debug)
+      when l_or_humanize(:author, :prefix=>"field_")
+        # author can't be empty
+        a_issue.author = find_project_rpmember(value, rpusers, a_issue.project, debug) || User.current
+      when l_or_humanize(:watchers, :prefix=>"field_")
+        a_issue.watchers = find_project_rpmember(value, rpusers, a_issue.project, debug)
+      when l_or_humanize(:category, :prefix=>"field_")
+        a_issue.category = IssueCategory.find_by_name(value) || a_issue.category
+      when l_or_humanize(:priority, :prefix=>"field_")
+        a_issue.priority = IssuePriority.find_by_name(value)||IssuePriority.default
+      when l_or_humanize(:status, :prefix=>"field_")
+        # status can't be empty
+        a_issue.status = IssueStatus.find_by_name(value)||IssueStatus.default
+      when l_or_humanize(:start_date, :prefix=>"field_")
+        a_issue.start_date = Time.at(value.to_i).strftime("%F")
+      when l_or_humanize(:due_date, :prefix=>"field_")
+        a_issue.due_date = Time.at(value.to_i).strftime("%F")
+      when l_or_humanize(:done_ratio, :prefix=>"field_")
+        value = 0 if value.to_i < 0
+        a_issue.done_ratio = [value.to_i, 100].min
+      when l_or_humanize(:estimated_hours, :prefix=>"field_")
+        a_issue.estimated_hours = value
+      else
+        #
+      end
+    end
+    return a_issue
+  end
   
 private
 
@@ -99,7 +236,6 @@ private
             attributes[hash_key][:itemtext] = attri.attributes["DefaultValue"]
             attributes[hash_key][:itemlist] = Array.new
             attributes[hash_key][:itemlist_used] = Array.new
-            #TODO: evtl. entfernen attributes[hash_key][:itemlist] = Hash.new
             attributes[hash_key][:attrlabel] = attri.attributes["Label"]
             attributes[hash_key][:datatype] = attri.attributes["DataTypeName"]
             attributes[hash_key][:project] = a_project[:prefix]
@@ -115,7 +251,6 @@ private
                     attributes[hash_key][:default] = item.attributes["ItemText"]
                   end
                   attributes[hash_key][:itemlist].push(item.attributes["ItemText"])
-                  #TODO: evtl. entfernen attributes[hash_key][:itemlist][item.attributes["ID"]] = item.attributes["ItemText"]
                 end  
               end
             end
@@ -151,7 +286,6 @@ private
                 hash_key = fv.elements["FGUID"].text
                 if attributes[hash_key] != nil
                   attributes[hash_key][:status] = "+"
-                  #TODO: evtl. entfernen attributes[hash_key][:rtid] = req.elements["RTID"].text
                 end
               end
             end
@@ -163,7 +297,6 @@ private
                 hash_key = lv.elements["UDF"].text # this is the attribute ID
                 if attributes[hash_key] != nil
                   attributes[hash_key][:status] = "+"
-                  #TODO: evtl. entfernen attributes[hash_key][:rtid] = req.elements["RTID"].text
                   attributes[hash_key][:itemlist_used].push(lv.elements["LITxt"].text)
                 end
               end
