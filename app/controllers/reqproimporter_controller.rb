@@ -128,12 +128,14 @@ class ReqproimporterController < ApplicationController
     @@requirement_types = collect_requirement_types(@@some_projects, deep_check_req_types)
     # generate the header for view
     @headers = Array.new
-    @headers = ["label_prefixed_reqtype", "label_mapped_reqtype"]
+    @headers = ["label_prefixed_reqtype", "label_mapped_reqtype", "label_reqname"]
     # remap used req types to "Project.Prefix" and take same prefixes of several projects together if conflating
     # :rt_prefix => {:name => "name", :project=>["p_prefix1","p_prefix2"]}
     @req_types_for_view = remap_req_types_to_project_prefix(@@requirement_types, conflate_req_types)
-    # copy to instance variable because view can't handle class variable
-    #@req_types_for_view = @@remapped_requirement_types
+    if @req_types_for_view != nil
+      #for displaying in alphabethical order
+      @req_types_keys_sorted = @req_types_for_view.keys.sort
+    end
     # entries in list fields 
     @trackers = Array.new
     Tracker.find(:all).each do |tr|
@@ -192,6 +194,7 @@ class ReqproimporterController < ApplicationController
     @original_filename = @@original_filename # need for view
     attributes_mapping = set_attributes_mapping(params[:fields_map_attribute])
     update_allowed = params[:issue_update_allowed]
+    import_parent_relation = params[:import_parent_relation_allowed]
     import_internal_relations = params[:import_internal_relation_allowed]
     import_external_relations = params[:import_external_relation_allowed]
     #delete unused attributes
@@ -208,21 +211,19 @@ class ReqproimporterController < ApplicationController
     # new attributes for requirements (Key is the ID): #@@attributes
     #new attributes for requirements - remapped to key = :project+:attrlabel+:status (or without :project):
     @@known_attributes = create_all_customfields(attributes_mapping, @@attributes, @@known_attributes, @@tracker_mapping)
-    # new projects:
-    create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers)
+    # new projects: @@some_projects[:rpid][:rmid] => Project id inside redmine
+    @@some_projects = create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers)
     # now import all issues from each ReqPro project 
-    return_hash_from_issues = create_all_issues(@@some_projects, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed)
+    return_hash_from_issues = create_all_issues(@@some_projects, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed, @debug)
     # update parents
-    puts "Wait for update parents" if @debug
-    update_issue_parents(return_hash_from_issues[:rp_req_unique_names])
-    #update internal traces
-    if import_internal_relations == true
-      puts "Wait for update internal traces" if @debug
-      @@import_results = update_internal_traces(return_hash_from_issues[:rpid_issue_rmid], return_hash_from_issues[:rp_internal_relation_list], @@import_results, @debug)
+    if import_parent_relation
+      puts "Wait for update parents" if @debug
+      update_issue_parents(return_hash_from_issues[:rp_req_unique_names])
     end
-    #TODO update external traces
-    if import_external_relations == true
-      puts "Wait for update external traces" if @debug
+    #update internal and external traces
+    if (import_internal_relations or import_external_relations)
+      puts "Wait for update traces" if @debug
+      @@import_results = update_traces(return_hash_from_issues[:rp_relation_list], import_internal_relations, import_external_relations, @@import_results, @debug)
     end
     # make the content for table
     @imp_res_sum_column = Hash.new
@@ -637,7 +638,17 @@ private
         new_user[:mail] = rp_user[:email]
         new_user[:login] = rp_user[:login]
         new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
-        new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login] 
+        new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login]
+        # add rpid as "RPUID"
+        if rp_key.to_s != "" and rp_key.to_s != nil
+          user_custom_field_for_rpuid = create_user_custom_field_for_rpuid("RPUID", @debug)
+          # set value 
+          # "new_user.custom_values" could never be nil, always an empty array "[]"
+          new_user.custom_field_values={user_custom_field_for_rpuid.id => rp_key.to_s}
+        else
+          puts "User RPUID is empty!"
+          debugger
+        end 
         if new_user.save    
           @@import_results[:imported][:users] += 1
           rp_user[:rmuser] = new_user # update mapping
@@ -658,10 +669,11 @@ private
     tracker_mapping.each do |rt_prefix,tr_value|
       # check for using 
       # check for tracker is existend
-      tracker = Tracker.find(:all, :conditions => ["name=?", tr_value[:tr_name]])[0]
+      #tracker = Tracker.find(:all, :conditions => ["name=?", tr_value[:tr_name]])[0]
+      tracker = Tracker.find_by_name(tr_value[:tr_name])
       if tracker == nil
         tracker = Tracker.create(:name=>tr_value[:tr_name], :is_in_roadmap=>"1")
-        if tracker != nil    
+        if tracker != nil
           @@import_results[:imported][:trackers] += 1
         else
           @@import_results[:failed][:trackers] += 1
@@ -675,7 +687,6 @@ private
           #copy workflow from first tracker:
           Workflow.copy(Tracker.find(:first), role, tracker, role)
         end
-        tracker_mapping[rt_prefix][:trid] = tracker[:id]
       else
         puts "Tracker already exist: " + tr_value[:tr_name]  + "->" + rt_prefix if @debug
       end
@@ -704,11 +715,12 @@ private
           new_issue_custom_field.searchable = "0"
           new_issue_custom_field.is_required = "0"
           new_issue_custom_field.regexp = "" 
-          new_issue_custom_field.is_for_all = "1"
+          new_issue_custom_field.is_for_all = "0"
           new_issue_custom_field.is_filter = "1"
           #collect some trackers which need this custom field
           if attri[:rtprefixes] != nil
             attri[:rtprefixes].each do |prefix|
+              next if tracker_mapping[prefix] == nil # used tracker is not mapped
               tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
               new_issue_custom_field.trackers.push(tracker)
             end
@@ -773,6 +785,7 @@ private
             if attri[:rtprefixes] != nil
               isc_changed = true
               attri[:rtprefixes].each do |prefix|
+                next if tracker_mapping[prefix] == nil # required tracker not mapped
                 tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
                 issue_custom_field.trackers.push(tracker)
                 issue_custom_field.trackers.uniq!
@@ -799,6 +812,7 @@ private
   end
   
   def create_all_projects(some_projects, tracker_mapping, rpusers)
+    rpid_project_rmid = Hash.new # reqpro project ids --> redmine project ids
     # prepare some content of all new projects:
     # 1. trackers
     trackers = Array.new
@@ -824,10 +838,18 @@ private
         new_project.issue_custom_field_ids= [""]
         #, :homepage=>"", :parent_id=>"", 
         new_project.is_public = "0"
+        # add rpid as "RPUID"
+        if key.to_s != "" and key.to_s != nil
+          project_custom_field_for_rpuid = create_project_custom_field_for_rpuid("RPUID")
+          # set value 
+          # "new_project.custom_values" could never be nil, always an empty array "[]"
+          new_project.custom_field_values={project_custom_field_for_rpuid.id => key.to_s}            
+        else
+          puts "Project RPUID is empty!"
+          debugger
+        end
         if (new_project.save) 
           @@import_results[:imported][:projects] += 1
-          # 3. users
-          update_project_members_with_roles(new_project, rpusers, a_project[:author_rpid])         
         else
           @@import_results[:failed][:projects] += 1
           debugger
@@ -843,7 +865,6 @@ private
         new_project.trackers = trackers
         if (new_project.save) 
           @@import_results[:updated][:projects] += 1
-          update_project_members_with_roles(new_project, rpusers, a_project[:author_rpid])  
         else
           @@import_results[:failed][:projects] += 1
           debugger
@@ -851,122 +872,19 @@ private
           debugger
         end
       end
+      a_project[:rmid] = new_project[:id]
+      update_project_members_with_roles(new_project, rpusers, a_project[:author_rpid])
     end
-  end
-  
-  def update_project_members_with_roles(rmproject, rpusers, rpproject_author_rpid)
-    if rpusers != nil
-      rpusers.each do |a_rpid, a_rpuser|
-        if a_rpuser[:project] != nil
-          if a_rpuser[:project].downcase == rmproject[:identifier]
-            rmuser = a_rpuser[:rmuser]
-            if rmuser != nil
-              if Member.find(:all, :conditions => { :user_id => rmuser[:id], :project_id => rmproject.id })[0] == nil
-                new_member = Member.new
-                new_member.user = rmuser
-                new_member.project = rmproject 
-                new_member.mail_notification = false
-                if a_rpid == rpproject_author_rpid
-                  new_member.roles.push(Role.find_by_name("Manager")) # use Manager for Project author
-                else
-                  new_member.roles.push(Role.find_by_name("Reporter")) # use reporter as default
-                end
-                new_member.roles.uniq!
-                if !new_member.save()
-                  debugger
-                  puts "Unable to save project member: " + rmproject[:identifier] + ", login:  " + rmuser[:login]
-                  debugger
-                  return false
-                end
-              else
-                puts "Member already exist: " + rmuser[:login] if @debug
-              end
-            else
-              debugger
-              puts "Requested user not found: " + a_rpuser[:user_id]
-              debugger
-              return false
-            end
-          end
-        else
-          debugger
-          #TODO: bug#11155: Mapping to a user which is not inside rp project but exist already within redmine niO
-          # this bug was not reproducable
-          puts "User without project found: " + a_rpuser[:login]
-          debugger
-        end
-      end
-    end
-    return true
-  end
-  
-  #find member in actual project using name string in an attribute
-  #1.) looking for name string inside rpusers
-  #2.) looking for rpuser inside redmine users
-  #3.) looking for membership inside the actual project
-  def find_project_rpmember(value, rpusers, project)
-    found_user = find_user_by_string(value, rpusers) 
-    #check for members of project
-    if found_user != nil
-      if Member.find(:all, :conditions => { :user_id => found_user[:id], :project_id => project.id })[0] == nil
-        puts "This user is not member of the project: " + found_user[:login] + "<-->" + project[:identifier] if @debug
-        found_user = nil # force user to nil because he is not allowed at this project
-      end
-    end
-    return found_user
-  end
-  
-  def update_attribute_or_custom_field_with_value(new_issue, mapping, customfield_id, value, rpusers, project)
-    # check for customfield id to update
-    # if not a custom field, update the existend attribute
-    # if the existend attribute deal with a user --> check the project members for this user
-    if customfield_id != ""
-      #"custom_field_values"=>{"1"=>"ein text", "2"=>"15"}
-      if new_issue.custom_field_values == nil
-        new_issue.custom_field_values = Hash.new
-      end
-      if value.to_s != ""
-        new_issue.custom_field_values = {customfield_id.to_s => value.to_s}
-      end
-    else
-      case mapping
-      when l_or_humanize(:assigned_to, :prefix=>"field_")
-        new_issue.assigned_to = find_project_rpmember(value, rpusers, project)
-      when l_or_humanize(:author, :prefix=>"field_")
-        new_issue.author = find_project_rpmember(value, rpusers, project)
-      when l_or_humanize(:watchers, :prefix=>"field_")
-        new_issue.watchers = find_project_rpmember(value, rpusers, project)
-      when l_or_humanize(:category, :prefix=>"field_")
-        new_issue.category = IssueCategory.find_by_name(value) || new_issue.category
-      when l_or_humanize(:priority, :prefix=>"field_")
-        new_issue.priority = IssuePriority.find_by_name(value)||IssuePriority.default
-      when l_or_humanize(:status, :prefix=>"field_")
-        new_issue.status = IssueStatus.find_by_name(value)||IssueStatus.default
-      when l_or_humanize(:start_date, :prefix=>"field_")
-        new_issue.start_date = Time.at(value.to_i).strftime("%F")
-      when l_or_humanize(:due_date, :prefix=>"field_")
-        new_issue.due_date = Time.at(value.to_i).strftime("%F")
-      when l_or_humanize(:done_ratio, :prefix=>"field_")
-        value = 0 if value.to_i < 0
-        new_issue.done_ratio = [value.to_i, 100].min
-      when l_or_humanize(:estimated_hours, :prefix=>"field_")
-        new_issue.estimated_hours = value
-      else
-        #
-      end
-    end
-    return new_issue
+    return some_projects    
   end
   
   # create all issues by importing requirements from each project
-  # generate "rpid_issue_rmid" list for further using (Reqpro-id to redmine issue id)
   # generate "rp_req_unique_names" list for further using (parent-child-import)
   # generate "rp_internal_relation_list" list for further using (internal relations to import)
-  def create_all_issues(some_projects, requirement_types, attributes, known_attributes, rpusers, update_allowed)
-    rpid_issue_rmid = Hash.new # reqpro reqirement ids --> redmine issue ids
+  def create_all_issues(some_projects, requirement_types, attributes, known_attributes, rpusers, update_allowed, debug)
     rp_req_unique_names = Hash.new
-    rp_internal_relation_list = Hash.new
-    some_projects.each_value do |a_project|
+    rp_relation_list = Hash.new
+    some_projects.each do |rp_project_id, a_project|
       #find project
       project = Project.find_by_identifier(a_project[:prefix])
       if(!project) 
@@ -986,11 +904,11 @@ private
         xmldoc.elements.each("PROJECT/Pkg/Requirements/Req") do |req|
           test_issue = Issue.new
           test_issue.project = project
-          test_issue.subject = ic.iconv(req.elements["RName"].text)
+          test_issue.subject = ic.iconv(req.elements["RName"].text)[0 .. 255] # limit to 200 char, not 255 because utf8
           # looking for ReqTyp ==> Tracker
           req_type = req.elements["RTID"].text
           if !(requirement_types.include?(req_type))
-            puts "Issue will not be imported - needed Requirement Type was not imported: " + test_issue.project[:identifier] + ":" + req_type + ":" + test_issue.subject if @debug
+            puts "Issue will not be imported - needed Requirement Type was not imported: " + req_type + ":" + test_issue.subject if @debug
             next #take next requirement
           end
           test_issue.tracker = Tracker.find_by_name(requirement_types[req_type][:mapping])
@@ -1010,7 +928,8 @@ private
           # update issue or new issue
           if new_issue == nil
             new_issue = test_issue
-            import_new_issue = true    
+            new_issue.save # for trackers --> used for custom fields
+            import_new_issue = true
           end
           rpid = req.elements["GUID"].text # this id
           #further issue parameters
@@ -1020,7 +939,7 @@ private
           new_issue.status = IssueStatus.default
           new_issue.priority = IssuePriority.default
           new_issue.category = IssueCategory.find(:all)[0]
-          new_issue.author = User.current
+          new_issue.author = User.current # default, can be overriden by "update_attribute_or_custom_field_with_value"
           new_issue.done_ratio = 0
           if attributes != nil
             # import attributes:
@@ -1032,7 +951,7 @@ private
                   if attributes[hash_key] != nil
                     # import this attribute value
                     new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                  known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
+                                  known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, debug)
                   end
                 end
               end
@@ -1046,7 +965,7 @@ private
                     # import this attribute value
                     puts "attribute with list element to update" if @debug
                     new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
-                                  known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, project)
+                                  known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, debug)
                   end
                 end
               end
@@ -1059,19 +978,77 @@ private
               new_issue.start_date = new_issue.due_date
             end
           end
-          # generate a relations-list for internal traces
+          # generate a relations-list for internal and external traces
           # "rpid" comes from "req.elements["GUID"].text" some lines above
+          #{SPRJ1_ID => {TPRJ1_ID => {SREQ1_ID => [TREQ1_ID, TREQ2_ID]},
+          #              TPRJ2_ID => {SREQ2_ID => [TREQ1_ID, TREQ4_ID]}}}
           # we use only TTo because:
           # TFrom is the same information like TTo f.e.:
           # (STRQ1 "TTo" NEED1) is the same like (NEED1 "TFrom" STRQ1)  
           if (req.elements["TTo"] != nil)
-            rp_internal_relation_list[rpid] = Array.new
+            rp_source_pid = rp_project_id
+            rp_source_iid = rpid # issue id
             req.elements["TTo"].each do |treq|
               if treq != nil #not empty
-                rp_internal_relation_list[rpid].push(treq.elements["TRID"].text) # to id
+                rp_target_iid = treq.elements["TRID"].text
+                if (treq.elements["EPGUID"] != nil)
+                  #this is an external relation
+                  rp_target_pid = treq.elements["EPGUID"].text
+                else
+                  #this is an internal relation
+                  rp_target_pid = rp_source_pid
+                end
+                # make new structure (if not exist)
+                rp_relation_list[rp_source_pid] = Hash.new if rp_relation_list[rp_source_pid] == nil
+                rp_relation_list[rp_source_pid][rp_target_pid] = Hash.new if rp_relation_list[rp_source_pid][rp_target_pid] == nil                
+                rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid] = Array.new if rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid] == nil
+                # fill content
+                rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid].push(rp_target_iid) # to id
+                rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid].uniq!
               end
             end
-            rp_internal_relation_list[rpid].uniq!
+          end
+          # TFrom elements
+          if (req.elements["TFrom"] != nil)
+            rp_target_pid = rp_project_id
+            rp_target_iid = rpid # issue id
+            req.elements["TFrom"].each do |treq|
+              if treq != nil #not empty
+                rp_source_iid = treq.elements["TRID"].text
+                if (treq.elements["EPGUID"] != nil)
+                  #this is an external relation
+                  rp_source_pid = treq.elements["EPGUID"].text
+                else
+                  #this is an internal relation
+                  rp_source_pid = rp_target_pid
+                end
+                # make new structure (if not exist)
+                rp_relation_list[rp_source_pid] = Hash.new if rp_relation_list[rp_source_pid] == nil
+                rp_relation_list[rp_source_pid][rp_target_pid] = Hash.new if rp_relation_list[rp_source_pid][rp_target_pid] == nil                
+                rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid] = Array.new if rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid] == nil
+                # fill content
+                rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid].push(rp_target_iid) # to id
+                rp_relation_list[rp_source_pid][rp_target_pid][rp_source_iid].uniq!
+              end
+            end
+          end
+          # add rpid as "RPUID"
+          if rpid.to_s != "" and rpid.to_s != nil
+            issue_custom_field_for_rpuid = create_issue_custom_field_for_rpuid("RPUID", debug)
+            issue_custom_field_for_rpuid = update_issue_custom_field(issue_custom_field_for_rpuid, new_issue.tracker, new_issue.project, debug)
+            if issue_custom_field_for_rpuid.projects.length != issue_custom_field_for_rpuid.projects.uniq.length
+              debugger
+              puts "issue_custom_field has now multiple entries of at least one project"
+            end
+            if project.issue_custom_fields.length != project.issue_custom_fields.uniq.length
+              debugger
+              puts "project has now multiple entries of at least one issue_custom_field"
+            end
+            # set value
+            new_issue = update_custom_value_in_issue(new_issue, issue_custom_field_for_rpuid, rpid, @debug)
+          else
+            puts "RPUID for issue is empty!"
+            debugger
           end
           # try to save
           #TODO: new_issue.save force "assigned_to" to a user (only while first save), how and why?
@@ -1107,14 +1084,12 @@ private
           else
             @@import_results[:updated][:issues] += 1
           end
-          rpid_issue_rmid[rpid] = new_issue[:id]
         end
       end
     end
     return_hash_from_issues = Hash.new
-    return_hash_from_issues[:rpid_issue_rmid] = rpid_issue_rmid
     return_hash_from_issues[:rp_req_unique_names] = rp_req_unique_names
-    return_hash_from_issues[:rp_internal_relation_list] = rp_internal_relation_list
+    return_hash_from_issues[:rp_relation_list] = rp_relation_list
     return return_hash_from_issues
   end
 

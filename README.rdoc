@@ -1,4 +1,4 @@
-= Redmine importer for RequisitePro Baselines V0.0.3 (tested with redmine 1.1.2)
+= Redmine importer for RequisitePro Baselines V0.4 (tested with redmine 1.3.0)
 Influenced from (and started with) "https://github.com/leovitch/redmine_importer". Thanks for the basics!
 
 To install:
@@ -12,12 +12,10 @@ To install:
 en, de localizations included.
 
 ToDos (rp = ReqPro, rm = redmine):
-- upgrade to redmine 1.3.0 --> planned for V0.0.4
-- traces between external requirements not supported (related issues) --> planned for V0.0.4
-- add versions if needed --> planned for V0.0.4
-- what to do with multiple mapping? (f.e. more than one user is mapped to one redmine user, more than one tracker is mapped to one redmine tracker) --> planned for V0.0.4
-- switch to a specific imported project from the last site --> planned for V0.0.5
-- switch to a specific imported user from the last site --> planned for V0.0.5 
-- switch to a specific imported tracker from the last site --> planned for V0.0.5
-- switch to a specific imported custom field (dropdown?) from the last site --> planned for V0.0.5
-- Dynamic progress indicator while importing issues (not sure about possibility) --> planned for V0.0.4
+- add versions if needed --> planned for V0.5
+- what to do with multiple mapping? (f.e. more than one user is mapped to one redmine user, more than one tracker is mapped to one redmine tracker) --> planned for V0.5
+- switch to a specific imported project from the last site --> planned for V0.5
+- switch to a specific imported user from the last site --> planned for V0.5 
+- switch to a specific imported tracker from the last site --> planned for V0.5
+- switch to a specific imported custom field (dropdown?) from the last site --> planned for V0.5
+- Dynamic progress indicator while importing issues (not sure about possibility) --> planned for V0.6

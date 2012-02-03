@@ -15,19 +15,18 @@ table.tab_center{
 	display: inline-block;
 }
 
-table.trackerlist{
-	width: 550px;
-}
-
 td.dropdown_column_user{
 	width: 350px;
 }
 
 td.first_column_tracker{
-	width: 350px;
+	width: 250px;
 }
 td.dropdown_column_tracker{
-	width: 200px;
+	width: 250px;
+}
+td.third_column_tracker{
+	width: 300px;
 }
 
 td.first_column_attribute{

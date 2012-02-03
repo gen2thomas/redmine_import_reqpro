@@ -17,16 +17,18 @@
 		    	<th><%= l(:label_tracker_placeholder) %></th>
 			</tr></thead>
 			<tbody>
-				<% @req_types_for_view.each_pair do |col_key,column| %>
-					<%  matched = ''	
+			<% @req_types_keys_sorted.each do |col_key| %>
+				<%column = @req_types_for_view[col_key]%>
+					<%  matched = ''
 						@trackers.each do |k|	if k.to_s.casecmp(col_key.to_s) == 0 then matched = k end	end 
 					%>
 					<tr class="<%= cycle("odd", "even") %>">
-						<td class="first_column_tracker"><%= column[:name] %>, <%= column[:projects].to_a.join("/") %>.<%= col_key %>:</td>
+						<td class="first_column_tracker"><%= column[:projects].to_a.join("/") %>.<%= col_key %></td>
 						<td class="dropdown_column_tracker"><%= select_tag "fields_map_tracker[#{col_key}]",
 						  "<option value=\"\">#{l(:option_ignore)}</option>" + "<option value=#{col_key}>+#{col_key}</option>" +
 						  options_for_select( @trackers, matched ), :style => 'width: 190px;' %></td>
-						 <td> <%= l(:label_tracker_placeholder) %> </td> 
+						<td class="third_column_tracker"><%= column[:name] %></td>
+						<td> <%= l(:label_tracker_placeholder) %> </td>
 					</tr>
 				<% end %>
 			</tbody>

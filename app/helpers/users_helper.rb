@@ -5,8 +5,8 @@ module UsersHelper
     return users
   end
   
+  # remap prefixes to key: ":conf_key"
   def remap_users_to_conflationkey(users)
-    # remap prefixes to key: ":conf_key"
     remaped_users = nil
     if users != nil
       remaped_users = Hash.new
@@ -40,10 +40,10 @@ module UsersHelper
     return remaped_users
   end
     
-  def update_rpusers_for_map_needing(rpusers, rmusers, user_mapping, debug)
-    #call after manual mapping in view
-    # delete not mapped (means not used) users
-    # add mapping target (:rmuser) if needed
+  #call after manual mapping in view
+  # delete not mapped (means not used) users
+  # add mapping target (:rmuser) if needed
+  def update_rpusers_for_map_needing(rpusers, rmusers, user_mapping, debug)  
     if rpusers != nil
       rpusers.each do |rpuser_id, rpuser_value|
         rmuser_key = user_mapping[rpuser_value[:conf_key]]
@@ -65,8 +65,11 @@ module UsersHelper
     return rpusers
   end  
   
+  # try to extract firstname and lastname from given 
+  # one string "fullname" 
+  # email an login can help to extraxt
   def get_fullname(fullname_old, email, login)
-    # firstname and lastname are in the same string
+    
     fullname = Hash.new
     fullname[:firstname] = nil
     fullname[:lastname] = nil
@@ -170,6 +173,47 @@ module UsersHelper
       end
     end
     return found_user
+  end
+  
+  # create project custom field for RPUID
+  # give back an succesfull saved UserCustomField
+  def create_user_custom_field_for_rpuid(the_name, debug)
+    new_user_custom_field = UserCustomField.find_by_name(the_name)
+    if new_user_custom_field == nil
+      new_user_custom_field = UserCustomField.new
+      new_user_custom_field.name = the_name
+      new_user_custom_field.field_format = "string"
+      new_user_custom_field.default_value = ""
+      new_user_custom_field.min_length = "0"
+      new_user_custom_field.max_length = "0"
+      new_user_custom_field.possible_values = ""
+      new_user_custom_field.is_required = "0"
+      new_user_custom_field.regexp = ""
+      new_user_custom_field.visible = "1"
+      new_user_custom_field.editable = "0"
+      if !new_user_custom_field.save
+        debugger
+        puts "Unable to create user custom field for RPUID"
+        debugger
+      end
+    else
+      puts "User custom field for RPUID already exist." if debug
+    end
+    return new_user_custom_field
+  end
+   
+  # each user have to have an "RPUID" custom field
+  # the corresponding redmine user is given back
+  def user_find_by_rpuid(rpuid, debug)
+    custom_value = CustomValue.find_by_value(rpuid)
+    if custom_value == nil
+      return nil
+    end
+    if custom_value.customized_type != "User"
+      puts "This is not an user-RPUID: " + rpuid + "type is an " + custom_value.customized_type if debug
+      return nil
+    end
+    return User.find_by_id(custom_value.customized_id)
   end
   
 private

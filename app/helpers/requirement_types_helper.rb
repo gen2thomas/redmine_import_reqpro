@@ -8,7 +8,7 @@ module RequirementTypesHelper
     return requirement_types
   end
   
-  # remap prefixes to key: .project+:prefix
+  # remap prefixes to key: .project+_+:prefix
   # fill in only needed or not tested req types (status = "+" or "?")
   # * conflate_req_types == true --> project is not used for key (all projects have (nearly) the same req_types)
   def remap_req_types_to_project_prefix(requirement_types, conflate_req_types)
@@ -17,7 +17,7 @@ module RequirementTypesHelper
       if conflate_req_types
         hash_key = req_type[:prefix]
       else
-        hash_key = req_type[:project] + "." + req_type[:prefix]
+        hash_key = req_type[:project].downcase + "_" + req_type[:prefix]
       end 
       if remaped_req_types[hash_key] == nil # not existand
         remaped_req_types[hash_key] = Hash.new
@@ -36,10 +36,16 @@ module RequirementTypesHelper
   # add :mapping target if needed      
   def update_requ_types_for_map_needing(requirement_types, tracker_mapping)
     requirement_types.each do |key,rq|
-      if  tracker_mapping[rq[:prefix]] == nil
-        requirement_types.delete(key) # entry not used 
-      else
+      if  tracker_mapping[rq[:prefix]] != nil
         rq[:mapping] = tracker_mapping[rq[:prefix]][:tr_name]
+      else
+        # in case of not conflated requirement types
+        if  tracker_mapping[rq[:project].downcase + "_" + rq[:prefix]] != nil
+          rq[:mapping] = tracker_mapping[rq[:project].downcase + "_" + rq[:prefix]][:tr_name]
+        end
+      end
+      if rq[:mapping] == nil  
+        requirement_types.delete(key) # entry not used
       end
     end
     return requirement_types
@@ -56,8 +62,7 @@ module RequirementTypesHelper
     end
     return attr_list
   end
-    
-    
+  
 private
 
   #get an data path to open an ProjectStructure file

@@ -24,11 +24,11 @@
 					<% @attributes_keys_sorted.each do |col_key| %>
 						<%column= @attributes_for_view[col_key]%>
 				    	<%matched = ''
-				          @attrs.each do |k| if k.to_s.casecmp(column[:attrlabel].to_s) == 0 then matched = k end end
+				          @attrs.each do |k| if k.to_s.casecmp(col_key.to_s) == 0 then matched = k end end
 				        %>
 				        <tr class="<%= cycle("odd", "even") %>">
-						 	<td class="first_column_attribute"><%= column[:projects].to_a.join("/") %>.<%= column[:rtprefixes].to_a.join("/") %>.<%= column[:attrlabel] %>:</td>
-						 	<td class="dropdown_column_attribute"><%= select_tag "fields_map_attribute[#{col_key}]", "<option value=\"\">#{l(:option_ignore)}</option>" + "<option value='#{column[:attrlabel]}'>+#{column[:attrlabel]}</option>" +
+						 	<td class="first_column_attribute"><%= column[:projects].to_a.join("/") %>.<%= column[:rtprefixes].to_a.join("/") %>.<%= col_key %>:</td>
+						 	<td class="dropdown_column_attribute"><%= select_tag "fields_map_attribute[#{col_key}]", "<option value=\"\">#{l(:option_ignore)}</option>" + "<option value='#{col_key}'>+#{col_key}</option>" +
 								options_for_select(@attrs, matched), :style => 'width: 200px;' %></td>
 							<td>@<%= column[:datatypes] %>: <%= column[:itemtext].to_a.join(", ")%></td> 
 						</tr>
@@ -41,8 +41,9 @@
 		<br/>
 		<h3><%= l(:label_issuerelations_import_settings_headline) %></h3>
 		<fieldset class="box"><legend><%= l(:label_issuerelations_import_settings) %></legend>
+			<label><%= check_box_tag "import_parent_relation_allowed", true, true %> <%= l(:label_import_parent_relation_allowed) %> </label><br/>
 			<label><%= check_box_tag "import_internal_relation_allowed", true, true %> <%= l(:label_import_internal_relation_allowed) %> </label><br/>
-			<label><%= check_box_tag "import_external_relation_allowed", true, false %> <%= l(:label_import_external_relation_allowed) %> </label><br/>
+			<label><%= check_box_tag "import_external_relation_allowed", true, true %> <%= l(:label_import_external_relation_allowed) %> </label><br/>
 		</fieldset>
 		<h3><%= l(:label_issue_import_settings_headline) %></h3>
 		<fieldset class="box"><legend><%= l(:label_issue_import_settings) %></legend>
