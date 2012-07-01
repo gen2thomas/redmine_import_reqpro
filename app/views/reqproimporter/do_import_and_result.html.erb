@@ -9,18 +9,25 @@
 <table class="tab_center">
 	<thead><tr>
 		<th>&nbsp;</th>
-	    <% @imp_res[:imported].each_key do |a_header| %>
-	      <th><%= l_or_humanize(a_header.to_s, :prefix => "label_header_") %> (<%= @imp_res_sum_row[a_header] %>)</th>
+	    <% @imp_res_header.each do |a_header| %>
+	      <th><%= l_or_humanize(a_header.to_s, :prefix => "label_header_") %> (<%= @imp_res[:sum][a_header] %>)</th>
 	    <% end %>
 	</tr></thead>
-	<tbody>
-	  <% @imp_res.each do |result_key, result_content| %>
+	<% @imp_res_first_column.each do |result_key| %>
+	  <% result_content = @imp_res[result_key] %>
+	  <tbody>
 	    <tr class="<%= cycle("odd", "even") %>">
-	    	<th class="th_firstcolumn"><%= l("#{"label_header_"}#{result_key.to_s}", :icount => @imp_res_sum_column[result_key]) %></th>
-	      <% result_content.each_value do |column| %><td class="td_content"><%= column %></td><% end %>
+	      <% if result_content[:failed] != 0 then %>
+	        <th class="th_firstcolumn_failed"><%= l("#{"label_header_"}#{result_key.to_s}", :icount => @imp_res[result_key][:sum]) %></th>
+	      <% else %>
+	        <th class="th_firstcolumn"><%= l("#{"label_header_"}#{result_key.to_s}", :icount => @imp_res[result_key][:sum]) %></th>
+	      <% end %>
+	      <% @imp_res_header.each do |row| %><% column=result_content[row] %>
+	        <% if column != 0 and row == :failed then %><td class="td_content_failed"><%= column %></td><% else %><td class="td_content"><%= column %></td><% end %>
+	      <% end %>
 	    </tr>
-	  <% end %>
-	</tbody>
+	  </tbody>
+	<% end %>
 </table>
 <br/>
 <hr/>

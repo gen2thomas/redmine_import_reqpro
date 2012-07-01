@@ -15,16 +15,17 @@ module ProjectsHelper
     return available_projects
   end
   
-  # make an array for the view
-  def collected_projects_to_content_array(some_projects)
-    some_projects_content = Array.new
-    idx = 0
-    some_projects.each_value do |project| 
-      some_projects_content.push([idx,project[:name],project[:description], project[:prefix], project[:date],project[:extprefixes]])
-      idx += 1
+  # make an sorted array of key for the view
+  def projects_sorted_array_of_key(some_projects)
+    if some_projects != nil
+      # alphabethical order of name
+      some_projects_sorted = some_projects.sort_by {|key,value| value[:name]}
+      some_projects_sorted.each do |a_project|
+        a_project.delete_at(1) # delete content, only keys needed
+      end
+      some_projects_sorted.flatten!
     end
-    # TODO: sort the array by project name and change the index
-    return some_projects_content
+    return some_projects_sorted
   end
   
   def update_projects_for_needing(some_projects, needed_projects)

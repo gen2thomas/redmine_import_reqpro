@@ -7,19 +7,48 @@ module AttributesHelper
     return attributes
   end
   
+  # remap {Project1_id=>[P1_Attrlabel1, P1_Attrlabel2], Project2_id=>[P2_Attrlabel1, P2_Attrlabel2]}
+  # sort for keys and values already done (ids are sorted not labels or prefixes!)
+  def remap_listattrlabels_to_projectid(attributes)
+    remaped_attributes = Hash.new
+    if attributes != nil
+      attributes.each_pair do |attr_key, attr_val|
+        if attr_val[:itemlist].length > 0
+          # this attribute is possible for version
+          hash_key = attr_val[:projectid]
+          if remaped_attributes[hash_key] == nil
+            remaped_attributes[hash_key] = Array.new
+          end
+          remaped_attributes[hash_key].push(attr_val[:attrlabel])
+          remaped_attributes[hash_key].uniq!
+          remaped_attributes[hash_key].sort!
+        end
+      end
+    end
+    return remaped_attributes.sort
+  end
+  
+  def attribute_find_by_projectid_and_attrlabel(attributes, projectid, label)
+    attributes.each do |attr_key, attr_value|
+      return {attr_key => attr_value} if (attr_value[:attrlabel] == label)and(attr_value[:projectid] == projectid)
+    end
+    return nil
+  end
+    
   # remap attributes to the key :project+_+:attrlabel
   # if conflation is allowed, project is not used for key (all projects have (nearly) the same attributes)
   # take same prefixes of several projects together
   # needing: ":attrlabel", ":project"=>[], ":rtprefix"=>[], ":datatype", ":itemtext"=>[]
-  def remap_attributes_to_label(attributes, conflate_attributes)
+  def remap_noversionattributes_to_attrlabel(attributes, versions_mapping, conflate_attributes)
     remaped_attributes = nil
     if attributes != nil
       remaped_attributes = Hash.new
-      attributes.each_pair do |attr_key,attr_type|
+      attributes.each_pair do |attr_key,attr_val|
+        next if (attr_key == versions_mapping[attr_val[:projectid]]) # atttribute is a version
         if conflate_attributes
-          hash_key = attr_type[:attrlabel]
+          hash_key = attr_val[:attrlabel]
         else
-          hash_key = attr_type[:project].downcase + "_" + attr_type[:attrlabel]
+          hash_key = attr_val[:project].downcase + "_" + attr_val[:attrlabel]
         end
         if remaped_attributes[hash_key] == nil # not existend
           remaped_attributes[hash_key] = Hash.new
@@ -29,28 +58,28 @@ module AttributesHelper
           remaped_attributes[hash_key][:itemtext] = Array.new
         end
         #projects  
-        remaped_attributes[hash_key][:projects].push(attr_type[:project])
+        remaped_attributes[hash_key][:projects].push(attr_val[:project])
         remaped_attributes[hash_key][:projects].uniq!
         remaped_attributes[hash_key][:projects].sort!
         #datatypes  
-        remaped_attributes[hash_key][:datatypes].push(attr_type[:datatype])
+        remaped_attributes[hash_key][:datatypes].push(attr_val[:datatype])
         remaped_attributes[hash_key][:datatypes].uniq!
         remaped_attributes[hash_key][:datatypes].sort!
         #rtprefixes
-        if attr_type[:rtprefixes] != nil #there is a new entry for the list
-          remaped_attributes[hash_key][:rtprefixes].push(attr_type[:rtprefixes])
+        if attr_val[:rtprefixes] != nil #there is a new entry for the list
+          remaped_attributes[hash_key][:rtprefixes].push(attr_val[:rtprefixes])
           remaped_attributes[hash_key][:rtprefixes].uniq!
           remaped_attributes[hash_key][:rtprefixes].sort!
         end
         #itemtext
-        if attr_type[:itemtext] != nil #there is a new entry for the list
-          remaped_attributes[hash_key][:itemtext].push(attr_type[:itemtext])
+        if attr_val[:itemtext] != nil #there is a new entry for the list
+          remaped_attributes[hash_key][:itemtext].push(attr_val[:itemtext])
           remaped_attributes[hash_key][:itemtext].uniq!
           remaped_attributes[hash_key][:itemtext].sort!
         end
         #itemlist to itemtext for viewing
-        if attr_type[:itemlist] != nil #there is a new entry for the list
-          remaped_attributes[hash_key][:itemtext].concat(attr_type[:itemlist])
+        if attr_val[:itemlist] != nil #there is a new entry for the list
+          remaped_attributes[hash_key][:itemtext].concat(attr_val[:itemlist])
           #remaped_attributes[hash_key][:itemtext].flatten!
           remaped_attributes[hash_key][:itemtext].uniq!
           remaped_attributes[hash_key][:itemtext].sort!
@@ -64,19 +93,21 @@ module AttributesHelper
   #call after manual mapping in view
   # delete not mapped (means not used) requirements
   # add :mapping target if needed
-  def update_attributes_for_map_needing(attributes, attributes_mapping)
-    attributes.each do |key,attri|
-      if  attributes_mapping[attri[:attrlabel]] != nil
-        attri[:mapping] = attributes_mapping[attri[:attrlabel]][:attr_name]
+  def update_attributes_for_map_needing(attributes, versions_mapping, attributes_mapping)
+    attributes.each do |attr_key, attr_val|
+      if  attributes_mapping[attr_val[:attrlabel]] != nil
+        attr_val[:mapping] = attributes_mapping[attr_val[:attrlabel]][:attr_name]
       else
         # in case of not conflated attributes
-        if  attributes_mapping[attri[:project].downcase + "_" + attri[:attrlabel]] != nil
-          attri[:mapping] = attributes_mapping[attri[:project].downcase + "_" + attri[:attrlabel]][:attr_name]
+        if  attributes_mapping[attr_val[:project].downcase + "_" + attr_val[:attrlabel]] != nil
+          attr_val[:mapping] = attributes_mapping[attr_val[:project].downcase + "_" + attr_val[:attrlabel]][:attr_name]
         end  
       end
-      # delete unused entry
-      if attri[:mapping] == nil
-        attributes.delete(key) # entry not used
+      # delete unused entry in case of no version
+      if attr_val[:mapping] == nil
+        if (attr_key != versions_mapping[attr_val[:projectid]])
+          attributes.delete(attr_key) # entry not used
+        end
       end
     end
     return attributes
@@ -169,10 +200,10 @@ module AttributesHelper
     return new_issue_custom_field
   end
   
+  # check for customfield id to update
+  # if not a custom field, update the existend attribute
+  # if the existend attribute deal with a user --> check the project members for this user
   def update_attribute_or_custom_field_with_value(a_issue, mapping, customfield_id, value, rpusers, debug)
-    # check for customfield id to update
-    # if not a custom field, update the existend attribute
-    # if the existend attribute deal with a user --> check the project members for this user
     if customfield_id != ""
       if value.to_s != ""
         a_issue_custom_field = IssueCustomField.find_by_id(customfield_id)
@@ -221,7 +252,7 @@ private
     #get an data path to open an ProjectStructure file
     #collect all labels to a hash
     attributes = Hash.new
-    some_projects.each_value do |a_project|
+    some_projects.each do |a_projectid, a_project|
       xmldoc = open_xml_file(a_project[:path],"ProjectStructure.XML")
       xmldoc.elements.each("PROJECT/Attributes/Attribute") do |attri|
         # check for this attribute is used inside requirement types 
@@ -239,6 +270,7 @@ private
             attributes[hash_key][:attrlabel] = attri.attributes["Label"]
             attributes[hash_key][:datatype] = attri.attributes["DataTypeName"]
             attributes[hash_key][:project] = a_project[:prefix]
+            attributes[hash_key][:projectid] = a_projectid
             attributes[hash_key][:rtid] = rtid
             attributes[hash_key][:rtprefixes] = requirement_types[rtid][:prefix]
             #check for list items  

@@ -31,6 +31,7 @@ class ReqproimporterController < ApplicationController
       :start_date, :due_date, :done_ratio, :estimated_hours, :watchers]
 
   def initialize
+    @@attr_debugger = Array.new
     @debug = true
   end
   
@@ -56,7 +57,7 @@ class ReqproimporterController < ApplicationController
     #--------------------
     # generate the header for view
     @headers = Array.new
-    @headers = ["label_import", "label_number", "label_projectname", "label_description", "label_prefix", "label_date", "label_extproj_prefixes"]
+    @headers = ["label_import", "label_prefix", "label_projectname", "label_description", "label_date", "label_extproj_prefixes"]
     #--------------------
     # generate the projects content
     @@some_projects = collect_projects(collected_data_pathes, deep_check_ext_projects)
@@ -64,7 +65,8 @@ class ReqproimporterController < ApplicationController
       flash.now[:error] = l_or_humanize("label_no_project")
       return false
     end
-    @contents_of_projects = collected_projects_to_content_array(@@some_projects) # need for view
+    @projects_keys_sorted = projects_sorted_array_of_key(@@some_projects) # need for view
+    @projects_for_view = @@some_projects # need for view
     @progress_percent = [0, 20]
   end
   
@@ -86,6 +88,10 @@ class ReqproimporterController < ApplicationController
     @@rpusers = collect_rpusers(@@some_projects, params[:conflate_users])
     # remap used users to :conf_key (conflation key)
     @rpusers_for_view = remap_users_to_conflationkey(@@rpusers)
+    if @rpusers_for_view != nil
+      #for displaying in alphabethical order (conf_key)
+      @rpusers_keys_sorted = @rpusers_for_view.keys.sort
+    end
     # entries in list fields for already existend redmine users 
     @@redmine_users = Hash.new
     @@redmine_users[:rmusers] = Array.new
@@ -120,6 +126,7 @@ class ReqproimporterController < ApplicationController
   
   def matchtrackers
     @original_filename = @@original_filename # need for view
+    @@user_update_allowed = params[:user_update_allowed]
     deep_check_req_types = params[:deep_check_req_types]
     conflate_req_types = params[:conflate_req_types]
     # delete unused rpusers, add equivalent rmuser  
@@ -133,7 +140,7 @@ class ReqproimporterController < ApplicationController
     # :rt_prefix => {:name => "name", :project=>["p_prefix1","p_prefix2"]}
     @req_types_for_view = remap_req_types_to_project_prefix(@@requirement_types, conflate_req_types)
     if @req_types_for_view != nil
-      #for displaying in alphabethical order
+      #for displaying in alphabethical order (project.prefix)
       @req_types_keys_sorted = @req_types_for_view.keys.sort
     end
     # entries in list fields 
@@ -145,7 +152,7 @@ class ReqproimporterController < ApplicationController
     @progress_percent = [0, 60]
   end
   
-  def matchattributes
+  def matchversions
     @original_filename = @@original_filename # need for view
     @@tracker_mapping = set_tracker_mapping(params[:fields_map_tracker])
     if @@tracker_mapping.empty?
@@ -153,20 +160,38 @@ class ReqproimporterController < ApplicationController
       return false
     end
     deep_check_attributes = params[:deep_check_attributes]
-    conflate_attributes = params[:conflate_attributes]
     @@requirement_types = update_requ_types_for_map_needing(@@requirement_types, @@tracker_mapping)
-    # make a list of used attributes in requiremet types
+    # make a list of used attributes in requirement types
     used_attributes_in_rts = make_attr_list_from_requirement_types(@@requirement_types)
     # collect attributes of all available projects
     @@attributes = collect_attributes(@@some_projects, @@requirement_types, used_attributes_in_rts, deep_check_attributes)
+    # prepare header for view
+    @headers = Array.new
+    @headers = ["label_prefixed_projects", "label_used_attribute_for_version"]
+    # remap {Project1=>[P1_Attrlabel1, P1_Attrlabel2], Project2=>[P2_Attrlabel1, P2_Attrlabel2]}
+    # @projects_with_attributes_for_view = remap_attributlabels_to_projectprefix(@@attributes)
+    @projects_with_versionattributes_for_view = remap_listattrlabels_to_projectid(@@attributes)
+    @projects_for_view = @@some_projects
+    @attrs_for_view = @@attributes
+    #mapping now in variable "params[:fields_map_version]"
+    @progress_percent = [0, 70]
+  end
+  
+  def matchattributes
+    @original_filename = @@original_filename # need for view
+    @@versions_mapping = set_versions_mapping(params[:fields_map_version], @@attributes)
+    @@version_update_allowed = params[:version_update_allowed]
+    conflate_attributes = params[:conflate_attributes]
+    # headers for view
     @headers = Array.new
     @headers = ["label_prefixed_attributes", "label_mapped_attributes", "label_datatype_values"]
-    # remap to "Project.AttrLabel" and take same prefixes of several projects together if conflating
+    # remap again (attributes for versions will deselect) 
+    # to "Project.AttrLabel" and take same prefixes of several projects together if conflating
     # needing: ":attrlabel", ":project"=>[], ":rtprefix"=>[], ":datatype", ":itemtext"=>[]
-    @attributes_for_view = remap_attributes_to_label(@@attributes, conflate_attributes)
-    if @attributes_for_view != nil
-      #for displaying in alphabethical order
-      @attributes_keys_sorted = @attributes_for_view.keys.sort
+    @novattributes_for_view = remap_noversionattributes_to_attrlabel(@@attributes, @@versions_mapping, conflate_attributes)
+    if @novattributes_for_view != nil
+      #for displaying in alphabethical order (:label)
+      @novattributes_keys_sorted = @novattributes_for_view.keys.sort
     end
     # search for all known attributes
     @@known_attributes = Hash.new
@@ -177,8 +202,7 @@ class ReqproimporterController < ApplicationController
       @@known_attributes[key] = Hash.new
       @@known_attributes[key][:custom_field_id] = "" 
     end
-    issue_custom_field = IssueCustomField.find(:all) 
-    issue_custom_field.each do |cu_fi|
+    IssueCustomField.find(:all).each do |cu_fi|
       key = cu_fi[:name]
       @attrs.push(key)
       @@known_attributes[key] = Hash.new
@@ -193,28 +217,37 @@ class ReqproimporterController < ApplicationController
   def do_import_and_result
     @original_filename = @@original_filename # need for view
     attributes_mapping = set_attributes_mapping(params[:fields_map_attribute])
-    update_allowed = params[:issue_update_allowed]
+    issue_update_allowed = params[:issue_update_allowed]
     import_parent_relation = params[:import_parent_relation_allowed]
     import_internal_relations = params[:import_internal_relation_allowed]
     import_external_relations = params[:import_external_relation_allowed]
     #delete unused attributes
-    @@attributes = update_attributes_for_map_needing(@@attributes, attributes_mapping)
-    @@import_results = {:imported => {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0, :issue_internal_relations => 0, :issue_external_relations => 0},
-                        :updated =>  {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0, :issue_internal_relations => 0, :issue_external_relations => 0},
-                        :failed =>   {:users => 0, :projects => 0, :issues => 0, :trackers => 0, :attributes => 0, :issue_internal_relations => 0, :issue_external_relations => 0}}
+    @@attributes = update_attributes_for_map_needing(@@attributes, @@versions_mapping, attributes_mapping)
+    @@import_results = {:users => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :projects => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :trackers => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :versions => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :attributes => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :issues => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :issue_internal_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :issue_external_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                        :sum => {:imported => 0, :updated => 0, :failed => 0, :sum =>0}
+                       }
     # users
-    @@rpusers = create_all_users_and_update(@@rpusers)
+    @@rpusers = create_all_users_and_update(@@rpusers, @@user_update_allowed)
     # new requirement types (key is the ID):
     #@@requirement_types, @@tracker_mapping (:rt_prefix=> {:tr_name, :trid})
     @@tracker_mapping = create_all_trackers_and_update_mapping(@@tracker_mapping)
     # add all needed attributes as custom fields
     # new attributes for requirements (Key is the ID): #@@attributes
     #new attributes for requirements - remapped to key = :project+:attrlabel+:status (or without :project):
-    @@known_attributes = create_all_customfields(attributes_mapping, @@attributes, @@known_attributes, @@tracker_mapping)
+    @@known_attributes = create_all_customfields(@@known_attributes, @@attributes, attributes_mapping, @@versions_mapping, @@tracker_mapping)
     # new projects: @@some_projects[:rpid][:rmid] => Project id inside redmine
     @@some_projects = create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers)
+    # create all versions
+    new_versions_mapping = create_all_versions(@@versions_mapping, @@attributes, @@version_update_allowed, @debug)
     # now import all issues from each ReqPro project 
-    return_hash_from_issues = create_all_issues(@@some_projects, @@requirement_types, @@attributes, @@known_attributes, @@rpusers, update_allowed, @debug)
+    return_hash_from_issues = create_all_issues(@@some_projects, @@requirement_types, @@attributes, new_versions_mapping, @@known_attributes, @@rpusers, issue_update_allowed, @debug)
     # update parents
     if import_parent_relation
       puts "Wait for update parents" if @debug
@@ -226,17 +259,12 @@ class ReqproimporterController < ApplicationController
       @@import_results = update_traces(return_hash_from_issues[:rp_relation_list], import_internal_relations, import_external_relations, @@import_results, @debug)
     end
     # make the content for table
-    @imp_res_sum_column = Hash.new
-    @imp_res_sum_row = Hash.new
-    @@import_results.each_key do |group_key|
-      @imp_res_sum_column[group_key] = 0
-      @@import_results[group_key].each do |a_key, a_value|
-        @imp_res_sum_column[group_key] += a_value
-        if @imp_res_sum_row[a_key] == nil
-          @imp_res_sum_row[a_key] = a_value
-        else
-          @imp_res_sum_row[a_key] += a_value
-        end
+    @imp_res_header = [:imported, :updated, :failed]
+    @imp_res_first_column = [:projects, :users, :trackers, :versions, :attributes, :issues, :issue_internal_relations, :issue_external_relations]
+    @imp_res_header.each do |column|
+      @imp_res_first_column.each do |row|
+        @@import_results[:sum][column] += @@import_results[row][column]
+        @@import_results[row][:sum] += @@import_results[row][column]
       end
     end
     @imp_res = @@import_results
@@ -597,13 +625,28 @@ private
     return tracker_mapping
   end
   
+  # convert mapping hash {proj1_id => attr1label, proj2_id => attr1label, proj3_id => attr2label}
+  # to hash {proj1_id => attr1_id, proj2_id => attr1_id, proj3_id => attr2_id}
+  def set_versions_mapping(versions_map, attributes)
+    vmap_new = Hash.new
+    if versions_map != nil and attributes != nil
+      versions_map.each do |v_key, v_val|
+        vval_new = attribute_find_by_projectid_and_attrlabel(attributes, v_key, v_val)
+        if vval_new != nil
+          vmap_new[v_key] = vval_new.to_a.flatten[0] # the key of hash
+        end
+      end
+    end
+    return vmap_new
+  end
+  
+  # create a hash {rpattrprefix1 => attr_name1, rpattrprefix2 => attr_name1, rpattrprefix3 => attr_name2} 
   def set_attributes_mapping(attributes_map)
     attributes_mapping = Hash.new
     if attributes_map != nil
-      attributes_map.each do |reqproattr_prefix,attr_name|
+      attributes_map.each do |reqproattr_prefix, attr_name|
         if attr_name != ""
           attributes_mapping[reqproattr_prefix]=Hash.new
-          #attributes_mapping[reqproattr_prefix][:attr_name]=attr_name.gsub(/[^\w\s\'\-]/,"_") # replace all non ok characters with "_"
           attributes_mapping[reqproattr_prefix][:attr_name]=attr_name
         end 
       end
@@ -612,29 +655,35 @@ private
   end
   
   # create new redmine users from rp-users
-  def create_all_users_and_update(rp_users)
+  def create_all_users_and_update(rp_users, update_allowed)
     # looking for existend users because while importing multiple projects
     # can cause double users which will cause an error while save the user
     if rp_users != nil
+      import_new_user = false
       rp_users.each do |rp_key, rp_user|
         new_user = rp_user[:rmuser]
         if new_user != nil
           puts "User already exist: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
-          next
+          next if !update_allowed
+        else
+          new_user = User.find_by_mail(rp_user[:email])
+          if new_user != nil
+            puts "User found via mail: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+            rp_user[:rmuser] = new_user # update mapping
+            next if !update_allowed
+          else
+            new_user = User.find_by_login(rp_user[:login])
+            if new_user != nil
+              puts "User found via login: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+              rp_user[:rmuser] = new_user # update mapping
+              next if !update_allowed
+            else
+              new_user = User.new
+              import_new_user = true
+            end
+          end
         end
-        new_user = User.find_by_mail(rp_user[:email])
-        if new_user != nil
-          puts "User found via mail: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
-          rp_user[:rmuser] = new_user # update mapping
-          next
-        end
-        new_user = User.find_by_login(rp_user[:login])
-        if new_user != nil
-          puts "User found via login: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
-          rp_user[:rmuser] = new_user # update mapping
-          next
-        end
-        new_user = User.new
+        # new user or update allowed for known user
         new_user[:mail] = rp_user[:email]
         new_user[:login] = rp_user[:login]
         new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
@@ -649,11 +698,15 @@ private
           puts "User RPUID is empty!"
           debugger
         end 
-        if new_user.save    
-          @@import_results[:imported][:users] += 1
+        if new_user.save
+          if import_new_user
+            @@import_results[:users][:imported] += 1
+          else
+            @@import_results[:users][:updated] += 1
+          end
           rp_user[:rmuser] = new_user # update mapping
         else
-          @@import_results[:failed][:users] += 1
+          @@import_results[:users][:failed] += 1
           debugger
           puts "Unable to import user: " + new_user[:mail]
         end
@@ -674,9 +727,9 @@ private
       if tracker == nil
         tracker = Tracker.create(:name=>tr_value[:tr_name], :is_in_roadmap=>"1")
         if tracker != nil
-          @@import_results[:imported][:trackers] += 1
+          @@import_results[:trackers][:imported] += 1
         else
-          @@import_results[:failed][:trackers] += 1
+          @@import_results[:trackers][:failed] += 1
           debugger
           puts "Unable to import tracker: " + tr_value[:tr_name]
         end
@@ -695,19 +748,20 @@ private
     return tracker_mapping
   end
   
-  def create_all_customfields(attributes_mapping, attributes, known_attributes, tracker_mapping)
+  def create_all_customfields(known_attributes, attributes, attributes_mapping, versions_mapping, tracker_mapping)
     if attributes != nil and !attributes_mapping.empty?
       fieldformat_mapping = {"Text" => "string", "MultiSelect" => "list", "List"=>"list", "Integer"=>"int", "Real"=>"float", "Date"=>"date"}
-      attributes.each do |key,attri|
+      attributes.each do |attr_key,attr_val|
+        next if (attr_key == versions_mapping[attr_val[:projectid]])
         # check for "custom field" or "redmine attribute" is already existend
-        newkey = attri[:mapping]
+        newkey = attr_val[:mapping]
         if !known_attributes.include?(newkey) and !known_attributes.include?(newkey.gsub(/[^\w\s\'\-]/,"_"))
           # not known --> create a custom field for this attribute
           new_issue_custom_field = IssueCustomField.new 
           # --> .gsub(/[^\w\s\'\-]/,"_") # replace all non ok characters with "_"
           new_issue_custom_field.name = newkey.gsub(/[^\w\s\'\-]/,"_")
-          new_issue_custom_field.field_format = fieldformat_mapping[attri[:datatype]]
-          new_issue_custom_field.default_value = attri[:default]
+          new_issue_custom_field.field_format = fieldformat_mapping[attr_val[:datatype]]
+          new_issue_custom_field.default_value = attr_val[:default]
           new_issue_custom_field.min_length = "0"
           new_issue_custom_field.max_length = "0"
           new_issue_custom_field.possible_values = ""
@@ -718,8 +772,8 @@ private
           new_issue_custom_field.is_for_all = "0"
           new_issue_custom_field.is_filter = "1"
           #collect some trackers which need this custom field
-          if attri[:rtprefixes] != nil
-            attri[:rtprefixes].each do |prefix|
+          if attr_val[:rtprefixes] != nil
+            attr_val[:rtprefixes].each do |prefix|
               next if tracker_mapping[prefix] == nil # used tracker is not mapped
               tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
               new_issue_custom_field.trackers.push(tracker)
@@ -749,20 +803,20 @@ private
           when "date"
             new_issue_custom_field.default_value = new_issue_custom_field.default_value.to_s 
           when "list"
-            new_issue_custom_field.possible_values = attri[:itemlist]
+            new_issue_custom_field.possible_values = attr_val[:itemlist]
             new_issue_custom_field.searchable = "1"
           else
             # handle the rest as "string"
             new_issue_custom_field.field_format = "string"
-            new_issue_custom_field.possible_values = attri[:itemlist].to_s + attri[:itemtext]
+            new_issue_custom_field.possible_values = attr_val[:itemlist].to_s + attr_val[:itemtext]
             new_issue_custom_field.searchable = "1"            
           end
           if (new_issue_custom_field.save)
             known_attributes[newkey] = Hash.new
             known_attributes[newkey][:custom_field_id] = new_issue_custom_field[:id] 
-            @@import_results[:imported][:attributes] += 1
+            @@import_results[:attributes][:imported] += 1
           else
-            @@import_results[:failed][:attributes] += 1
+            @@import_results[:attributes][:failed] += 1
             debugger
             puts "Unable to import attribute as custom field" + newkey
             debugger
@@ -776,15 +830,15 @@ private
             isc_changed = false
             if issue_custom_field[:field_format] == "list"
               list_elements = issue_custom_field[:possible_values] # make the string to an array
-              list_elements.push(attri[:itemlist]) #add new element
+              list_elements.push(attr_val[:itemlist]) #add new element
               list_elements.flatten!
               list_elements.uniq!
               isc_changed = true
             end
             #collect some further trackers which need this custom field
-            if attri[:rtprefixes] != nil
+            if attr_val[:rtprefixes] != nil
               isc_changed = true
-              attri[:rtprefixes].each do |prefix|
+              attr_val[:rtprefixes].each do |prefix|
                 next if tracker_mapping[prefix] == nil # required tracker not mapped
                 tracker = Tracker.find_by_id(tracker_mapping[prefix][:trid])
                 issue_custom_field.trackers.push(tracker)
@@ -794,9 +848,9 @@ private
             #write it back
             if (isc_changed)
               if (issue_custom_field.save)
-                @@import_results[:updated][:attributes] += 1
+                @@import_results[:attributes][:updated] += 1
               else
-                @@import_results[:failed][:attributes] += 1
+                @@import_results[:attributes][:failed] += 1
                 debugger
                 puts "Unable to update attribute as custom field: " + newkey
                 debugger
@@ -849,9 +903,9 @@ private
           debugger
         end
         if (new_project.save) 
-          @@import_results[:imported][:projects] += 1
+          @@import_results[:projects][:imported] += 1
         else
-          @@import_results[:failed][:projects] += 1
+          @@import_results[:projects][:failed] += 1
           debugger
           puts "Unable to import project" + a_project[:name]
           debugger
@@ -864,9 +918,9 @@ private
         trackers.uniq!
         new_project.trackers = trackers
         if (new_project.save) 
-          @@import_results[:updated][:projects] += 1
+          @@import_results[:projects][:updated] += 1
         else
-          @@import_results[:failed][:projects] += 1
+          @@import_results[:projects][:failed] += 1
           debugger
           puts "Unable to update project" + a_project[:name]
           debugger
@@ -878,10 +932,70 @@ private
     return some_projects    
   end
   
+  
+  # create version and
+  # generate a hash {project_id1 => {attr1_id => {item1 => p1version1, item2 => p1version2}}},
+  #                  project_id2 => {attr1_id => {item1 => p2version1, item2 => p2version2}}}
+  #                  project_id3 => {:attrlabel => attr_name2, :itemlist => {item1 => p3version1, item2 => p3version2, item3 => p3version3}}
+  def create_all_versions(versions_mapping, attributes, version_update_allowed, debug)
+    if versions_mapping != nil
+      vmap_new = Hash.new
+      versions_mapping.each do |rp_project_id, attr_for_version_id|
+        rm_project =  project_find_by_rpuid(rp_project_id, debug)
+        if rm_project == nil
+          rm_project = Project.find_by_identifier(attributes[attr_for_version_id][:project].downcase)
+        end
+        if rm_project == nil
+          puts "Project at version creation not found, take next! project ID: " + rp_project_id
+          next
+        end
+        vmap_new[rp_project_id] = Hash.new
+        # TODO: hier gibt es manchmal ein Problem
+        if attributes[attr_for_version_id] == nil
+          debugger
+        end
+        if attributes[attr_for_version_id][:itemlist] == nil
+          debugger
+        end
+        attributes[attr_for_version_id][:itemlist].each do |version_suffix|
+          version_name = attributes[attr_for_version_id][:attrlabel] + "_" + version_suffix
+          new_version = Version.find_by_name(version_name)
+          if new_version == nil
+            new_version = Version.new
+            update_version = false
+          else
+            next if !version_update_allowed
+            update_version = true
+          end
+          new_version.name = version_name
+          new_version.description = version_suffix
+          new_version.status = "open"
+          new_version.sharing = "none"
+          new_version.wiki_page_title = ""
+          new_version.project = rm_project
+          if (new_version.save)
+            vmap_new[rp_project_id][version_name] = new_version
+            if update_version
+              @@import_results[:versions][:updated] += 1
+            else
+              @@import_results[:versions][:imported] += 1
+            end
+          else
+            @@import_results[:versions][:failed] += 1
+            debugger
+            puts "Unable to import version" + attr_version[:attrlabel]
+            debugger
+          end
+        end
+      end
+    end
+    return vmap_new
+  end
+  
   # create all issues by importing requirements from each project
   # generate "rp_req_unique_names" list for further using (parent-child-import)
   # generate "rp_internal_relation_list" list for further using (internal relations to import)
-  def create_all_issues(some_projects, requirement_types, attributes, known_attributes, rpusers, update_allowed, debug)
+  def create_all_issues(some_projects, requirement_types, attributes, new_versions_mapping, known_attributes, rpusers, update_allowed, debug)
     rp_req_unique_names = Hash.new
     rp_relation_list = Hash.new
     some_projects.each do |rp_project_id, a_project|
@@ -964,8 +1078,19 @@ private
                   if attributes[hash_key] != nil
                     # import this attribute value
                     puts "attribute with list element to update" if @debug
-                    new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
+                    #check for a version
+                    if new_versions_mapping[rp_project_id] != nil
+                      #version_name = attributes[attr_for_version_id][:attrlabel] + "_" + version_suffix
+                      version_name = hash_key + "_" + value
+                      if new_versions_mapping[rp_project_id] == version_name
+                        puts "attribute with list element is a version" if @debug
+                        a_version = new_versions_mapping[rp_project_id][version_name]
+                          debugger
+                      end
+                    else
+                      new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
                                   known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, debug)
+                    end
                   end
                 end
               end
@@ -1054,7 +1179,7 @@ private
           #TODO: new_issue.save force "assigned_to" to a user (only while first save), how and why?
           user_before = new_issue.assigned_to # workarround step 1 for "assigned_to" bug
           if !(new_issue.save)
-            @@import_results[:failed][:issues] += 1
+            @@import_results[:issues][:failed] += 1
             debugger
             puts "Failed to save new issue"
             debugger
@@ -1079,10 +1204,10 @@ private
           end
           if (import_new_issue)
             a_project[:imported_issues] += 1
-            @@import_results[:imported][:issues] += 1
+            @@import_results[:issues][:imported] += 1
             rp_req_unique_names[unique_name.downcase] = new_issue[:id]
           else
-            @@import_results[:updated][:issues] += 1
+            @@import_results[:issues][:updated] += 1
           end
         end
       end

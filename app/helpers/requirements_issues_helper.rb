@@ -22,16 +22,16 @@ module RequirementsIssuesHelper
         source_iid_list.each do |source_iid, target_iid_array|
           source_issue = issue_find_by_rpuid(source_iid, debug)
           if source_issue == nil
-            import_results[:failed][:issue_internal_relations] += 1 if intern_relation
-            import_results[:failed][:issue_external_relations] += 1 if extern_relation
+            import_results[:issue_internal_relations][:failed] += 1 if intern_relation
+            import_results[:issue_external_relations][:failed] += 1 if extern_relation
             puts "No source issue found from RPUID " + source_iid + ", take next relation." if debug
             next
           end
           target_iid_array.each do |target_iid|
             target_issue = issue_find_by_rpuid(target_iid, debug)
             if target_issue == nil
-              import_results[:failed][:issue_internal_relations] += 1 if intern_relation
-              import_results[:failed][:issue_external_relations] += 1 if extern_relation
+              import_results[:issue_internal_relations][:failed] += 1 if intern_relation
+              import_results[:issue_external_relations][:failed] += 1 if extern_relation
               puts "Related target issue (according to this internal trace) was not found, take next relation." if debug
               next
             end
@@ -43,13 +43,13 @@ module RequirementsIssuesHelper
               issue_relation_new.relation_type = "relates"
               if !(issue_relation_new.save)
                 # failed relation is normal for installed KUP-Plugin
-                import_results[:failed][:issue_internal_relations] += 1 if intern_relation
-                import_results[:failed][:issue_external_relations] += 1 if extern_relation
+                import_results[:issue_internal_relations][:failed] += 1 if intern_relation
+                import_results[:issue_external_relations][:failed] += 1 if extern_relation
                 puts "Failed to save new internal issue relation." if (debug and intern_relation)
                 puts "Failed to save new external issue relation." if (debug and extern_relation)
               else
-                import_results[:imported][:issue_internal_relations] += 1 if intern_relation
-                import_results[:imported][:issue_external_relations] += 1 if extern_relation
+                import_results[:issue_internal_relations][:imported] += 1 if intern_relation
+                import_results[:issue_external_relations][:imported] += 1 if extern_relation
               end
             end
           end

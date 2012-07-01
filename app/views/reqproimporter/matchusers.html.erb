@@ -21,7 +21,8 @@
 			    	<% end %>
 				</tr></thead>
 				<tbody>
-					<% @rpusers_for_view.each_pair do |col_key,column| %>
+					<% @rpusers_keys_sorted.each do |col_key| %>
+						<%column = @rpusers_for_view[col_key]%>
 						<%  matched = ''	
 							@rmusers_for_view.each do |k|	if k.to_s.casecmp(col_key.to_s) == 0 then matched = k end	end 
 						%>
@@ -48,6 +49,11 @@
 			<%= l(:label_no_rpusers) %><br/><br/>
 		<% end %>
 		<br/>
+		<h3><%= l(:label_user_import_settings_headline) %></h3>
+		<fieldset class="box"><legend><%= l(:label_user_import_settings) %></legend>
+			<label><%= check_box_tag "user_update_allowed", true, false %> <%= l(:label_user_update_allowed) %> </label><br/>
+		</fieldset>
+		<br/>		
 		<h3><%= l(:label_reqtypes_checking_settings_headline) %></h3>
 		<fieldset class="box"><legend><%= l(:label_req_type_checking_settings) %></legend>
 			<label><%= check_box_tag "deep_check_req_types", true, true %> <%= l(:label_deep_check_req_types) %> </label><br/>

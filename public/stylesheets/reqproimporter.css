@@ -39,7 +39,15 @@ td.dropdown_column_attribute{
 th.th_firstcolumn{
 	text-align: right;
 }
-
 td.td_content{
-	width: 100px;
+	width: 150px;
+}
+th.th_firstcolumn_failed{
+	text-align: right;
+	color: red;
+}
+td.td_content_failed{
+	width: 150px;
+	font-weight: bold;
+	color: red;
 }

@@ -11,9 +11,15 @@
 			    <% end %>
 			</tr></thead>
 			<tbody>
-			  <% @contents_of_projects.each do |project_content| %>
+			  <% @projects_keys_sorted.each do |col_key| %>
+			  <% column = @projects_for_view[col_key]%>
 			    <tr class="<%= cycle("odd", "even") %>">
-			      <td><%= check_box_tag "import_this_projects[]", "#{project_content[3]}", true %></td><% project_content.each do |column| %><td><%= column %></td><% end %>
+			      <td><%= check_box_tag "import_this_projects[]", "#{column[:prefix]}", true %></td>
+			      <td><%= column[:prefix] %></td>
+			      <td><%= column[:name] %></td>
+			      <td><%= column[:description] %></td>
+			      <td><%= column[:date] %></td>
+			      <td><%= column[:extprefixes] %></td>
 			    </tr>
 			  <% end %>
 			</tbody>

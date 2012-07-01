@@ -4,7 +4,7 @@
 
 <% if !flash[:error] %>
 	<h2><%= l(:label_match_trackers) %> (<%= @original_filename %>)</h2>
-	<% form_tag({:action => 'matchattributes'}, {:multipart => true}) do %>
+	<% form_tag({:action => 'matchversions'}, {:multipart => true}) do %>
 		<%= render :partial => "progress_bar" %><br/>
 		<h3><%= l(:label_used_trackers_headline) %></h3>
 		<%= l(:label_matchtrackers_select) %><br/>
@@ -37,13 +37,10 @@
 		<h3><%= l(:label_attributes_checking_settings_headline) %></h3>
 		<fieldset class="box"><legend><%= l(:label_attributes_checking_settings) %></legend>
 			<label><%= check_box_tag "deep_check_attributes", true, true %> <%= l(:label_deep_check_attributes) %> </label><br/>
-			<label><%= check_box_tag "conflate_attributes", true, true %> <%= l(:label_conflate_attributes) %> </label><br/>
 		</fieldset>
-		<%= submit_tag l(:button_match_attributes) %><br/><hr/>
+		<%= submit_tag l(:button_match_versions) %><br/><hr/>
 		<%= l(:label_attributescheckingsettings_line1) %><br/>
 		<%= l(:label_attributescheckingsettings_line2) %><br/>
-		<%= l(:label_attributescheckingsettings_line3) %><br/><br/>
-		<%= l(:label_attributescheckingsettings_line4) %><br/>
-		<%= l(:label_attributescheckingsettings_line5) %><br/>
+		<%= l(:label_attributescheckingsettings_line3) %><br/>
 	<% end %>
 <% end %>

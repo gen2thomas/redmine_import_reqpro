@@ -1,9 +1,9 @@
-= Redmine importer for RequisitePro Baselines V0.4 (tested with redmine 1.3.0)
+= Redmine importer for RequisitePro Baselines V0.5 (tested with redmine 1.4.3)
 Influenced from (and started with) "https://github.com/leovitch/redmine_importer". Thanks for the basics!
 
 To install:
 - Prerequisites: 
-- Download the plugin to your vendors/plugins directory.  Be sure to maintain the correct folder name, 'redmine_import_reqpro'.
+- Download the plugin to your vendors/plugins directory. Be sure to maintain the correct folder name, 'redmine_import_reqpro'.
 - Run 'rake db:migrate_plugins'
 - Restart your redmine as appropriate
 - Go to the Admin/Projects/../Modules
@@ -13,9 +13,9 @@ en, de localizations included.
 
 ToDos (rp = ReqPro, rm = redmine):
 - add versions if needed --> planned for V0.5
-- what to do with multiple mapping? (f.e. more than one user is mapped to one redmine user, more than one tracker is mapped to one redmine tracker) --> planned for V0.5
-- switch to a specific imported project from the last site --> planned for V0.5
-- switch to a specific imported user from the last site --> planned for V0.5 
-- switch to a specific imported tracker from the last site --> planned for V0.5
-- switch to a specific imported custom field (dropdown?) from the last site --> planned for V0.5
-- Dynamic progress indicator while importing issues (not sure about possibility) --> planned for V0.6
+- what to do with multiple mapping? (f.e. more than one user is mapped to one redmine user, more than one tracker is mapped to one redmine tracker) --> planned for V0.6
+- switch to a specific imported project from the last site --> planned for V0.7
+- switch to a specific imported user from the last site --> planned for V0.7
+- switch to a specific imported tracker from the last site --> planned for V0.7
+- switch to a specific imported custom field (dropdown?) from the last site --> planned for V0.7
+- Dynamic progress indicator while importing issues (not sure about possibility) --> planned for V0.8
