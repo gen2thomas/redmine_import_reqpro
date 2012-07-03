@@ -658,6 +658,7 @@ private
   def create_all_users_and_update(rp_users, update_allowed)
     # looking for existend users because while importing multiple projects
     # can cause double users which will cause an error while save the user
+    admin_user = User.find_by_admin(true)
     if rp_users != nil
       import_new_user = false
       rp_users.each do |rp_key, rp_user|
@@ -684,31 +685,36 @@ private
           end
         end
         # new user or update allowed for known user
-        new_user[:mail] = rp_user[:email]
-        new_user[:login] = rp_user[:login]
-        new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
-        new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login]
-        # add rpid as "RPUID"
-        if rp_key.to_s != "" and rp_key.to_s != nil
-          user_custom_field_for_rpuid = create_user_custom_field_for_rpuid("RPUID", @debug)
-          # set value 
-          # "new_user.custom_values" could never be nil, always an empty array "[]"
-          new_user.custom_field_values={user_custom_field_for_rpuid.id => rp_key.to_s}
-        else
-          puts "User RPUID is empty!"
-          debugger
-        end 
-        if new_user.save
-          if import_new_user
-            @@import_results[:users][:imported] += 1
+        # prevent overwrite or update an admin user
+        if new_user[:admin] == false and rp_user[:login] != admin_user[:login] and rp_user[:email] != admin_user[:mail]
+          new_user[:mail] = rp_user[:email]
+          new_user[:login] = rp_user[:login]
+          new_user[:lastname] = rp_user[:lastname] || rp_user[:login] || rp_user[:firstname]
+          new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login]
+          # add rpid as "RPUID"
+          if rp_key.to_s != "" and rp_key.to_s != nil
+            user_custom_field_for_rpuid = create_user_custom_field_for_rpuid("RPUID", @debug)
+            # set value
+            # "new_user.custom_values" could never be nil, always an empty array "[]"
+            new_user.custom_field_values={user_custom_field_for_rpuid.id => rp_key.to_s}
           else
-            @@import_results[:users][:updated] += 1
+            puts "User RPUID is empty!"
+            debugger
+          end 
+          if new_user.save
+            if import_new_user
+              @@import_results[:users][:imported] += 1
+            else
+              @@import_results[:users][:updated] += 1
+            end
+            rp_user[:rmuser] = new_user # update mapping
+          else
+            @@import_results[:users][:failed] += 1
+            debugger
+            puts "Unable to import user: " + new_user[:mail]
           end
-          rp_user[:rmuser] = new_user # update mapping
         else
-          @@import_results[:users][:failed] += 1
-          debugger
-          puts "Unable to import user: " + new_user[:mail]
+          puts "Unable to overwrite an admin user: " + new_user[:mail] + ", login: " + new_user[:login]
         end
       end
     end
@@ -1058,6 +1064,7 @@ private
           if attributes != nil
             # import attributes:
             if req.elements["FVs"] != nil
+              # the issue can have normal some attributes with value
               req.elements["FVs"].each do |fv|
                 if fv != nil #not empty
                   hash_key = fv.elements["FGUID"].text
@@ -1071,21 +1078,21 @@ private
               end
             end
             if req.elements["LVs"] != nil
+              # the issue can have list-field-attributes 
               req.elements["LVs"].each do |lv|
                 if lv != nil #not empty
                   hash_key = lv.elements["UDF"].text
                   value = lv.elements["LITxt"].text
                   if attributes[hash_key] != nil
                     # import this attribute value
-                    puts "attribute with list element to update" if @debug
+                    puts "attribute with list element to update:" if @debug
                     #check for a version
                     if new_versions_mapping[rp_project_id] != nil
-                      #version_name = attributes[attr_for_version_id][:attrlabel] + "_" + version_suffix
-                      version_name = hash_key + "_" + value
-                      if new_versions_mapping[rp_project_id] == version_name
+                      version_name = attributes[hash_key][:attrlabel] + "_" + value
+                      a_version = new_versions_mapping[rp_project_id][version_name]
+                      if a_version != nil
                         puts "attribute with list element is a version" if @debug
-                        a_version = new_versions_mapping[rp_project_id][version_name]
-                          debugger
+                        new_issue.fixed_version = a_version
                       end
                     else
                       new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
