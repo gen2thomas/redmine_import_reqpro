@@ -1,0 +1,14 @@
+---
+project_1:
+ id: 1
+ is_public: 0
+ description: "MyProjectDescription1"
+ name: "MyProjectName1"
+ identifier: "mpr1"
+ 
+project_2:
+ id: 2
+ is_public: 0
+ description: "MyProjectDescription2"
+ name: "MyProjectName2"
+ identifier: "mpr2"

@@ -1,0 +1,80 @@
+---
+issue_11:
+    id: 11
+    tracker_id: 1
+    project_id: 1
+    subject: "MyTestIssue1_AtProject1"
+    description: "MyDescription11"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    
+issue_12:
+    id: 12
+    tracker_id: 1
+    project_id: 1
+    subject: "MyTestIssue1_AtProject1"
+    description: "MyDescription12"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    
+issue_13:
+    id: 13
+    tracker_id: 1
+    project_id: 1
+    subject: "MyTestIssue13_AtProject1"
+    description: "MyDescription13"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    
+issue_14:
+    id: 14
+    tracker_id: 2
+    project_id: 1
+    subject: "MyTestIssue14_AtProject1"
+    description: "MyDescription14"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+
+issue_15:
+    id: 15
+    tracker_id: 1
+    project_id: 1
+    subject: "MyTestIssue15_AtProject1"
+    description: "MyDescription15"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+
+issue_21:
+    id: 21
+    tracker_id: 2
+    project_id: 2
+    subject: "MyTestIssue21"
+    description: "MyDescription21"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    
+issue_22:
+    id: 22
+    tracker_id: 2
+    project_id: 2
+    subject: "MyTestIssue22"
+    description: "MyDescription22"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    
+issue_31:
+    id: 31
+    tracker_id: 3
+    project_id: 3
+    subject: "MyTestIssue3"
+    description: "MyDescription3"
+    status_id: 1
+    priority_id: 4
+    author_id: 1

@@ -1,0 +1,10 @@
+---
+issue_priority_01:
+ id: 1
+ name: "Default"
+ position: 1
+ is_default: true
+ type: "IssuePriority"
+ active: true
+ project_id: 1
+ 

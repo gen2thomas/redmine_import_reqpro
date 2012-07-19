@@ -1,0 +1,71 @@
+---
+custom_value_01:
+  id: 1
+  customized_type: "Issue"
+  customized_id: 11
+  custom_field_id: 1
+  value: "{01}"
+  
+custom_value_02:
+  id: 2
+  customized_type: "Issue"
+  customized_id: 12
+  custom_field_id: 1
+  value: "{02}"
+  
+custom_value_03:
+  id: 3
+  customized_type: "Issue"
+  customized_id: 13
+  custom_field_id: 1
+  value: "{03}"
+  
+custom_value_04:
+  id: 4
+  customized_type: "Issue"
+  customized_id: 14
+  custom_field_id: 1
+  value: "{04}"
+  
+custom_value_05:
+  id: 5
+  customized_type: "Issue"
+  customized_id: 15
+  custom_field_id: 1
+  value: "{05}"
+  
+custom_value_06:
+  id: 6
+  customized_type: "Issue"
+  customized_id: 21
+  custom_field_id: 1
+  value: "{06}"
+  
+custom_value_07:
+  id: 7
+  customized_type: "Issue"
+  customized_id: 22
+  custom_field_id: 1
+  value: "{07}"
+  
+custom_value_10:
+  id: 10
+  customized_type: "Project"
+  customized_id: 1
+  custom_field_id: 1
+  value: "{01}"
+
+custom_value_11:
+  id: 11
+  customized_type: "Project"
+  customized_id: 2
+  custom_field_id: 1
+  value: "{02}"
+  
+custom_value_20:
+  id: 20
+  customized_type: "NoIssue"
+  customized_id: 12
+  custom_field_id: 1
+  value: "{20}"
+  
