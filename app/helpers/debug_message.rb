@@ -1,0 +1,3 @@
+class DebugMessage < RuntimeError
+
+end

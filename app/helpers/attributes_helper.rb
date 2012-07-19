@@ -116,7 +116,7 @@ module AttributesHelper
   # force value into custom field values (test after save issue)
   def update_custom_value_in_issue(a_issue, a_custom_field, the_value, debug)
     a_issue.custom_field_values={a_custom_field.id => the_value.to_s}
-    if !a_issue.save
+    if !issue_save_with_assignee_restore(a_issue)
       puts "Error while save the issue within custom value update"
       debugger
     else

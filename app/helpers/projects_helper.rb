@@ -49,7 +49,7 @@ module ProjectsHelper
   #2.) looking for rpuser inside redmine users
   #3.) looking for membership inside the actual project
   def find_project_rpmember(value, rpuser, project, debug)
-    found_user = find_user_by_string(value, rpuser) 
+    found_user = find_user_by_string(value, rpuser)   
     #check for members of project
     if found_user != nil
       if Member.find(:all, :conditions => { :user_id => found_user[:id], :project_id => project.id })[0] == nil
