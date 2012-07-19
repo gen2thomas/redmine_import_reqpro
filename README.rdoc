@@ -12,6 +12,7 @@ To install:
 en, de localizations included.
 
 ToDos (rp = ReqPro, rm = redmine):
+- write some unit tests --> planned for V0.5
 - add versions if needed --> planned for V0.5
 - what to do with multiple mapping? (f.e. more than one user is mapped to one redmine user, more than one tracker is mapped to one redmine tracker) --> planned for V0.6
 - switch to a specific imported project from the last site --> planned for V0.7
