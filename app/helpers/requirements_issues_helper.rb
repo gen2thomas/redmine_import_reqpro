@@ -53,7 +53,8 @@ module RequirementsIssuesHelper
           if parent_issue_id != nil
             child_issue.parent_issue_id = parent_issue_id
             #wg. redmine Defect #11348
-            if issue_save_with_assignee_restore(child_issue)
+            child_issue=issue_save_with_assignee_restore(child_issue)
+            if child_issue != nil
               set_parent_from_child(rp_req_unique_names, my_parent_rp_req_unique_name_key, debug)
             else
               debugger
@@ -79,20 +80,24 @@ module RequirementsIssuesHelper
     tmp_a_to = a_issue.assigned_to
     tmp_a_to_id = a_issue.assigned_to_id
     
-    result = a_issue.save
-    
-    if a_issue.assigned_to != tmp_a_to
+    if !a_issue.save
       debugger
-      if tmp_a_to != nil
-        puts "assignee canged, old: " + tmp_a_to + ", new: " + a_issue.assigned_to
-      else
-        puts "assignee canged, old: nil, new: " + a_issue.assigned_to.login
+      a_issue = nil
+    else
+      if a_issue.assigned_to != tmp_a_to
+        debugger
+        if tmp_a_to != nil
+          puts "assignee canged, old: " + tmp_a_to + ", new: " + a_issue.assigned_to
+        else
+          puts "assignee canged, old: nil, new: " + a_issue.assigned_to.login
+        end
+        debugger
       end
-      debugger
+      
+      a_issue.assigned_to = tmp_a_to
     end
     
-    a_issue.assigned_to = tmp_a_to
-    return result
+    return a_issue
   end
   
 end

@@ -1,4 +1,6 @@
 module AttributesHelper
+  
+  #collect 
   def collect_attributes(some_projects, requirement_types, used_attributes_in_rts, deep_check_attrs)
     attributes = collect_attributes_fast(some_projects, requirement_types, used_attributes_in_rts)
     if deep_check_attrs
@@ -116,7 +118,8 @@ module AttributesHelper
   # force value into custom field values (test after save issue)
   def update_custom_value_in_issue(a_issue, a_custom_field, the_value, debug)
     a_issue.custom_field_values={a_custom_field.id => the_value.to_s}
-    if !issue_save_with_assignee_restore(a_issue)
+    a_issue=issue_save_with_assignee_restore(a_issue)
+    if a_issue == nil
       puts "Error while save the issue within custom value update"
       debugger
     else
@@ -248,9 +251,9 @@ module AttributesHelper
   
 private
 
+  #get an data path to open an ProjectStructure.xml file
+  #collect all labels to a hash
   def collect_attributes_fast(some_projects, requirement_types, used_attributes_in_rts)
-    #get an data path to open an ProjectStructure file
-    #collect all labels to a hash
     attributes = Hash.new
     some_projects.each do |a_projectid, a_project|
       xmldoc = open_xml_file(a_project[:path],"ProjectStructure.XML")
@@ -303,9 +306,9 @@ private
     return attributes
   end
   
+  #search inside all files of all projects for using of attributes
+  # change status for found attributes to "+" (needed and available)
   def update_attributes_for_reqpro_needing(some_projects, attributes)
-    #search inside all files of all projects for using of attributes
-    # change status for found attributes to "+" (needed and available)
     some_projects.each_value do |a_project|
       filepath = a_project[:path] # this is the main path of project
       all_files = collect_all_data_files(filepath)
