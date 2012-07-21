@@ -7,4 +7,30 @@ issue_priority_01:
  type: "IssuePriority"
  active: true
  project_id: 1
+
+issue_priority_02:
+ id: 2
+ name: "Low"
+ position: 2
+ is_default: false
+ type: "IssuePriority"
+ active: true
+ project_id: 1
  
+issue_priority_03:
+ id: 3
+ name: "Medium"
+ position: 3
+ is_default: false
+ type: "IssuePriority"
+ active: true
+ project_id: 1
+ 
+issue_priority_04:
+ id: 4
+ name: "High"
+ position: 4
+ is_default: false
+ type: "IssuePriority"
+ active: true
+ project_id: 1

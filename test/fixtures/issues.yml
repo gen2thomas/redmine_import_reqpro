@@ -46,7 +46,7 @@ issue_15:
     subject: "MyTestIssue15_AtProject1"
     description: "MyDescription15"
     status_id: 1
-    priority_id: 4
+    priority_id: 1
     author_id: 1
 
 issue_21:
@@ -56,7 +56,7 @@ issue_21:
     subject: "MyTestIssue21"
     description: "MyDescription21"
     status_id: 1
-    priority_id: 4
+    priority_id: 2
     author_id: 1
     
 issue_22:
@@ -66,7 +66,7 @@ issue_22:
     subject: "MyTestIssue22"
     description: "MyDescription22"
     status_id: 1
-    priority_id: 4
+    priority_id: 3
     author_id: 1
     
 issue_31:
