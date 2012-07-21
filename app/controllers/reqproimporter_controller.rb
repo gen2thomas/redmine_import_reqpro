@@ -42,7 +42,7 @@ class ReqproimporterController < ApplicationController
   def listprojects
     #list all projects with some informations and external project prefixes
     #--------------------
-    # read a textfile witch include all the project directories with path
+    # read a textfile which include all the project directories with path
     # at the local machine
     if params[:file] == nil
       flash.now[:error] = l_or_humanize("label_no_file")
@@ -707,7 +707,6 @@ private
           # update issue or new issue
           if new_issue == nil
             new_issue = test_issue
-            issue_save_with_assignee_restore(new_issue) # for trackers --> used for custom fields
             import_new_issue = true
           end
           rpid = req.elements["GUID"].text # this id
@@ -732,9 +731,6 @@ private
                     # import this attribute value
                     new_issue = update_attribute_or_custom_field_with_value(new_issue, attributes[hash_key][:mapping], 
                                   known_attributes[attributes[hash_key][:mapping]][:custom_field_id], value, rpusers, debug)
-                    debugger
-                    puts "(C) hier mal den new_issue.assigned_to ansehen!"
-                    debugger
                   end
                 end
               end
@@ -845,7 +841,8 @@ private
             debugger
           end
           # try to save
-          if !issue_save_with_assignee_restore(new_issue)
+          new_issue=issue_save_with_assignee_restore(new_issue)
+          if new_issue==nil
             @@import_results[:issues][:failed] += 1
             debugger
             puts "Failed to save new issue"
