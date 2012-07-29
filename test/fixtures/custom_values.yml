@@ -53,7 +53,7 @@ custom_value_10:
   customized_type: "Project"
   customized_id: 1
   custom_field_id: 1
-  value: "{01}"
+  value: "{10}"
 
 custom_value_11:
   id: 11

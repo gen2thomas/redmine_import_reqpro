@@ -13,7 +13,7 @@ issue_12:
     id: 12
     tracker_id: 1
     project_id: 1
-    subject: "MyTestIssue1_AtProject1"
+    subject: "MyTestIssue12_AtProject1"
     description: "MyDescription12"
     status_id: 1
     priority_id: 4

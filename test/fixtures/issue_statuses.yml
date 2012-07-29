@@ -1,7 +1,8 @@
 ---
 issue_status_1:
-    id: 1
-    name: "Default"
-    is_closed: false
-    is_default: true
-    position: 1
+ id: 1
+ name: Default
+ is_closed: false
+ is_default: true
+ position: 1
+ 

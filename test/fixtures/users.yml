@@ -1,0 +1,31 @@
+---
+user_01:
+  id: 1
+  firstname: "First1"
+  lastname: "User1"
+  login: "User01"
+  mail: "user01@users.de"
+  admin: true
+  status: 1
+  type: User
+
+user_02:
+  id: 2
+  firstname: "First2"
+  lastname: "User2"
+  login: "User02"
+  mail: "user02@users.de"
+  admin: false
+  status: 1 
+  type: User
+  
+user_03:
+  id: 3
+  firstname: "First3"
+  lastname: "User3"
+  login: "User03"
+  mail: "user03@users.de"
+  admin: false
+  status: 1
+  type: User
+  

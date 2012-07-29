@@ -1,36 +1,36 @@
 ---
 issue_priority_01:
  id: 1
- name: "Default"
+ name: Default
  position: 1
  is_default: true
- type: "IssuePriority"
+ type: IssuePriority
  active: true
  project_id: 1
 
 issue_priority_02:
  id: 2
- name: "Low"
+ name: Low
  position: 2
  is_default: false
- type: "IssuePriority"
+ type: IssuePriority
  active: true
  project_id: 1
  
 issue_priority_03:
  id: 3
- name: "Medium"
+ name: Medium
  position: 3
  is_default: false
- type: "IssuePriority"
+ type: IssuePriority
  active: true
  project_id: 1
  
 issue_priority_04:
  id: 4
- name: "High"
+ name: High
  position: 4
  is_default: false
- type: "IssuePriority"
+ type: IssuePriority
  active: true
  project_id: 1
