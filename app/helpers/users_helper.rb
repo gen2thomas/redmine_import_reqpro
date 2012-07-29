@@ -129,6 +129,7 @@ module UsersHelper
   # rpusers[key] ={:firstname => "Firstname", :lastname => "Lastname", :rmuser => rm-user}
   # if a rpuser is found --> check the rmusers for existenz
   def find_user_by_string(rp_user_string, rpusers)
+    puts "Zu spaet"
     rp_fullname = get_fullname(rp_user_string, nil, nil)
     found_user = nil
     # best level:

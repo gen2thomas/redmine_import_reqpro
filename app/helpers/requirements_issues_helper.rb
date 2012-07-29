@@ -16,18 +16,9 @@ module RequirementsIssuesHelper
   # each issue have to have an "RPUID" custom field
   # the corresponding redmine issue is given back
   def issue_find_by_rpuid(rpuid, debug)
-    custom_value = CustomValue.find_by_value(rpuid)
+    custom_value = CustomValue.find(:first, :conditions => { :value => rpuid, :customized_type => "Issue" })
     if custom_value == nil
       return nil
-    end
-    if custom_value.customized_type != "Issue"
-      begin
-        raise(DebugMessage, "This is not an issue-RPUID: " + rpuid + ", type is an " + custom_value.customized_type) if debug
-      rescue DebugMessage => var
-        puts "#{var.class}: #{var.message}"
-      ensure
-        return nil
-      end
     end
     return Issue.find_by_id(custom_value.customized_id)
   end
