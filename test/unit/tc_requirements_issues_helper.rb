@@ -7,12 +7,23 @@ include RequirementsIssuesHelper
 #
 # starten mit:  vendor/plugins/redmine_import_reqpro/test/unit/tc_requirements_issues_helper.rb
 
-class TestsRequirementsIssuesHelper < ActiveSupport::TestCase 
+class TcRequirementsIssuesHelper < ActiveSupport::TestCase 
   self.fixture_path = File.dirname(__FILE__) + "/../fixtures/"
+  fixtures :issues, :projects, :trackers, :projects_trackers, :issue_statuses, :enumerations, :custom_fields, :custom_values
   
-  fixtures :issues, :projects, :issue_statuses, :enumerations, :custom_fields, :custom_values
+  def test_issue_prerequisites
+    puts "test_issue_prerequisites"
+    assert(Issue.find(:all).count==8, "Issue nicht korrekt")
+    assert(Project.find(:all).count==2, "Project nicht korrekt")
+    assert(Tracker.find(:all).count==3, "Tracker nicht korrekt")
+    assert(IssueStatus.find(:all).count==1, "IssueStatus nicht korrekt")
+    assert(Enumeration.find(:all).count==4, "Enumeration nicht korrekt")
+    assert(CustomField.find(:all).count==1, "CustomField nicht korrekt")
+    assert(CustomValue.find(:all).count==10, "CustomValue nicht korrekt")
+  end
     
   def test_issue_normal_save
+    puts "test_issue_normal_save"
     #prepare new issue
     a_issue = Issue.new    
     a_issue.tracker_id = issues(:issue_11).tracker_id
@@ -31,6 +42,7 @@ class TestsRequirementsIssuesHelper < ActiveSupport::TestCase
   end
   
   def test_issue_save_with_assignee_restore
+    puts "test_issue_save_with_assignee_restore"
     #prepare new issue
     a_issue = Issue.new    
     a_issue.tracker_id = issues(:issue_12).tracker_id
