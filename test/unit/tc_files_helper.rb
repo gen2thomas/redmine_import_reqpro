@@ -8,7 +8,7 @@ class TcFilesHelper < ActiveSupport::TestCase
   def test_collect_all_data_files
     puts "test_collect_all_data_files"
     cf= collect_all_data_files(File.dirname(__FILE__) + '/../samples')
-    assert_equal(cf.count, 2, "Es sollten genau 2 Dateien sein!")
+    assert_equal(7, cf.count, "Es sollten genau 7 Dateien sein!")
     assert(cf.include?("Baseline02_Mlc/Project.XML"), "Datei fehlt")
     assert(cf.include?("Baseline01_App/Project.XML"), "Datei fehlt")
   end

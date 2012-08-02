@@ -13,13 +13,13 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
   
   def test_issue_prerequisites
     puts "test_issue_prerequisites"
-    assert(Issue.find(:all).count==8, "Issue nicht korrekt")
-    assert(Project.find(:all).count==2, "Project nicht korrekt")
-    assert(Tracker.find(:all).count==3, "Tracker nicht korrekt")
-    assert(IssueStatus.find(:all).count==1, "IssueStatus nicht korrekt")
-    assert(Enumeration.find(:all).count==4, "Enumeration nicht korrekt")
-    assert(CustomField.find(:all).count==1, "CustomField nicht korrekt")
-    assert(CustomValue.find(:all).count==10, "CustomValue nicht korrekt")
+    assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
+    assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
+    assert_equal(3,Tracker.find(:all).count, "Tracker nicht korrekt")
+    assert_equal(1,IssueStatus.find(:all).count, "IssueStatus nicht korrekt")
+    assert_equal(4,Enumeration.find(:all).count, "Enumeration nicht korrekt")
+    assert_equal(1,CustomField.find(:all).count, "CustomField nicht korrekt")
+    assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
   end
     
   def test_issue_normal_save

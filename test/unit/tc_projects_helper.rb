@@ -15,11 +15,11 @@ class TcProjectsHelper < ActiveSupport::TestCase
   
   def test_project_prerequisites
     puts "test_project_prerequisites"
-    assert(Project.find(:all).count==2, "Project nicht korrekt")
-    assert(CustomValue.find(:all).count==10, "CustomValue nicht korrekt")
-    assert(Issue.find(:all).count==8, "Issue nicht korrekt")
-    assert(User.find(:all).count==3, "User nicht korrekt")
-    assert(Role.find(:all).count==5, "Role nicht korrekt")
+    assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
+    assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
+    assert_equal(6,User.find(:all).count, "User nicht korrekt")
+    assert_equal(5,Role.find(:all).count, "Role nicht korrekt")
   end
     
   def test_project_find_by_rpuid
@@ -29,10 +29,10 @@ class TcProjectsHelper < ActiveSupport::TestCase
     #prepare call
     hc=HelperClassForModules.new()
     #function call
-    proj_1=hc.project_find_by_rpuid("{10}", true) #known project
-    proj_2=hc.project_find_by_rpuid("{02}", true) #same ID also for an Issue
-    proj_nil = hc.project_find_by_rpuid("{01234}", true) #unknown rpuid
-    no_proj = hc.project_find_by_rpuid("{07}", true) #wrong customized_type
+    proj_1=hc.project_find_by_rpuid("{10}") #known project
+    proj_2=hc.project_find_by_rpuid("{02}") #same ID also for an Issue
+    proj_nil = hc.project_find_by_rpuid("{01234}") #unknown rpuid
+    no_proj = hc.project_find_by_rpuid("{07}") #wrong customized_type
     #test
     assert_equal(Project.find_by_id(1), proj_1, "Project 1 not found by ID!")
     assert_equal(Project.find_by_id(2), proj_2, "Project 2 not found by ID!")
@@ -47,7 +47,7 @@ class TcProjectsHelper < ActiveSupport::TestCase
     #prepare call
     hc=HelperClassForModules.new()
     #call
-    pcf1 = hc.create_project_custom_field_for_rpuid()
+    pcf1 = hc.create_project_custom_field_for_rpuid(true)
     #test 1
     assert(pcf1!=nil, "pcf1 is nil!")
     if pcf1!=nil
@@ -57,7 +57,7 @@ class TcProjectsHelper < ActiveSupport::TestCase
     #prepare
     pcf1_id=pcf1.id
     #call
-    pcf2 = hc.create_project_custom_field_for_rpuid()
+    pcf2 = hc.create_project_custom_field_for_rpuid(true)
     #test 2
     assert(pcf_count+1 == ProjectCustomField.find(:all).count, "pcf2 has not to be added!")
     assert(pcf2[:id]==pcf1_id, "pcf1 id must be the same like pfc2!")
