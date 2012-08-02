@@ -1,4 +1,4 @@
-require 'fastercsv'
+#require 'fastercsv'
 require 'tempfile'
 require 'rexml/document'
 require File.dirname(__FILE__) + '/../../app/helpers/files_helper'
@@ -17,12 +17,6 @@ include UsersHelper
 include RequirementTypesHelper
 include AttributesHelper
 include RequirementsIssuesHelper
-
-class MultipleIssuesForUniqueValue < Exception
-end
-
-class NoIssueForUniqueValue < Exception
-end
 
 class ReqproimporterController < ApplicationController
   unloadable
@@ -317,8 +311,9 @@ private
   def create_all_users_and_update(rp_users, update_allowed)
     # looking for existend users because while importing multiple projects
     # can cause double users which will cause an error while save the user
-    admin_user = User.find_by_admin(true)
     if rp_users != nil
+      #TODO: koennen das nicht auch mehrere admins sein?
+      admin_user = User.find_by_admin(true) #new user modifications forbidden for admin users
       import_new_user = false
       rp_users.each do |rp_key, rp_user|
         new_user = rp_user[:rmuser]
@@ -334,7 +329,7 @@ private
           else
             new_user = User.find_by_login(rp_user[:login])
             if new_user != nil
-              puts "User found via login: " + new_user[:mail]  + " -> " + rp_user[:email] if @debug
+              puts "User found via login: " + new_user[:login]  + " -> " + rp_user[:login] if @debug
               rp_user[:rmuser] = new_user # update mapping
               next if !update_allowed
             else
@@ -355,7 +350,7 @@ private
         new_user[:firstname] = rp_user[:firstname] || rp_user[:lastname] || rp_user[:login]
         # add rpid as "RPUID"
         if rp_key.to_s != "" and rp_key.to_s != nil
-          user_custom_field_for_rpuid = create_user_custom_field_for_rpuid("RPUID", @debug)
+          user_custom_field_for_rpuid = create_user_custom_field_for_rpuid(@debug)
           # set value
           # "new_user.custom_values" could never be nil, always an empty array "[]"
           new_user.custom_field_values={user_custom_field_for_rpuid.id => rp_key.to_s}
@@ -559,7 +554,7 @@ private
         new_project.is_public = "0"
         # add rpid as "RPUID"
         if key.to_s != "" and key.to_s != nil
-          project_custom_field_for_rpuid = create_project_custom_field_for_rpuid("RPUID")
+          project_custom_field_for_rpuid = create_project_custom_field_for_rpuid(@debug)
           # set value 
           # "new_project.custom_values" could never be nil, always an empty array "[]"
           new_project.custom_field_values={project_custom_field_for_rpuid.id => key.to_s}            
@@ -606,12 +601,12 @@ private
     if versions_mapping != nil
       vmap_new = Hash.new
       versions_mapping.each do |rp_project_id, attr_for_version_id|
-        rm_project =  project_find_by_rpuid(rp_project_id, debug)
+        rm_project =  project_find_by_rpuid(rp_project_id)
         if rm_project == nil
           rm_project = Project.find_by_identifier(attributes[attr_for_version_id][:project].downcase)
         end
         if rm_project == nil
-          puts "Project at version creation not found, take next! project ID: " + rp_project_id
+          puts "Project at version creation not found, take next! project ID: " + rp_project_id if debug
           next
         end
         vmap_new[rp_project_id] = Hash.new

@@ -118,7 +118,7 @@ module ProjectsHelper
   end
   
   # create project custom field for RPUID
-  def create_project_custom_field_for_rpuid()
+  def create_project_custom_field_for_rpuid(debug)
     the_name="RPUID"
     new_project_custom_field = ProjectCustomField.find_by_name(the_name)
     if new_project_custom_field == nil
@@ -139,14 +139,14 @@ module ProjectsHelper
         debugger
       end
     else
-      puts "Project custom field for RPUID already exist."
+      puts "Project custom field for RPUID already exist." if debug
     end
     return new_project_custom_field
   end
   
   # each project have to have an "RPUID" custom field
   # the corresponding redmine project is given back
-  def project_find_by_rpuid(rpuid, debug)
+  def project_find_by_rpuid(rpuid)
     custom_value = CustomValue.find(:first, :conditions => { :value => rpuid, :customized_type => "Project" })
     if custom_value == nil
       return nil

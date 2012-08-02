@@ -41,9 +41,10 @@ module UsersHelper
   end
     
   #call after manual mapping in view
-  # delete not mapped (means not used) users
+  # use array of rmusers
+  # delete not mapped (means not used) rpusers from hash
   # add mapping target (:rmuser) if needed
-  def update_rpusers_for_map_needing(rpusers, rmusers, user_mapping, debug)  
+  def update_rpusers_for_map_needing(rpusers, rmusers, user_mapping, debug)
     if rpusers != nil
       rpusers.each do |rpuser_id, rpuser_value|
         rmuser_key = user_mapping[rpuser_value[:conf_key]]
@@ -73,19 +74,25 @@ module UsersHelper
     fullname = Hash.new
     fullname[:firstname] = nil
     fullname[:lastname] = nil
+    #remove trailing and leading whitespaces
+    fullname_old.strip!
     # try to split
-    # case 1: space is the delimiter "firstname lastname"
+    # case 1: space is the delimiter "Firstname Lastname" or "firstname lastname" or "Firstname lastname" or "firstname Lastname"
     splitname = fullname_old.split(/\s/)
     if splitname.length == 2
       fullname[:firstname] = splitname[0].capitalize
       fullname[:lastname] = splitname[1].capitalize
     end
-    # case 2: uppercase letters are the signs "FirstnameLastname" or "Firstname lastname"
+    # case 2: uppercase letters are the signs "FirstnameLastname" or "firstnameLastname"
     if fullname[:firstname] == nil
       splitname = fullname_old.split(/([A-Z][a-z]*)/)
       if splitname.length == 4
         fullname[:firstname] = splitname[1].capitalize
         fullname[:lastname] = splitname[3].capitalize
+      end
+      if splitname.length == 2
+        fullname[:firstname] = splitname[0].capitalize
+        fullname[:lastname] = splitname[1].capitalize
       end
     end
     # check against errors and use mail
@@ -94,24 +101,26 @@ module UsersHelper
     if fullname[:firstname] == nil
       if splitname.length < 4 and email != nil
         email1 = email.split(/[@]/) # ["firstname.lastname","gmx.de"]
-        splitname = email1[0].split(/([A-Z]?[a-z]*)([.]?)/) # ["", "firstname", "", "", "Lastname"]
-        if splitname.length == 5
-          fullname[:firstname] = splitname[1].capitalize
-          fullname[:lastname] = splitname[4].capitalize      
+        if email1 != nil and email1.count>0
+          splitname = email1[0].split(/([A-Z]?[a-z]*)([.]?)/) # ["", "firstname", "", "", "Lastname"]:
+          if splitname.length == 5
+            fullname[:firstname] = splitname[1].capitalize
+            fullname[:lastname] = splitname[4].capitalize      
+          end
         end 
       end
     end
     # case 4: try to find login inside email
     # case 5: firstname@lastname...
-    if email1 != nil
+    if email1 != nil and email1.count>0
       if fullname[:firstname] == nil
         fullname[:firstname] = email1[0].downcase.split(login.downcase)[0].capitalize
         if fullname[:firstname].downcase != email1[0].downcase
           #login was found
           fullname[:lastname] = login.capitalize
         else
-          #login was not found, use last part of mail
-          fullname[:lastname] = email1[1]
+          #login was not found, use last part of mail without extension
+          fullname[:lastname] = email1[1].split(/[.]/)[0].capitalize if email1[1]!=nil
         end
       end
     end
@@ -120,7 +129,7 @@ module UsersHelper
       fullname[:firstname] = "Firstname"
     end
     if fullname[:lastname] == nil
-      fullname[:lastname] = fullname_old
+      fullname[:lastname] = fullname_old.capitalize
     end
     return fullname
   end
@@ -129,7 +138,6 @@ module UsersHelper
   # rpusers[key] ={:firstname => "Firstname", :lastname => "Lastname", :rmuser => rm-user}
   # if a rpuser is found --> check the rmusers for existenz
   def find_user_by_string(rp_user_string, rpusers)
-    puts "Zu spaet"
     rp_fullname = get_fullname(rp_user_string, nil, nil)
     found_user = nil
     # best level:
@@ -178,11 +186,11 @@ module UsersHelper
   
   # create project custom field for RPUID
   # give back an succesfull saved UserCustomField
-  def create_user_custom_field_for_rpuid(the_name, debug)
-    new_user_custom_field = UserCustomField.find_by_name(the_name)
+  def create_user_custom_field_for_rpuid(debug)
+    new_user_custom_field = UserCustomField.find_by_name("RPUID")
     if new_user_custom_field == nil
       new_user_custom_field = UserCustomField.new
-      new_user_custom_field.name = the_name
+      new_user_custom_field.name = "RPUID"
       new_user_custom_field.field_format = "string"
       new_user_custom_field.default_value = ""
       new_user_custom_field.min_length = "0"
@@ -205,23 +213,20 @@ module UsersHelper
    
   # each user have to have an "RPUID" custom field
   # the corresponding redmine user is given back
-  def user_find_by_rpuid(rpuid, debug)
-    custom_value = CustomValue.find_by_value(rpuid)
+  def user_find_by_rpuid(rpuid)
+    custom_value = CustomValue.find(:first, :conditions => { :value => rpuid, :customized_type => "User" })
     if custom_value == nil
-      return nil
-    end
-    if custom_value.customized_type != "User"
-      puts "This is not an user-RPUID: " + rpuid + "type is an " + custom_value.customized_type if debug
       return nil
     end
     return User.find_by_id(custom_value.customized_id)
   end
   
 private
+
+  #get an data path to open an ProjectUserGroups file
+  #collect all users to an array of hash
+  # add a possible ":conf_key" (conflation-key)
   def collect_users_fast(some_projects, conflate_users)
-    #get an data path to open an ProjectUserGroups file
-    #collect all users to an array of hash
-    # add a possible ":conf_key" (conflation-key)
     users = Hash.new
     some_projects.each_value do |a_project|
       xmldoc = open_xml_file(a_project[:path],"ProjectUserGroups.XML")

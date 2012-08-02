@@ -29,6 +29,7 @@ module FilesHelper
   end
   
   def open_xml_file(filepath, filename)
+    #TODO: sinnvolle Reaktion, wenn Pfad nicht da oder File nicht da
     oldpath=Dir.pwd
     #change to the right data directory
     Dir.chdir(filepath)

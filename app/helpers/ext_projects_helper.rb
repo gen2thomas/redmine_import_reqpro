@@ -1,8 +1,8 @@
 module ExtProjectsHelper
   
-  def external_prefixes_to_string(external_projects_list)
-    #get a list of external projects
-    #collect all prefixes inside a string
+  #get a list of external projects
+  #collect all prefixes inside a string
+  def external_prefixes_to_string(external_projects_list)  
     external_prefixes = ""
     external_projects_list.each_value do |ext_proj| 
       if external_prefixes.length > 0
@@ -13,10 +13,10 @@ module ExtProjectsHelper
     return external_prefixes
   end
   
+  # "available_projects" --> available (self and external) projects
+  #check for external projects
+  # --> known external projects, status = "?" means unknown
   def collect_external_projects(filepath, deep_check_ext_projects, available_projects)
-    # "available_projects" --> available (self and external) projects
-    #check for external projects
-    # --> known external projects, status = "?" means unknown
     external_projects = collect_external_projects_fast(filepath)
     if deep_check_ext_projects
       # --> update status of external projects
@@ -42,9 +42,9 @@ module ExtProjectsHelper
   
 private
 
+  #get an data path to open an external project file
+  #collect all prefixes and guids to an array of hash
   def collect_external_projects_fast(filepath)
-    #get an data path to open an external project file
-    #collect all prefixes and guids to an array of hash
     xmldocexternal = open_xml_file(filepath,"ExternalProjects.XML")
     external_projects = Hash.new
     xmldocexternal.elements.each("PROJECT/ExternalProject") do |ext_proj|
@@ -56,23 +56,23 @@ private
     return external_projects
   end
   
+  #search inside the files for external traces (TTo.EPGUID, TFrom.EPGUID)
+  # change status for found GUID to "-" (needed but not available)
+  # availability is checked later on
   def update_status_for_needed_ext_projects(external_projects, filepath)
-    #search inside the files for external traces (TTo.EPGUID, TFrom.EPGUID)
-    # change status for found GUID to "-" (needed but not available)
-    # availability is checked later on
     all_files = collect_all_data_files(filepath)
     all_files.each do |filename|
       xmldoc = open_xml_file(filepath,filename)
       xmldoc.elements.each("PROJECT/Pkg/Requirements/Req/TFrom/TReq/EPGUID") do |e|
         if e.text != nil #not empty
           hash_key = e.text
-          external_projects[hash_key][:status] = "-"
+          external_projects[hash_key][:status] = "-" if external_projects[hash_key]!=nil
         end
       end
       xmldoc.elements.each("PROJECT/Pkg/Requirements/Req/TTo/TReq/EPGUID") do |e|
         if e.text != nil #not empty
           hash_key = e.text
-          external_projects[hash_key][:status] = "-"
+          external_projects[hash_key][:status] = "-" if external_projects[hash_key]!=nil
         end
       end
     end
