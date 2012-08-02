@@ -1,0 +1,2 @@
+<?xml version="1.0" standalone="yes"?>
+<PROJECT GUID="{065CCCD0-4129-497C-8474-27EBCD96065D}"><ExternalProject GUID="{BFCD0B9E-E4B5-4B0A-8C59-F568269DCCE3}" Prefix="MSP" Name="MultisprayerPainting - Product" Directory="../ReqPro/Produkte/MultisprayerPainting_ReqProProduct" Filename="Msp" ConnectAtOpen="-1"/><ExternalProject GUID="{D8365C50-839F-49A9-BC66-E400921E7D47}" Prefix="NFL" Name="NewFunctionLibraries - Product" Directory="../ReqPro/Projekte/NewFunctionLibraries" Filename="Nfl" ConnectAtOpen="-1"/></PROJECT>
