@@ -1,10 +1,5 @@
 # Require the unit tests
-['tc_files_helper.rb',
-'tc_projects_helper.rb',
-'tc_requirements_issues_helper.rb'
-].each do |file|
-  require File.dirname(__FILE__) + '/unit/' + file
-end
+require File.dirname(__FILE__) + '/unit/ts_all_unittests.rb'
 
 # Require the functional tests
 #['application_controller_test.rb',
