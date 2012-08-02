@@ -69,3 +69,17 @@ custom_value_20:
   custom_field_id: 1
   value: "{20}"
   
+custom_value_30:
+  id: 30
+  customized_type: "User"
+  customized_id: 1
+  custom_field_id: 1
+  value: "{30}"
+
+custom_value_31:
+  id: 31
+  customized_type: "User"
+  customized_id: 3
+  custom_field_id: 1
+  value: "{03}"
+  
