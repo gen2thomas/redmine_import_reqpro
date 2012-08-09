@@ -1,5 +1,4 @@
-#require 'fastercsv'
-require 'tempfile'
+#require 'tempfile'
 require 'rexml/document'
 require File.dirname(__FILE__) + '/../../app/helpers/files_helper'
 require File.dirname(__FILE__) + '/../../app/helpers/projects_helper'
@@ -293,7 +292,7 @@ private
     return vmap_new
   end
   
-  # create a hash {rpattrprefix1 => attr_name1, rpattrprefix2 => attr_name1, rpattrprefix3 => attr_name2} 
+  # create a hash {rpattrprefix1[:attr_name] => attr_name1, rpattrprefix2[:attr_name] => attr_name1, rpattrprefix3[:attr_name] => attr_name2} 
   def set_attributes_mapping(attributes_map)
     attributes_mapping = Hash.new
     if attributes_map != nil
