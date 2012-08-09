@@ -1,6 +1,8 @@
 module AttributesHelper
   
-  #collect 
+  #collect the req_pro attributes for all projects in "some_projects"
+  #attributes including "requirement_types" if attribute is a rt
+  #
   def collect_attributes(some_projects, requirement_types, used_attributes_in_rts, deep_check_attrs)
     attributes = collect_attributes_fast(some_projects, requirement_types, used_attributes_in_rts)
     if deep_check_attrs
@@ -92,7 +94,8 @@ module AttributesHelper
     return remaped_attributes
   end
   
-  #call after manual mapping in view
+  #call after manual mapping in view 
+  #mapping hash is {attrlabel => attr_name} or {project_attrlabel => attr_name}
   # delete not mapped (means not used) requirements
   # add :mapping target if needed
   def update_attributes_for_map_needing(attributes, versions_mapping, attributes_mapping)
@@ -225,7 +228,12 @@ module AttributesHelper
         # author can't be empty
         a_issue.author = find_project_rpmember(value, rpusers, a_issue.project, debug) || User.current
       when l_or_humanize(:watchers, :prefix=>"field_")
-        a_issue.watchers = find_project_rpmember(value, rpusers, a_issue.project, debug)
+        found_user = find_project_rpmember(value, rpusers, a_issue.project, debug)
+        if found_user != nil
+          wa=Watcher.new
+          wa.user_id = found_user
+          a_issue.watchers.push(wa)
+        end
       when l_or_humanize(:category, :prefix=>"field_")
         a_issue.category = IssueCategory.find_by_name(value) || a_issue.category
       when l_or_humanize(:priority, :prefix=>"field_")
@@ -234,9 +242,9 @@ module AttributesHelper
         # status can't be empty
         a_issue.status = IssueStatus.find_by_name(value)||IssueStatus.default
       when l_or_humanize(:start_date, :prefix=>"field_")
-        a_issue.start_date = Time.at(value.to_i).strftime("%F")
+        a_issue.start_date = Time.at(Time.parse(value).to_i).strftime("%F")
       when l_or_humanize(:due_date, :prefix=>"field_")
-        a_issue.due_date = Time.at(value.to_i).strftime("%F")
+        a_issue.due_date = Time.at(Time.parse(value).to_i).strftime("%F")
       when l_or_humanize(:done_ratio, :prefix=>"field_")
         value = 0 if value.to_i < 0
         a_issue.done_ratio = [value.to_i, 100].min
@@ -279,7 +287,7 @@ private
             #check for list items  
             if attri.elements["ListItems"] != nil
               # there are some list items
-              attri.elements["ListItems"].each do |item|  
+              attri.elements["ListItems"].each_element("ListItem") do |item|
                 if item.attributes["ItemText"] != nil
                   #check for a new entry for default
                   if item.attributes["Default"]=="True"
@@ -291,9 +299,9 @@ private
             end
           else
             #this should normally never be the case, better would be a raised error
-            #add this project to known projects
             puts "Already known attribute-item found: " + hash_key + "->" + attri.attributes["Label"]
             debugger
+            #add this project to known projects
             attributes[hash_key][:project] = attributes[hash_key][:project].to_a
             attributes[hash_key][:project].push(a_project[:prefix])
             attributes[hash_key][:project].uniq! #delete double entries
@@ -316,7 +324,7 @@ private
         xmldoc = open_xml_file(filepath,filename)
         xmldoc.elements.each("PROJECT/Pkg/Requirements/Req") do |req|
           if req.elements["FVs"] != nil
-            req.elements["FVs"].each do |fv|
+            req.elements["FVs"].each_element("FV") do |fv|
               if fv != nil #not empty
                 hash_key = fv.elements["FGUID"].text
                 if attributes[hash_key] != nil
@@ -326,7 +334,7 @@ private
             end
           end
           if req.elements["LVs"] != nil
-            req.elements["LVs"].each do |lv|
+            req.elements["LVs"].each_element("LV") do |lv|
               if lv != nil #not empty
                 #hash_key = lv.elements["LGUID"].text --> this is only the list item ID!
                 hash_key = lv.elements["UDF"].text # this is the attribute ID
