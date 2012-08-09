@@ -1,11 +1,13 @@
 require File.dirname(__FILE__) + '/../test_helper.rb'
 require File.dirname(__FILE__) + '/../../app/helpers/requirements_issues_helper'
 
-include RequirementsIssuesHelper
-
 #gutes Beispiel: vendor/plugins/awesome_nested_set
 #
 # starten mit:  vendor/plugins/redmine_import_reqpro/test/unit/tc_requirements_issues_helper.rb
+
+class HelperClassForModules
+  include RequirementsIssuesHelper
+end
 
 class TcRequirementsIssuesHelper < ActiveSupport::TestCase 
   self.fixture_path = File.dirname(__FILE__) + "/../fixtures/"
@@ -16,7 +18,7 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
     assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
     assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
     assert_equal(3,Tracker.find(:all).count, "Tracker nicht korrekt")
-    assert_equal(1,IssueStatus.find(:all).count, "IssueStatus nicht korrekt")
+    assert_equal(2,IssueStatus.find(:all).count, "IssueStatus nicht korrekt")
     assert_equal(4,Enumeration.find(:all).count, "Enumeration nicht korrekt")
     assert_equal(1,CustomField.find(:all).count, "CustomField nicht korrekt")
     assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
@@ -34,7 +36,7 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
     a_issue.priority_id  = issues(:issue_11).priority_id
     a_issue.author_id  = issues(:issue_11).author_id
     #save old value
-    the_assignee_id =  a_issue.assigned_to_id 
+    the_assignee_id =  a_issue.assigned_to_id
     #save the issue in normal way
     assert(a_issue.save, "Saving failed!")
     assert_equal(the_assignee_id, a_issue.assigned_to_id)
@@ -53,9 +55,12 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
     a_issue.priority_id  = issues(:issue_12).priority_id
     a_issue.author_id  = issues(:issue_12).author_id
     #save old value
-    the_assignee_id =  a_issue.assigned_to_id 
+    the_assignee_id =  a_issue.assigned_to_id
+    #prepare call of private function
+    HelperClassForModules.class_eval{def iswar(a) return issue_save_with_assignee_restore(a) end}
+    hc=HelperClassForModules.new
     #save with myown routine and test
-    a_issue = issue_save_with_assignee_restore(a_issue)
+    a_issue = hc.iswar(a_issue)
     assert(a_issue != nil, "Saving failed!")
     if a_issue != nil
       assert_equal(the_assignee_id, a_issue.assigned_to_id, "The assignee has changed!")
@@ -84,12 +89,15 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
     rp_req_unique_names["NEED1.2"] = 14 #tracker not the same
     rp_req_unique_names["STRQ1.1"] = 15 #rq-type not the same
     rp_req_unique_names["STRQ1.1.1"] = 150 #issue not present in system
+    #prepare call of private function
+    HelperClassForModules.class_eval{def spfc(a,b,c) return set_parent_from_child(a,b,c) end}
+    hc=HelperClassForModules.new
     #function
-    set_parent_from_child(rp_req_unique_names, "NEED1.1.1", true)
-    set_parent_from_child(rp_req_unique_names, "NEED1.2", true)
-    set_parent_from_child(rp_req_unique_names, "STRQ1.1", true)
-    set_parent_from_child(rp_req_unique_names, "STRQ1.1.1", true)
-    set_parent_from_child(rp_req_unique_names, "STRQ1.2", true) #unknown id
+    hc.spfc(rp_req_unique_names, "NEED1.1.1", true)
+    hc.spfc(rp_req_unique_names, "NEED1.2", true)
+    hc.spfc(rp_req_unique_names, "STRQ1.1", true)
+    hc.spfc(rp_req_unique_names, "STRQ1.1.1", true)
+    hc.spfc(rp_req_unique_names, "STRQ1.2", true) #unknown id
     #test
     assert_equal(Issue.find_by_id(11).parent, Issue.find_by_id(12), "Parent for NEED1.1.1 not correct!")
     assert_equal(Issue.find_by_id(12).parent, Issue.find_by_id(13), "Parent for NEED1.1 not correct!")
@@ -102,10 +110,13 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
     puts "test_issue_find_by_rpuid"
     #prepare custom fields done by fixture
     #prepare issues done by fixture
+    #prepare call of private function
+    HelperClassForModules.class_eval{def ifbr(a,b) return issue_find_by_rpuid(a,b) end}
+    hc=HelperClassForModules.new()
     #function call
-    issue_11 = issue_find_by_rpuid("{01}", true)
-    issue_nil = issue_find_by_rpuid("{01234}", true) #unknown rpuid
-    no_issue = issue_find_by_rpuid("{20}", true) #wrong customized_type
+    issue_11 = hc.ifbr("{01}", true)
+    issue_nil = hc.ifbr("{01234}", true) #unknown rpuid
+    no_issue = hc.ifbr("{20}", true) #wrong customized_type
     #test
     assert_equal(issue_11, Issue.find_by_id(11), "Issue 11 not found by ID!")
     assert_nil(issue_nil, "issue_nil not nil!")
@@ -133,7 +144,9 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
     rp_req_unique_names["NEED1.2"] = 14 #tracker not the same
     rp_req_unique_names["STRQ1.1"] = 15 #rq-type not the same
     rp_req_unique_names["STRQ1.1.1"] = 150 #issue not present in system
-    update_issue_parents(rp_req_unique_names, true)
+    #prepare call
+    hc=HelperClassForModules.new
+    hc.update_issue_parents(rp_req_unique_names, true)
     #test
     assert_equal(Issue.find_by_id(11).parent, Issue.find_by_id(12), "Parent for NEED1.1.1 not correct!")
     assert_equal(Issue.find_by_id(12).parent, Issue.find_by_id(13), "Parent for NEED1.1 not correct!")

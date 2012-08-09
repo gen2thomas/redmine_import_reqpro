@@ -3,24 +3,18 @@ require File.dirname(__FILE__) + '/../../app/helpers/users_helper'
 require 'mocha'
 
 class HelperClassForModules
-  #include ProjectsHelper
   include UsersHelper
   include FilesHelper
-  #include ExtProjectsHelper
 end
 
 class TcUsersHelper < ActiveSupport::TestCase
   self.fixture_path = File.dirname(__FILE__) + "/../fixtures/"
   fixtures :users, :custom_values
-  #:issues, :users, :roles
   
   def test_user_prerequisites
     puts "test_user_prerequisites"
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
     assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
-    #assert(Issue.find(:all).count==8, "Issue nicht korrekt")
-    #assert(Project.find(:all).count==2, "Project nicht korrekt")
-    #assert(Role.find(:all).count==5, "Role nicht korrekt")
   end
 
   def test_collect_rpusers
@@ -37,18 +31,9 @@ class TcUsersHelper < ActiveSupport::TestCase
   def test_collect_users_fast
     puts "test_collect_users_fast"
     #prepare data
-    data_pathes = Array.new()
-    path_to_samples=Dir.pwd + '/' + File.dirname(__FILE__) + '/../samples'
-    data_pathes.push(path_to_samples + '/Baseline01_App')
-    data_pathes.push(path_to_samples + '/Baseline02_Mlc')
+    mth=MyTestHelper.new()
     #available projects (only prefix and path needed)
-    ap=Hash.new
-    ap["{065CCCD0-4129-497C-8474-27EBCD96065D}"]=Hash.new
-    ap["{065CCCD0-4129-497C-8474-27EBCD96065D}"][:prefix]="STP"
-    ap["{065CCCD0-4129-497C-8474-27EBCD96065D}"][:path]=data_pathes[0]
-    ap["{BFCD0B9E-E4B5-4B0A-8C59-F568269DCCE3}"]=Hash.new
-    ap["{BFCD0B9E-E4B5-4B0A-8C59-F568269DCCE3}"][:prefix]="MSP"
-    ap["{BFCD0B9E-E4B5-4B0A-8C59-F568269DCCE3}"][:path]=data_pathes[1]
+    ap=mth.some_projects()
     #prepare call of private function
     HelperClassForModules.class_eval{def cuf(a,b) return collect_users_fast(a,b) end}
     hc=HelperClassForModules.new
@@ -245,7 +230,7 @@ class TcUsersHelper < ActiveSupport::TestCase
     # rpusers
     rpus = Hash.new
     rpus["{01}"] = Hash.new
-    rpus["{01}"][:email] = "usr1_mail" 
+    rpus["{01}"][:email] = "usr1_mail"
     rpus["{01}"][:login] = "usr1_login"
     rpus["{01}"][:conf_key] = rpus["{01}"][:login]
     rpus["{02}"] = Hash.new
@@ -279,48 +264,8 @@ class TcUsersHelper < ActiveSupport::TestCase
   def test_remap_users_to_conflationkey
     puts "test_remap_users_to_conflationkey"
     #prepare data
-    # rpusers
-    rpus = Hash.new
-    rpus["{01}"] = Hash.new
-    rpus["{01}"][:project] = "PR1"
-    rpus["{01}"][:email] = "usr1_mail" 
-    rpus["{01}"][:login] = "usr_loginA"
-    rpus["{01}"][:firstname] = "usr1_firstnam"
-    rpus["{01}"][:lastname] = "usr1_Lastname"
-    rpus["{01}"][:group] = "usr_grp"
-    rpus["{01}"][:conf_key] = rpus["{01}"][:login]
-    rpus["{02}"] = Hash.new
-    rpus["{02}"][:project] = "PR1"
-    rpus["{02}"][:email] = "usr2_mail" 
-    rpus["{02}"][:login] = "usr_loginB"
-    rpus["{02}"][:firstname] = "usr2_firstnam"
-    rpus["{02}"][:lastname] = "usr2_Lastname"
-    rpus["{02}"][:group] = "usr_grp"
-    rpus["{02}"][:conf_key] = rpus["{02}"][:login]
-    rpus["{03}"] = Hash.new
-    rpus["{03}"][:project] = "PR1"
-    rpus["{03}"][:email] = "usr3_mail" 
-    rpus["{03}"][:login] = "usr_loginA"
-    rpus["{03}"][:firstname] = "usr3_firstnam"
-    rpus["{03}"][:lastname] = "usr3_Lastname"
-    rpus["{03}"][:conf_key] = rpus["{03}"][:login]
-    rpus["{03}"][:group] = "usr_grp"
-    rpus["{04}"] = Hash.new
-    rpus["{04}"][:project] = "PR2"
-    rpus["{04}"][:email] = "usr4_mail" 
-    rpus["{04}"][:login] = "usr_loginB"
-    rpus["{04}"][:firstname] = "usr4_firstnam"
-    rpus["{04}"][:lastname] = "usr4_Lastname"
-    rpus["{04}"][:group] = "usr_grp"
-    rpus["{04}"][:conf_key] = rpus["{04}"][:login]
-    rpus["{05}"] = Hash.new
-    rpus["{05}"][:project] = "PR2"
-    rpus["{05}"][:email] = "usr0_mail" 
-    rpus["{05}"][:login] = "usr_loginB"
-    rpus["{05}"][:firstname] = "usr5_firstnam"
-    rpus["{05}"][:lastname] = "usr5_Lastname"
-    rpus["{05}"][:group] = "usr_grp"
-    rpus["{05}"][:conf_key] = rpus["{05}"][:login]
+    mth=MyTestHelper.new()
+    rpus=mth.rpusers()
     #prepare call
     hc=HelperClassForModules.new
     rpus_new=hc.remap_users_to_conflationkey(rpus)
