@@ -1,0 +1,436 @@
+<?xml version="1.0" standalone="yes"?>
+<PROJECT ID="{065CCCD0-4129-497C-8474-27EBCD96065D}" XMLVersion="2">
+  <RequirementTypes>
+    <RequirementType Name="Product Feature" Description="Top-Level capabilities or characteristics of a system that directly fulfill a &quot;NEED&quot;. Often thought as the &quot;advertised benefits&quot; of the system. Expressed in developer terms and developer viewpoint." RequirementPrefix="FEAT" RequirementColorName="Black" RequirementColor="1" RequirementStyleName="Double Underline" RequirementStyle="3" RequirementMustContain="" InitialReqNumber="1" LastReqNumber="5" AllowExternalReferences="True" ID="{9ECB26FE-4696-4C7D-94CE-E0279F816713}">
+      <Attributes>
+        <Attribute Label="Category" ID="{1091D0C8-DB2B-450B-9D26-3C321645C7C1}"/>
+        <Attribute Label="Effort (days)" ID="{A140FE86-A849-42B9-B71B-36DA2C67A85E}"/>
+        <Attribute Label="Effort remaining (days)" ID="{208B1ECF-B4F5-4D3C-B816-9391FEC60716}"/>
+        <Attribute Label="Priority" ID="{7CDBEDDD-85A8-4631-AF64-1C5D58DB5FCA}"/>
+        <Attribute Label="State" ID="{AF0DE15E-E8F3-4189-8DCC-189B9673E0EE}"/>
+        <Attribute Label="Difficulty" ID="{3BB7C969-FC96-46C1-B550-AD1D4A568330}"/>
+        <Attribute Label="Stability" ID="{6D51981C-174C-4244-94A0-5EEF18BA8E39}"/>
+        <Attribute Label="Risk" ID="{B4CBB8E8-07DE-4639-9081-7C289E6DD4A4}"/>
+        <Attribute Label="Planned Iteration" ID="{ED103A99-38E6-48CB-955A-479BEACC20C7}"/>
+        <Attribute Label="Actual Iteration" ID="{90FBCB7A-7BD7-45FB-86EE-5A9834A080C8}"/>
+        <Attribute Label="Assigned To" ID="{152584EC-B846-4168-9EFE-EFC834862CA3}"/>
+        <Attribute Label="Target Date" ID="{2BB4A9CA-CA53-4F4D-A38E-B23727E55790}"/>
+      </Attributes>
+    </RequirementType>
+    <RequirementType Name="User Need" Description="The business or operational problem (opportunity) that must be fulfilled in order to justify purchase or use. Also known as &quot;goal&quot; or &quot;objective&quot;. Expressed in developer terms and from developer viewpoint" RequirementPrefix="NEED" RequirementColorName="Black" RequirementColor="1" RequirementStyleName="Double Underline" RequirementStyle="3" RequirementMustContain="" InitialReqNumber="1" LastReqNumber="18" AllowExternalReferences="True" ID="{022D080E-A80B-48F4-B573-8C57DE8F3860}">
+      <Attributes>
+        <Attribute Label="Category" ID="{B77C4030-CC70-4377-A19D-46819635E29E}"/>
+        <Attribute Label="State" ID="{7E229F6C-A2A8-4223-AF77-5C57BE3BBD1A}"/>
+        <Attribute Label="Developer" ID="{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}"/>
+        <Attribute Label="Effort (days)" ID="{51E59074-F681-44CA-9888-561861D2EBC0}"/>
+        <Attribute Label="Effort remaining (days)" ID="{63765958-43FF-4FA2-BA21-257D03DFA2F0}"/>
+        <Attribute Label="Priority" ID="{77949EC0-91FF-4096-9B22-A5227D850474}"/>
+        <Attribute Label="Difficulty" ID="{40088819-36D5-4841-9B9D-707362EE37D4}"/>
+        <Attribute Label="Stability" ID="{2A379FB1-B401-4116-BF73-E39092CB42C4}"/>
+      </Attributes>
+    </RequirementType>
+    <RequirementType Name="Stakeholder Request" Description="This requirement type is used to indicate all stakeholder requests requirements for the project. Expressed in stakeholder terms and from stakeholder viewpoint." RequirementPrefix="STRQ" RequirementColorName="Black" RequirementColor="1" RequirementStyleName="Double Underline" RequirementStyle="3" RequirementMustContain="" InitialReqNumber="1" LastReqNumber="22" AllowExternalReferences="False" ID="{2243C17B-6ADA-412E-8A22-16E314AC3A3B}">
+      <Attributes>
+        <Attribute Label="Processtype" ID="{99766361-C342-4CEE-993A-BA52B6D0D2CB}"/>
+        <Attribute Label="Category" ID="{521225AB-8354-4221-AA88-879BEDC6BE62}"/>
+        <Attribute Label="State" ID="{A97CE4E9-0FE6-4287-85B4-5BBB255D3CE3}"/>
+        <Attribute Label="Stakeholder Priority" ID="{60747266-0BC9-4977-9AF0-462262D5C7C7}"/>
+        <Attribute Label="Origin" ID="{F627E6F6-3BF9-4CBD-B969-5003C2E5365F}"/>
+        <Attribute Label="Source" ID="{A6CC54E5-C79C-46B8-BDDA-D7C1C9EA5A8D}"/>
+        <Attribute Label="Document" ID="{53D8BF22-45B2-4E06-B64F-F2B4E78BA9DD}"/>
+      </Attributes>
+    </RequirementType>
+    <RequirementType Name="Glossary Item" Description="This requirement type identifies all glossary items within the project." RequirementPrefix="TERM" RequirementColorName="Black" RequirementColor="1" RequirementStyleName="Double Underline" RequirementStyle="3" RequirementMustContain="" InitialReqNumber="1" LastReqNumber="7" AllowExternalReferences="True" ID="{7646B33E-070D-43AD-B8DC-262DEFD21B31}">
+      <Attributes/>
+    </RequirementType>
+    <RequirementType Name="Use Case" Description="This requirement type defines all requirements related to a use case in the project." RequirementPrefix="UC" RequirementColorName="DarkCyan" RequirementColor="10" RequirementStyleName="Double Underline" RequirementStyle="3" RequirementMustContain="" InitialReqNumber="99" LastReqNumber="99" AllowExternalReferences="True" ID="{CC39D30E-F4B4-4CA1-BB84-49E883CEF78C}">
+      <Attributes>
+        <Attribute Label="Property" ID="{189144EA-1E2C-4CB3-90FD-46448C7EEFFE}"/>
+        <Attribute Label="Priority" ID="{273F908B-6FD4-4F3E-93A2-3C72FF685A16}"/>
+        <Attribute Label="Status" ID="{CAAF3C64-EABF-4DE9-913B-D92613CA7941}"/>
+        <Attribute Label="Difficulty" ID="{DD487D5D-C32A-41C9-BD1F-39FDAF4131AF}"/>
+        <Attribute Label="Stability" ID="{039002F6-DA18-41AD-A4BC-C2C56CA868D3}"/>
+        <Attribute Label="Risk" ID="{3DC745E8-CDFB-474F-ABA0-9B68C1821978}"/>
+        <Attribute Label="Affects Architecture" ID="{6064FCEA-035F-4662-9294-AC842DC67D61}"/>
+        <Attribute Label="Assigned To" ID="{35091773-8784-43C0-A886-1C52E0FE614E}"/>
+        <Attribute Label="Target Level" ID="{5F411DA8-4EA7-40C6-8E84-33323A6C5C74}"/>
+        <Attribute Label="Design Scope" ID="{7A53807C-1C64-4C92-8BAE-99C7EF631B59}"/>
+        <Attribute Label="Planned Iteration" ID="{D0439F8A-FBEF-45E4-8D01-CE7D48286A81}"/>
+        <Attribute Label="Actual Iteration" ID="{A7C3FA3E-F888-4316-8A48-B935BB4D6F7B}"/>
+        <Attribute Label="EnhancementRequest" ID="{46829ED9-3DC3-477D-BCC8-021DA1E0FE18}"/>
+        <Attribute Label="Defect" ID="{B20CE26D-E0AF-40B7-BA1A-CF23C9201324}"/>
+        <Attribute Label="Obsolete" ID="{A81FE83F-5692-4346-9393-44CEFCDA95EB}"/>
+        <Attribute Label="Effort (days)" ID="{605BBA76-B11C-4452-80C2-5D5F9FC6F8F7}"/>
+      </Attributes>
+    </RequirementType>
+  </RequirementTypes>
+  <Attributes>
+    <Attribute Label="Actual Iteration" Rank="19" AutoSuspect="False" Required="False" DataTypeName="Integer" DataType="2" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{90FBCB7A-7BD7-45FB-86EE-5A9834A080C8}"/>
+    <Attribute Label="Actual Iteration" Rank="11" AutoSuspect="False" Required="False" DataTypeName="Integer" DataType="2" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{A7C3FA3E-F888-4316-8A48-B935BB4D6F7B}"/>
+    <Attribute Label="Assigned To" Rank="7" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{35091773-8784-43C0-A886-1C52E0FE614E}"/>
+    <Attribute Label="Assigned To" Rank="5" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{C27CC9DA-C3A0-459E-808D-207AA78CF23F}"/>
+    <Attribute Label="Assigned To" Rank="5" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{1ACEDE18-25AF-455B-8D28-A2D534268711}"/>
+    <Attribute Label="Assigned To" Rank="5" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{74FBC99F-565C-4C5D-8FCD-BA1C080C1BAD}"/>
+    <Attribute Label="Contact Name" Rank="7" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{9D05988C-899F-4B95-9A70-71364F8D06AD}"/>
+    <Attribute Label="Cost" Rank="2" AutoSuspect="False" Required="False" DataTypeName="Real" DataType="3" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{618A3DBB-43A9-46F9-A2A6-F0C2390F4304}"/>
+    <Attribute Label="Cost" Rank="2" AutoSuspect="False" Required="False" DataTypeName="Real" DataType="3" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{CE01E92A-7312-4B9E-9E1D-D65BCFDA65C2}"/>
+    <Attribute Label="Cost" Rank="2" AutoSuspect="False" Required="False" DataTypeName="Real" DataType="3" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{18DD5C1F-A5D2-421C-8957-27DE9E43AED9}"/>
+    <Attribute Label="Defect" Rank="13" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="2" Description="" FieldProperties="CustomType=/d(/sProgID-/sASCQIConnector.Connector)" ID="{B20CE26D-E0AF-40B7-BA1A-CF23C9201324}"/>
+    <Attribute Label="Document" Rank="6" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{53D8BF22-45B2-4E06-B64F-F2B4E78BA9DD}"/>
+    <Attribute Label="Effort (days)" Rank="5" AutoSuspect="False" Required="False" DataTypeName="Integer" DataType="2" DefaultValue="1" Flags="0" Description="" FieldProperties="" ID="{51E59074-F681-44CA-9888-561861D2EBC0}"/>
+    <Attribute Label="Effort (days)" Rank="2" AutoSuspect="False" Required="False" DataTypeName="Integer" DataType="2" DefaultValue="999" Flags="0" Description="" FieldProperties="" ID="{A140FE86-A849-42B9-B71B-36DA2C67A85E}"/>
+    <Attribute Label="Effort (days)" Rank="15" AutoSuspect="False" Required="False" DataTypeName="Integer" DataType="2" DefaultValue="1" Flags="0" Description="" FieldProperties="" ID="{605BBA76-B11C-4452-80C2-5D5F9FC6F8F7}"/>
+    <Attribute Label="Effort remaining (days)" Rank="3" AutoSuspect="False" Required="False" DataTypeName="Real" DataType="3" DefaultValue="999.0" Flags="0" Description="" FieldProperties="" ID="{208B1ECF-B4F5-4D3C-B816-9391FEC60716}"/>
+    <Attribute Label="Effort remaining (days)" Rank="6" AutoSuspect="False" Required="False" DataTypeName="Real" DataType="3" DefaultValue="999.0" Flags="0" Description="" FieldProperties="" ID="{63765958-43FF-4FA2-BA21-257D03DFA2F0}"/>
+    <Attribute Label="EnhancementRequest" Rank="12" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="2" Description="" FieldProperties="CustomType=/d(/sProgID-/sASCQIConnector.Connector)" ID="{46829ED9-3DC3-477D-BCC8-021DA1E0FE18}"/>
+    <Attribute Label="Planned Iteration" Rank="10" AutoSuspect="False" Required="False" DataTypeName="Integer" DataType="2" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{D0439F8A-FBEF-45E4-8D01-CE7D48286A81}"/>
+    <Attribute Label="Planned Iteration" Rank="18" AutoSuspect="False" Required="False" DataTypeName="Integer" DataType="2" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{ED103A99-38E6-48CB-955A-479BEACC20C7}"/>
+    <Attribute Label="Source" Rank="5" AutoSuspect="False" Required="False" DataTypeName="Text" DataType="1" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{A6CC54E5-C79C-46B8-BDDA-D7C1C9EA5A8D}"/>
+    <Attribute Label="Target Date" Rank="21" AutoSuspect="False" Required="False" DataTypeName="Date" DataType="4" DefaultValue="38716" Flags="0" Description="" FieldProperties="" ID="{2BB4A9CA-CA53-4F4D-A38E-B23727E55790}"/>
+    <Attribute Label="Affects Architecture" Rank="6" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{6064FCEA-035F-4662-9294-AC842DC67D61}">
+      <ListItems>
+        <ListItem ItemText="True" ItemRank="0" Default="False" ID="{30E0BBD5-E36C-46EA-A321-4040293833A0}"/>
+        <ListItem ItemText="False" ItemRank="1" Default="False" ID="{6A373C92-7E1E-4295-86AB-02A6DA66EA92}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Assigned To" Rank="20" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{152584EC-B846-4168-9EFE-EFC834862CA3}">
+      <ListItems>
+        <ListItem ItemText="Vorname5" ItemRank="0" Default="False" ID="{1B641DD8-6E5A-4AA3-A2F4-755DF20C185F}"/>
+        <ListItem ItemText="Nachname1, Vorname1" ItemRank="1" Default="False" ID="{82229743-D140-4DD0-9E0A-F1B905A878F4}"/>
+        <ListItem ItemText="Nachname2 Vorname2" ItemRank="2" Default="False" ID="{29BD4549-C08D-4A7A-AE36-9CC88E024DEA}"/>
+        <ListItem ItemText="Nachname3 Vorname3" ItemRank="3" Default="False" ID="{9BF1F72F-DE75-4486-B630-A60B3D0CAFA0}"/>
+        <ListItem ItemText="Nachname4" ItemRank="4" Default="False" ID="{530D7696-7E1B-430C-BA6D-6806FCAAE2DA}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Design Scope" Rank="9" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{7A53807C-1C64-4C92-8BAE-99C7EF631B59}">
+      <ListItems>
+        <ListItem ItemText="Organisation Black Box" ItemRank="0" Default="False" ID="{312451A1-341F-4C2C-B87F-F82B338951DB}"/>
+        <ListItem ItemText="Organisation White Box" ItemRank="1" Default="False" ID="{09D16A44-CF2A-4936-A1E5-738B9304438E}"/>
+        <ListItem ItemText="System Black Box" ItemRank="2" Default="False" ID="{7749167F-8EE3-4D6F-8334-07851D22F05D}"/>
+        <ListItem ItemText="System White Box" ItemRank="3" Default="False" ID="{6F1D2658-0F77-4907-8FEE-4B83113B20DF}"/>
+        <ListItem ItemText="Component" ItemRank="4" Default="False" ID="{9A615579-3FDA-4510-8A60-D6078B73C135}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Difficulty" Rank="3" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{DD487D5D-C32A-41C9-BD1F-39FDAF4131AF}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{185EBB3E-FCA0-4A24-8DF2-6770BB3A0833}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{39F05813-C084-46C8-86F8-6AAC7A77E1B0}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{A4733DF9-B88F-4BE7-88BE-C4F3AD629446}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Difficulty" Rank="3" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{8071EE65-4C2B-4599-8467-C766165A90D7}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{E4306188-919C-48E2-BDD7-0016BBEFE039}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{779D7ABA-3D5C-4179-8475-38D8BB6C9098}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{1A8A0A3C-FD12-4A07-BA5E-C5CEFB507AF3}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Difficulty" Rank="15" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{3BB7C969-FC96-46C1-B550-AD1D4A568330}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{F1BD896B-74BD-4333-9B16-E791E213C378}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{9E4D64AD-8B21-493D-BC02-47DA523B9A62}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{304B3928-68B5-430F-AB04-14054D7E27BC}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Difficulty" Rank="10" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{40088819-36D5-4841-9B9D-707362EE37D4}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{32828D18-4D39-4DF4-ADAC-A3FA35C94695}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{2162566E-55A3-46D3-A8DB-6A54CEB9B59E}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{763534D0-1B0C-404D-815E-66CC350EA8E4}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Difficulty" Rank="5" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{A7F969D0-FD1B-42A4-AFFC-8FC6F1E33DBD}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{DA0227E1-03BD-4A4F-B3A9-206D5348B1B0}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{6DA49F0F-E951-4B87-8E44-92C87C908144}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{609A4616-C44D-438E-8FE0-CAC0D354C7F4}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Difficulty" Rank="3" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{073C7ACA-A03E-4985-BE0C-7F2CB44C9D91}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{8D2DAF53-5AF4-42BA-8D74-4EE0C64FBE18}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{494B8BF2-8E75-4B81-A0BB-56FBBAA72EFB}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{59C75210-4921-47B4-8918-01AFF516224C}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Difficulty" Rank="3" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{40B4E556-CB3F-4687-8CAF-CBB8628A76BF}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{72C8A43D-6965-4DC5-BFC2-7CD7A9CF1278}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{2427DE03-03A6-43BA-9C7E-D8A3AC656649}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{EFA853AD-835B-4BFA-ADC1-059E2921C1EA}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Obsolete" Rank="14" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{A81FE83F-5692-4346-9393-44CEFCDA95EB}">
+      <ListItems>
+        <ListItem ItemText="True" ItemRank="0" Default="False" ID="{6BC5A024-02E3-4F7A-86F1-6D2CFD2B3860}"/>
+        <ListItem ItemText="False" ItemRank="1" Default="True" ID="{8B998803-A699-4302-B7FD-231EC364C079}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Origin" Rank="4" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{F627E6F6-3BF9-4CBD-B969-5003C2E5365F}">
+      <ListItems>
+        <ListItem ItemText="Help desk" ItemRank="0" Default="False" ID="{CA49BB55-FA4D-4939-A269-0464B0C0A719}"/>
+        <ListItem ItemText="Competition" ItemRank="1" Default="False" ID="{B38935A1-FDAB-44C7-BE1F-3DE3DAA7E354}"/>
+        <ListItem ItemText="Partners" ItemRank="2" Default="False" ID="{F00746F5-6525-4A8B-B0DA-475BDF1945DF}"/>
+        <ListItem ItemText="End Users" ItemRank="3" Default="False" ID="{759B2691-F484-463C-A0A1-BE04146A4A4D}"/>
+        <ListItem ItemText="Development" ItemRank="5" Default="False" ID="{54EE8211-BC62-4A2B-9E8C-0FEEE74C7170}"/>
+        <ListItem ItemText="Management" ItemRank="6" Default="False" ID="{0627600E-3794-46A8-AA57-1084C64CBACE}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Priority" Rank="0" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{D3B9C430-9DEE-4E47-A912-93A7B46B7EA2}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{2BA96793-EC67-4E1E-8E93-47AFDF858E28}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{A7757030-0AE6-4CA4-8B5E-024C5BEACA2B}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{24F9453E-DCC1-49FD-AE4C-52D85D6118CF}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Priority" Rank="0" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{B556119B-2560-4A34-8474-774D9C97AF95}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{F3040B31-D09C-49E5-9E32-B48B2AF966E4}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{33D618F5-39E9-44F5-AECD-D147534D35F1}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{436EC0E3-6475-4C4E-89FA-85B657A63507}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Priority" Rank="1" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{273F908B-6FD4-4F3E-93A2-3C72FF685A16}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{EB44DFB3-025B-4104-803E-9F75753D54DC}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{B60A68BD-F136-4DAA-AE58-1818B69022A1}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{0F219B69-18F0-4B87-BE6A-44E223CABDAA}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Priority" Rank="7" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{77949EC0-91FF-4096-9B22-A5227D850474}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{2120817C-E736-42D1-8BE0-1CC55A3CF23E}"/>
+        <ListItem ItemText="preHigh" ItemRank="1" Default="False" ID="{4043B550-6A55-4E8A-8C6D-C76F88544B9A}"/>
+        <ListItem ItemText="Medium" ItemRank="2" Default="False" ID="{498D66EB-F57A-4983-B03C-DB59F1CADD07}"/>
+        <ListItem ItemText="preMedium" ItemRank="3" Default="False" ID="{AD9F9539-D2A7-4946-9CB7-4389C680654A}"/>
+        <ListItem ItemText="Low" ItemRank="4" Default="False" ID="{A6457894-3925-46E3-BE75-53192C95B864}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Priority" Rank="3" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{5E05C67B-9B18-4F0B-A47A-0567DCA77BF4}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{21508445-0359-4B0F-AFA7-066B53E7388B}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{9AE64F55-42A1-4ED2-B94A-E01C3EBE2371}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{30048830-BC24-467C-B776-3020A6E0B35E}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Priority" Rank="4" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{7CDBEDDD-85A8-4631-AF64-1C5D58DB5FCA}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{E8573868-C042-4B00-A275-3855D21796AE}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{9864113E-DEF3-4C47-B6C5-248FD5D648A9}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{23503E24-1889-4ACD-825F-AD0BCC24F89A}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Priority" Rank="0" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{ED94542E-861A-4EBB-B599-845750699A77}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{44546EF1-4B59-4E93-ADE1-570BDCB0D188}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{8DFCD65A-FE50-4CD8-AB34-DDD830397AFE}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{A55EFFD2-3850-44C6-90C3-EE37A97347E9}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Property" Rank="0" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{189144EA-1E2C-4CB3-90FD-46448C7EEFFE}">
+      <ListItems>
+        <ListItem ItemText="Name" ItemRank="0" Default="True" ID="{B707F20E-8C6E-4AC1-B35C-6C5DEED52067}"/>
+        <ListItem ItemText="Brief Description" ItemRank="1" Default="False" ID="{57C5B12E-3DAF-471F-A81C-C38477673616}"/>
+        <ListItem ItemText="Basic Flow" ItemRank="2" Default="False" ID="{C3F890F4-989C-4F48-B721-A6732D0032D0}"/>
+        <ListItem ItemText="Alternate Flow" ItemRank="3" Default="False" ID="{EBB297D2-E9AD-459A-A112-F9DD90FE0411}"/>
+        <ListItem ItemText="Special Requirement" ItemRank="4" Default="False" ID="{22428B70-9A31-4E33-BA30-017ED7426994}"/>
+        <ListItem ItemText="Pre-Condition" ItemRank="5" Default="False" ID="{7636B361-6F05-40B7-A077-C31701832A68}"/>
+        <ListItem ItemText="Post Condition" ItemRank="6" Default="False" ID="{6331AE92-040C-4B90-A9FC-FFB92EC6F55E}"/>
+        <ListItem ItemText="Extension Point" ItemRank="7" Default="False" ID="{9C1CC41F-3B4C-4AA1-ADCF-5BB16D684CD7}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stability" Rank="4" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{039002F6-DA18-41AD-A4BC-C2C56CA868D3}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{69E99813-8982-48D4-BC0A-D2EA5B461E4C}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{85B50C43-5D44-45F8-B678-8A7F281AFD29}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{222B21D9-F54D-4624-8A5B-E54FC8E47F67}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stability" Rank="4" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{938280BB-E498-4174-972B-C397F7DF9367}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{4A1D60A4-3992-4D2B-A60E-687761ECC900}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{FE575C13-FF08-45DC-97DA-200622A67AD0}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{8D97CDC3-17BB-468F-87D8-6A60F57F6FFD}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stability" Rank="4" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{9BAEB7EF-7098-4C82-A0BF-D48F5DE2EE68}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{34173C37-5FF9-4273-AE2C-B8FFC3076144}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{324DAAC5-26D6-418E-9923-44E629D1DEFD}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{BECFC851-F21D-4295-9990-C1591C08574B}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stability" Rank="16" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{6D51981C-174C-4244-94A0-5EEF18BA8E39}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{9BD23234-DC5E-4071-A1FA-AF73FE9C6E50}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{A75875A1-1422-4AA4-8113-AA1E6AB9B68A}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{68798443-D3CE-4C31-8B5E-17D5B857BDD7}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stability" Rank="6" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{6028F68B-92B3-4247-B313-32E0FF9C50BB}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{EE55C755-35C9-4AEC-B997-822D177EEED2}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{25D5E9FD-8323-44BE-8A77-07C73F91998E}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{CEB5AA00-AB03-4D00-927B-590FD3028142}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stability" Rank="11" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{2A379FB1-B401-4116-BF73-E39092CB42C4}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{12B7EA4F-748F-4B24-8149-3287D081C7E6}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{62757340-527C-4722-B4D8-AEDEA59DF426}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{ED095D7D-2F7C-4D21-9F23-27D6AAC287B7}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stability" Rank="4" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{48078863-A4AA-4E1F-BEEA-24C26F881159}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{65134929-7594-4B5A-B2BD-3DD1864530F7}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="True" ID="{EEEB6324-44B3-470F-8ACF-28BF7348C5C8}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{EAFA462D-F69F-4271-A71F-45CA7486D57C}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Stakeholder Priority" Rank="3" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{60747266-0BC9-4977-9AF0-462262D5C7C7}">
+      <ListItems>
+        <ListItem ItemText="High" ItemRank="0" Default="False" ID="{6A727AC7-AA22-41D3-BCB1-E0A4E0D11F8E}"/>
+        <ListItem ItemText="Medium" ItemRank="1" Default="False" ID="{D4F2DA79-54E1-4255-BFFA-EB2A29CDD387}"/>
+        <ListItem ItemText="Low" ItemRank="2" Default="False" ID="{383826D4-9E06-4C12-80D7-08A25C16A8E7}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="State" Rank="5" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{AF0DE15E-E8F3-4189-8DCC-189B9673E0EE}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="True" ID="{51A16705-53FA-4129-B60C-AE24DE9C7C96}"/>
+        <ListItem ItemText="Verified" ItemRank="1" Default="False" ID="{B8BD320E-7877-4D0B-AC2A-677750AF513B}"/>
+        <ListItem ItemText="Traced" ItemRank="2" Default="False" ID="{A5270539-E840-4CB9-BF3E-6231F35EF176}"/>
+        <ListItem ItemText="Available" ItemRank="3" Default="False" ID="{BABDED63-CB3A-4813-8463-7D1652BE9E44}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Status" Rank="4" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{8E0997AF-C54E-4B7C-80E0-6C4602A70FFD}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="True" ID="{44AA959D-608E-4E76-8C22-FD60024C1242}"/>
+        <ListItem ItemText="Traced" ItemRank="1" Default="False" ID="{F6C37294-C714-4A79-BE64-0250CEA500C4}"/>
+        <ListItem ItemText="Not Relevant" ItemRank="2" Default="False" ID="{B18588EE-2AA0-41A9-BA9E-82EDE536FE9E}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Status" Rank="1" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{0442DEFF-8032-4FDF-8291-AE65E8B2672D}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="False" ID="{72776967-A6FF-4A5D-B238-DCBDBDEDF250}"/>
+        <ListItem ItemText="Approved" ItemRank="1" Default="True" ID="{5D9F10C3-F323-4775-8888-75C5ED919938}"/>
+        <ListItem ItemText="Incorporated" ItemRank="2" Default="False" ID="{6608E839-4F83-4F55-BAE8-B70FC48C679B}"/>
+        <ListItem ItemText="Validated" ItemRank="3" Default="False" ID="{173CAB7C-D344-4105-A5BA-DF21C5BB9BB0}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Status" Rank="1" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{8D4DAE6F-AD5E-46FE-81D8-69E41C9413C3}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="False" ID="{31DC8D2A-1326-47E9-9EA1-8314679626E1}"/>
+        <ListItem ItemText="Approved" ItemRank="1" Default="True" ID="{7FAD9B85-2F5F-42B1-99BA-13DC701C2880}"/>
+        <ListItem ItemText="Incorporated" ItemRank="2" Default="False" ID="{21CA8460-C543-4082-BF4B-68F8CF42CD60}"/>
+        <ListItem ItemText="Validated" ItemRank="3" Default="False" ID="{74C18131-984C-495E-9AB8-25A54D84A7F1}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Status" Rank="2" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{CAAF3C64-EABF-4DE9-913B-D92613CA7941}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="True" ID="{EDF19C72-BDE5-448C-B160-F1CD61B668B2}"/>
+        <ListItem ItemText="Approved" ItemRank="1" Default="False" ID="{4DAD7DF8-48DD-4A1F-89B6-54AA480F2918}"/>
+        <ListItem ItemText="Incorporated" ItemRank="2" Default="False" ID="{1D6D99E8-B9B2-4032-9084-2CE6BABCFC4F}"/>
+        <ListItem ItemText="Validated" ItemRank="3" Default="False" ID="{A6EF81BB-9C3F-4D3A-96F0-DB2044CC4BA9}"/>
+        <ListItem ItemText="Rejected" ItemRank="4" Default="False" ID="{BF062C1D-1C0D-49EA-9937-E3FDD4DB3CE7}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Status" Rank="1" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{B3FF06BB-8EA9-444B-8A55-BB6D30420F1A}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="False" ID="{D4B3EF0A-49D2-4D55-951F-2307C18EA87E}"/>
+        <ListItem ItemText="Approved" ItemRank="1" Default="True" ID="{3901945B-6D62-4C7E-9509-BE1A2BAA234C}"/>
+        <ListItem ItemText="Incorporated" ItemRank="2" Default="False" ID="{2E2F783E-A2F3-4AD2-8A87-9DA4E124C6B8}"/>
+        <ListItem ItemText="Validated" ItemRank="3" Default="False" ID="{A48CDEB6-1E1F-4770-B759-9DBA923A987E}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Target Level" Rank="8" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{5F411DA8-4EA7-40C6-8E84-33323A6C5C74}">
+      <ListItems>
+        <ListItem ItemText="Very Abstract" ItemRank="0" Default="False" ID="{01221743-98D0-4F08-B4A2-6C340BC0DB2C}"/>
+        <ListItem ItemText="Overview" ItemRank="1" Default="False" ID="{E796B0CA-6E2E-40B1-8F62-9B2CAEFF7069}"/>
+        <ListItem ItemText="User Goal" ItemRank="2" Default="False" ID="{258BC510-25FB-4C36-BA56-1048F422145F}"/>
+        <ListItem ItemText="Subfunction" ItemRank="3" Default="False" ID="{E6F11671-4C7C-47C8-8278-70F94454BAAD}"/>
+        <ListItem ItemText="Too Low" ItemRank="4" Default="False" ID="{61FDEB32-7A2F-4FBD-B553-795DD0845A22}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="URPS+" Rank="2" AutoSuspect="False" Required="False" DataTypeName="List" DataType="0" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{43069C10-7967-45FC-9C61-30D103145F6C}">
+      <ListItems>
+        <ListItem ItemText="Usability" ItemRank="0" Default="False" ID="{39A34687-0F3A-46C9-B050-FA46DF804DF8}"/>
+        <ListItem ItemText="Reliability" ItemRank="1" Default="False" ID="{4B62CB17-1DAA-4F8F-9798-332C94251DDA}"/>
+        <ListItem ItemText="Performance" ItemRank="2" Default="False" ID="{976E2E7C-2EC1-46D0-BB9B-F0F42494AA8C}"/>
+        <ListItem ItemText="Supportability" ItemRank="3" Default="False" ID="{1873BBF5-0076-4318-8573-C9BBC6AF6244}"/>
+        <ListItem ItemText="+ Implementation" ItemRank="4" Default="False" ID="{E495B961-EA5A-4D65-9FA5-C97BA71A4AD1}"/>
+        <ListItem ItemText="+ Interface" ItemRank="5" Default="False" ID="{087EB14E-25F6-4B6F-8808-9263A31BB5B3}"/>
+        <ListItem ItemText="+ Operations" ItemRank="6" Default="False" ID="{7107D492-FDA1-4B62-B2D1-CF97F80E0161}"/>
+        <ListItem ItemText="+ Packaging" ItemRank="7" Default="False" ID="{158098DF-FEAA-42C1-8AF9-5A6C4C2CB672}"/>
+        <ListItem ItemText="+ Legal" ItemRank="8" Default="False" ID="{F5EFEA37-8EAA-4BAC-A3FD-E19FFB1B1613}"/>
+        <ListItem ItemText="+Constraint" ItemRank="9" Default="False" ID="{6A2C1B7D-BDB8-4CC0-AEDD-E2DE89FB8F1E}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Developer" Rank="4" AutoSuspect="False" Required="False" DataTypeName="MultiSelect" DataType="10" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}">
+      <ListItems>
+        <ListItem ItemText="Vorname2 Nachname2" ItemRank="0" Default="False" ID="{46942C79-BE59-448F-A187-D62DCC617636}"/>
+        <ListItem ItemText="Vorname1 Nachname1" ItemRank="1" Default="False" ID="{49A0B237-E554-4A22-8CF1-D6B77D2433A6}"/>
+        <ListItem ItemText="Vorname6 Nachname6" ItemRank="2" Default="False" ID="{CE5141A9-2DBF-4317-94DC-D47EEBD459FF}"/>
+        <ListItem ItemText="Vorname7 Nachname7" ItemRank="3" Default="False" ID="{0CA76F51-104D-485B-9031-0553C3338CFB}"/>
+        <ListItem ItemText="Vorname3 Nachname3" ItemRank="4" Default="False" ID="{42F2CCA5-A2B6-4706-8D0A-D9058DE94D09}"/>
+        <ListItem ItemText="Vorname8 Nachname8" ItemRank="5" Default="False" ID="{501C8CA1-5921-4F4E-8614-2A69BF9DA53F}"/>
+        <ListItem ItemText="Vorname5 Nachname5" ItemRank="6" Default="False" ID="{BC64EDFD-8A82-44A4-9881-36E53B9C2C2C}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="ProcessingLayer" Rank="9" AutoSuspect="False" Required="False" DataTypeName="MultiSelect" DataType="10" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{93A9D6D7-1118-465D-A162-6C4BD82F7CD6}">
+      <ListItems>
+        <ListItem ItemText="User" ItemRank="0" Default="False" ID="{837B7063-941E-4853-B28D-91BE6D418C09}"/>
+        <ListItem ItemText="GUI" ItemRank="1" Default="False" ID="{C26ACA16-7B68-4793-BA7E-11D0D6A410E0}"/>
+        <ListItem ItemText="Process" ItemRank="4" Default="False" ID="{A1C25F80-AD61-4FB8-84BF-6977787FFEF7}"/>
+        <ListItem ItemText="Documentation" ItemRank="5" Default="False" ID="{9E6FBE7F-F5EC-4493-9242-DB3AF12D9A53}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Risk" Rank="5" AutoSuspect="False" Required="False" DataTypeName="MultiSelect" DataType="10" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{3DC745E8-CDFB-474F-ABA0-9B68C1821978}">
+      <ListItems>
+        <ListItem ItemText="Schedule - High" ItemRank="0" Default="False" ID="{C1672E73-6137-4C63-8772-3118F56CAB75}"/>
+        <ListItem ItemText="Schedule - Medium" ItemRank="1" Default="False" ID="{65A23A29-7A8F-4708-83DC-0DE415A15BCC}"/>
+        <ListItem ItemText="Schedule - Low" ItemRank="2" Default="False" ID="{DB6897B3-EEBA-4057-A8D4-75D640600441}"/>
+        <ListItem ItemText="Technology - High" ItemRank="3" Default="False" ID="{BCDD1BE4-84E7-4AC7-997E-FC1BF8027ECF}"/>
+        <ListItem ItemText="Technology - Medium" ItemRank="4" Default="False" ID="{D1E21BDE-F972-4DFC-AA5E-38C3F560C8D3}"/>
+        <ListItem ItemText="Technology - Low" ItemRank="5" Default="False" ID="{005A37AA-2F0A-4429-B689-6233C66343F5}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="Risk" Rank="17" AutoSuspect="False" Required="False" DataTypeName="MultiSelect" DataType="10" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{B4CBB8E8-07DE-4639-9081-7C289E6DD4A4}">
+      <ListItems>
+        <ListItem ItemText="Schedule - High" ItemRank="0" Default="False" ID="{3C5F78FC-8AC4-4DBF-AB5F-E24C428EB29A}"/>
+        <ListItem ItemText="Schedule - Medium" ItemRank="1" Default="False" ID="{A2BE6B6D-46B5-4730-A60D-FCA30CA4FD5C}"/>
+        <ListItem ItemText="Schedule - Low" ItemRank="2" Default="False" ID="{9E8B99C3-6046-4428-AEC7-03B0227C63D8}"/>
+        <ListItem ItemText="Technology - High" ItemRank="3" Default="False" ID="{A214E715-6B6F-4B1F-A0B9-F75A0B96C048}"/>
+        <ListItem ItemText="Technology - Medium" ItemRank="4" Default="False" ID="{81ADB806-70EB-4713-B101-538070EE8B25}"/>
+        <ListItem ItemText="Technology - Low" ItemRank="5" Default="False" ID="{35ECAD82-25DB-464E-9D8C-97875FBB16C5}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="State" Rank="2" AutoSuspect="False" Required="False" DataTypeName="MultiSelect" DataType="10" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{A97CE4E9-0FE6-4287-85B4-5BBB255D3CE3}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="True" ID="{7EB56006-E101-4156-B947-FFF3AC2DFD1F}"/>
+        <ListItem ItemText="Not Clear" ItemRank="1" Default="False" ID="{B1666DD5-B280-4054-BB13-82363778174A}"/>
+        <ListItem ItemText="Open" ItemRank="2" Default="False" ID="{376A51F3-9CBF-44CC-8983-90AE8BBED049}"/>
+        <ListItem ItemText="Done" ItemRank="11" Default="False" ID="{E9BB92A7-EFF9-43F7-A849-88E178257E59}"/>
+        <ListItem ItemText="Cancelled" ItemRank="12" Default="False" ID="{B06D8C9D-09ED-4B1F-850A-EC3480377BED}"/>
+      </ListItems>
+    </Attribute>
+    <Attribute Label="State" Rank="3" AutoSuspect="False" Required="False" DataTypeName="MultiSelect" DataType="10" DefaultValue="" Flags="0" Description="" FieldProperties="" ID="{7E229F6C-A2A8-4223-AF77-5C57BE3BBD1A}">
+      <ListItems>
+        <ListItem ItemText="Proposed" ItemRank="0" Default="False" ID="{DD1293B3-4485-4575-A475-C50755DCAC6A}"/>
+        <ListItem ItemText="Traced" ItemRank="5" Default="False" ID="{ED86FADF-205B-4DDF-B841-A0CDE55A0464}"/>
+        <ListItem ItemText="Spec" ItemRank="25" Default="False" ID="{25218C30-8994-4A12-BAB7-ACFB0B1439E4}"/>
+        <ListItem ItemText="C++-Code" ItemRank="42" Default="False" ID="{0D530B91-60DC-49BB-93CB-81F1E0D1B4EC}"/>
+        <ListItem ItemText="FirstReview" ItemRank="56" Default="False" ID="{CA3AC26C-7442-4218-AAB6-1F219EFD028A}"/>
+        <ListItem ItemText="NotRelevant" ItemRank="57" Default="False" ID="{F912D7E0-99D5-4E1C-8A11-4B34BB2D385A}"/>
+      </ListItems>
+    </Attribute>
+  </Attributes>
+  <DocumentTypes>
+    <DocumentType Name="Glossary" Description="Documents of this type are use for managing the common vocabulary of the project." FileExtension="GLS" DefaultRequirementName="Glossary Item" TemplateName="RUP Glossary" TemplateDescription="Rational Unified Process supplied template used to capture a common vocabulary." TemplateFileName="rup_gloss.dot" TemplateHelpFile="" DefaultRequirementTypeGUID="{7646B33E-070D-43AD-B8DC-262DEFD21B31}" ID="{002CCDD6-2441-4A05-8282-0FFCA042CD6F}"/>
+    <DocumentType Name="Requirements Management Plan" Description="This document type sets out guidelines for establishing the requirements documents, types, attributes, and traceability in order to manage the project requirements." FileExtension="RMP" DefaultRequirementName="Aufgaben, die erledigt werden müssen" TemplateName="RUP Requirements Management Plan" TemplateDescription="Rational Unified Process supplied template used to detail the processes and project specifications to be used in managing the requirements for the system to be built." TemplateFileName="Rup_rmpln.dot" TemplateHelpFile="" DefaultRequirementTypeGUID="{EE1DE543-6957-4C0A-9F56-8954FC1EAEBF}" ID="{B71CB644-BF84-47D8-833E-A224114697A5}"/>
+    <DocumentType Name="Stakeholder Request" Description="Documents of this type are used to collect and describe stakeholder requests." FileExtension="STR" DefaultRequirementName="Stakeholder Request" TemplateName="RUP Stakeholder Requests" TemplateDescription="Rational Unified Process supplied template used to collect stakeholder requests regarding the system to be built." TemplateFileName="rup_stkreq.dot" TemplateHelpFile="" DefaultRequirementTypeGUID="{2243C17B-6ADA-412E-8A22-16E314AC3A3B}" ID="{31F32959-A2D5-4842-A2DE-77CFB4A43925}"/>
+    <DocumentType Name="Supplementary Requirements Specification" Description="Documents of this type contain supplementary, non-functional requirements." FileExtension="SUP" DefaultRequirementName="Supplementary" TemplateName="RUP Supplementary Specification" TemplateDescription="Rational Unified Process supplied template used to collect the system requirements that are not readily captured in the use cases of the use-case model." TemplateFileName="rup_sspec.dot" TemplateHelpFile="" DefaultRequirementTypeGUID="{1B53300F-0E91-4D97-8A7A-7A3E1764F089}" ID="{1172EEF8-EE36-4556-AFBD-65380F5E5F33}"/>
+    <DocumentType Name="Use Case Specification" Description="Documents of this type contain use cases and detailed information pertaining to those use cases.  Typically there is one use case per document." FileExtension="UCS" DefaultRequirementName="Use Case" TemplateName="RUP Use Case Specification" TemplateDescription="Rational Unified Process supplied template used to specify a use case." TemplateFileName="rup_ucspec.dot" TemplateHelpFile="" DefaultRequirementTypeGUID="{CC39D30E-F4B4-4CA1-BB84-49E883CEF78C}" ID="{58B016DD-25DA-47A9-BDC4-41EEDC23A217}"/>
+    <DocumentType Name="Vision" Description="Documents of this type describe, at a high level, the purpose, needs, and features of the proposed product to be built." FileExtension="VIS" DefaultRequirementName="Product Feature" TemplateName="RUP Vision Document" TemplateDescription="Rational Unified Process supplied template used to collect, analyze and define high-level needs and features of the system to be built." TemplateFileName="rup_vision.dot" TemplateHelpFile="" DefaultRequirementTypeGUID="{9ECB26FE-4696-4C7D-94CE-E0279F816713}" ID="{FE8A6D48-C996-408C-89DF-DA9891A6C769}"/>
+  </DocumentTypes>
+</PROJECT>
