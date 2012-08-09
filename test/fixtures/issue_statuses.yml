@@ -5,4 +5,10 @@ issue_status_1:
  is_closed: false
  is_default: true
  position: 1
- 
+
+issue_status_2:
+ id: 2
+ name: Open
+ is_closed: false
+ is_default: false
+ position: 2
