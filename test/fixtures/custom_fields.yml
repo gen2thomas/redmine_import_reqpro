@@ -15,4 +15,22 @@ custom_field_01:
   searchable: true
   default_value: ""
   editable: true
-  visible: true 
+  visible: true
+  
+custom_field_02:
+  id: 2
+  type: "IssueCustomField"
+  name: "Status"
+  field_format: "string"
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: "open"
+  editable: true
+  visible: true  

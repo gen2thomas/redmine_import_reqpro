@@ -47,7 +47,14 @@ custom_value_07:
   customized_id: 22
   custom_field_id: 1
   value: "{07}"
-  
+
+custom_value_08:
+  id: 8
+  customized_type: "Issue"
+  customized_id: 31
+  custom_field_id: 2
+  value: "in_work"
+    
 custom_value_10:
   id: 10
   customized_type: "Project"
