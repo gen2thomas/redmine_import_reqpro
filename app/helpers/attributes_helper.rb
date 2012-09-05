@@ -179,7 +179,8 @@ module AttributesHelper
   end
   
   # create custom field for RPUID
-  def create_issue_custom_field_for_rpuid(the_name, debug)
+  def create_issue_custom_field_for_rpuid(debug)
+    the_name="RPUID"
     new_issue_custom_field = IssueCustomField.find_by_name(the_name)
     if new_issue_custom_field == nil
       new_issue_custom_field = IssueCustomField.new 

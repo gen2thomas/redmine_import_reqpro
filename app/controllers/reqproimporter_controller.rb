@@ -818,7 +818,7 @@ private
           end
           # add rpid as "RPUID"
           if rpid.to_s != "" and rpid.to_s != nil
-            issue_custom_field_for_rpuid = create_issue_custom_field_for_rpuid("RPUID", debug)
+            issue_custom_field_for_rpuid = create_issue_custom_field_for_rpuid(debug)
             issue_custom_field_for_rpuid = update_issue_custom_field(issue_custom_field_for_rpuid, new_issue.tracker, new_issue.project, debug)
             if issue_custom_field_for_rpuid.projects.length != issue_custom_field_for_rpuid.projects.uniq.length
               debugger
