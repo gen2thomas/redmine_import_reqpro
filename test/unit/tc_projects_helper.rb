@@ -16,7 +16,7 @@ class TcProjectsHelper < ActiveSupport::TestCase
   def test_project_prerequisites
     puts "test_project_prerequisites"
     assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
-    assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(13,CustomValue.find(:all).count, "CustomValue nicht korrekt")
     assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
     assert_equal(5,Role.find(:all).count, "Role nicht korrekt")

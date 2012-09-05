@@ -14,7 +14,7 @@ class TcUsersHelper < ActiveSupport::TestCase
   def test_user_prerequisites
     puts "test_user_prerequisites"
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
-    assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(13,CustomValue.find(:all).count, "CustomValue nicht korrekt")
   end
 
   def test_collect_rpusers

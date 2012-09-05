@@ -20,8 +20,8 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
     assert_equal(3,Tracker.find(:all).count, "Tracker nicht korrekt")
     assert_equal(2,IssueStatus.find(:all).count, "IssueStatus nicht korrekt")
     assert_equal(4,Enumeration.find(:all).count, "Enumeration nicht korrekt")
-    assert_equal(1,CustomField.find(:all).count, "CustomField nicht korrekt")
-    assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(2,CustomField.find(:all).count, "CustomField nicht korrekt")
+    assert_equal(13,CustomValue.find(:all).count, "CustomValue nicht korrekt")
   end
     
   def test_issue_normal_save
