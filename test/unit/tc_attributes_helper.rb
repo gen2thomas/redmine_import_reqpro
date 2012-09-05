@@ -10,44 +10,125 @@ end
 
 class TcAttributesHelper < ActiveSupport::TestCase
   self.fixture_path = File.dirname(__FILE__) + "/../fixtures/"
-  fixtures :issues, :users, :custom_values, :issue_statuses, :issue_categories
+  fixtures :issues, :users, :custom_values, :issue_statuses, :issue_categories, :trackers, :projects
   
   def test_attributes_prerequisites
     puts "test_attributes_prerequisites"
     assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
-    assert_equal(12,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(13,CustomValue.find(:all).count, "CustomValue nicht korrekt")
     assert_equal(2,IssueStatus.find(:all).count, "IssueStatus nicht korrekt")
     assert_equal(3,IssueCategory.find(:all).count, "IssueCategory nicht korrekt")
+    assert_equal(3,Tracker.find(:all).count, "Tracker nicht korrekt")
+    assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
   end
 
   def test_attribute_find_by_projectid_and_attrlabel
-    #attribute_find_by_projectid_and_attrlabel(attributes, projectid, label)
+    puts "test_attribute_find_by_projectid_and_attrlabel"
+    #prepare data
+    mth=MyTestHelper.new()
+    atts=mth.attributes()
+    #prepare call
+    hc=HelperClassForModules.new()
+    #call
+    att1=hc.attribute_find_by_projectid_and_attrlabel(atts, "{BFCD0B9E-E4B5-4B0A-8C59-F568269DCCE3}", "Actual Iteration")
+    att2=hc.attribute_find_by_projectid_and_attrlabel(atts, "UnknownProj", "Developer")
+    att3=hc.attribute_find_by_projectid_and_attrlabel(atts, "{065CCCD0-4129-497C-8474-27EBCD96065D}", "UnknownLabel")
+    #test
+    assert_equal(atts["{0E8304EF-59BF-440D-9315-5E56E523A58C}"],att1["{0E8304EF-59BF-440D-9315-5E56E523A58C}"],"Attr1 nicht gefunden!")
+    assert_equal(nil,att2,"Attr2 muss leer sein!")
+    assert_equal(nil,att3,"Attr3 muss leer sein!")
   end
   
   def test_create_issue_custom_field_for_rpuid
     puts "test_create_issue_custom_field_for_rpuid"
-    #create_issue_custom_field_for_rpuid(the_name, debug)
+    #prepare data
+    icf_count=IssueCustomField.find(:all).count
+    #prepare call
+    hc=HelperClassForModules.new()
+    #call
+    icf1 = hc.create_issue_custom_field_for_rpuid(true)
+    #test 1
+    assert(icf1!=nil, "icf1 is nil!")
+    if icf1!=nil
+      assert(icf1[:name]=="RPUID", "icf1 name must be RPUID!")
+    end
+    assert(icf_count+1 == IssueCustomField.find(:all).count, "icf1 has to be added!")
+    #prepare
+    icf1_id=icf1.id
+    #call
+    icf2 = hc.create_issue_custom_field_for_rpuid(true)
+    #test 2
+    assert(icf_count+1 == IssueCustomField.find(:all).count, "icf2 has not to be added!")
+    assert(icf2[:id]==icf1_id, "icf1 id must be the same like icf2!")
   end
   
   def test_remap_listattrlabels_to_projectid
     puts "test_remap_listattrlabels_to_projectid"
-    #remap_listattrlabels_to_projectid(attributes)
-  end 
+    #prepare data
+    mth=MyTestHelper.new()
+    atts=mth.attributes()
+    #prepare call
+    hc=HelperClassForModules.new
+    #@projects_with_versionattributes_for_view = remap_listattrlabels_to_projectid(@@attributes)
+    pwv=hc.remap_listattrlabels_to_projectid(atts)
+    #test
+    assert_equal("{065CCCD0-4129-497C-8474-27EBCD96065D}", pwv[0][0], "Falsches Projekt gemappt!")
+    assert_equal("Developer", pwv[0][1][0], "Falsches Attribute als Version gemappt!")
+  end
   
-  def test_remap_noversionattributes_to_attrlabel
-    puts "test_remap_noversionattributes_to_attrlabel"
-    #remap_noversionattributes_to_attrlabel(attributes, versions_mapping, conflate_attributes)
+  def test_remap_noversionattributes_to_attrlabel_conf
+    puts "test_remap_noversionattributes_to_attrlabel with conflation"
+    #prepare data
+    mth=MyTestHelper.new()
+    atts=mth.attributes()
+    vermap=mth.versions_mapping()
+    #prepare call
+    hc=HelperClassForModules.new
+    att4view=hc.remap_noversionattributes_to_attrlabel(atts, vermap, true)
+    #test
+    assert_equal("STP", att4view["Effort (days)"][:projects][0], "Falsches Projekt gemappt!")
+    assert_equal("FEAT", att4view["Effort (days)"][:rtprefixes][0], "Falscher ReqType gemappt!")
+    assert_equal("MSP", att4view["Actual Iteration"][:projects][0], "Falsches Projekt gemappt!")
+    assert_equal("FUNC", att4view["Actual Iteration"][:rtprefixes][0], "Falsches ReqType gemappt!")
+  end
+  
+  def test_remap_noversionattributes_to_attrlabel_noconf
+    puts "test_remap_noversionattributes_to_attrlabel without conflation"
+    #prepare data
+    mth=MyTestHelper.new()
+    atts=mth.attributes()
+    vermap=mth.versions_mapping()
+    #prepare call
+    hc=HelperClassForModules.new
+    att4view=hc.remap_noversionattributes_to_attrlabel(atts, vermap, false)
+    assert_equal("STP", att4view["stp_Effort (days)"][:projects][0], "Falsches Projekt gemappt!")
+    assert_equal("FEAT", att4view["stp_Effort (days)"][:rtprefixes][0], "Falscher ReqType gemappt!")
+    assert_equal("MSP", att4view["msp_Actual Iteration"][:projects][0], "Falsches Projekt gemappt!")
+    assert_equal("FUNC", att4view["msp_Actual Iteration"][:rtprefixes][0], "Falsches ReqType gemappt!")
   end
   
   def test_update_custom_value_in_issue
     puts "test_update_custom_value_in_issue"
-    #update_custom_value_in_issue(a_issue, a_custom_field, the_value, debug)
+    #prepare call
+    hc=HelperClassForModules.new
+    #a_issue=issue_save_with_assignee_restore(a_issue)
+    hc.stubs(:issue_save_with_assignee_restore).returns(Issue.find_by_id(11))
+    #call methode
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(2), "end_Work", true)
+    assert_equal("end_Work", aisu.custom_values.find_by_custom_field_id(2).value, "Wert nicht aktualisiert!")
   end
   
   def test_update_issue_custom_field
     puts "test_update_issue_custom_field"
-    #update_issue_custom_field(issue_custom_field, new_tracker, new_project, debug)
+    #prepare call
+    hc=HelperClassForModules.new
+    #call methode
+    icf=hc.update_issue_custom_field(IssueCustomField.find_by_id(2), Tracker.find_by_id(3), Project.find_by_id(2), true)
+    #tests
+    assert_equal(IssueCustomField.find_by_id(2), icf, "falsches ICF vorhanden!")
+    assert_equal(Tracker.find_by_id(3), icf.trackers.find_by_id(3), "Tracker nicht aktualisiert!")
+    assert_equal(Project.find_by_id(2), icf.projects.find_by_id(2), "Projekt nicht aktualisiert!")
   end 
   
   def test_update_attribute_or_custom_field_with_value1
@@ -102,7 +183,6 @@ class TcAttributesHelper < ActiveSupport::TestCase
     #prepare users done by fixture
     #prepare custom fields done by fixture
     #prepare data
-    #prepare data
     mth=MyTestHelper.new()
     rpus=mth.rpusers()
     #prepare call
@@ -112,12 +192,10 @@ class TcAttributesHelper < ActiveSupport::TestCase
     #a_issue = update_custom_value_in_issue(a_issue, a_issue_custom_field, value, debug)
     #a_issue.assigned_to = find_project_rpmember(value, rpusers, a_issue.project, debug)
     hc.stubs(:update_issue_custom_field).returns(IssueCustomField.find_by_id(1))
-    hc.stubs(:update_custom_value_in_issue).returns(Issue.find_by_id(1))
-    hc.stubs(:find_project_rpmember).returns(User.find_by_id(1))
+    hc.stubs(:update_custom_value_in_issue).returns(Issue.find_by_id(11))
     #call methode for case custom_field_id != "" --> update custom field (simple test using mocks)
-    #hc.update_attribute_or_custom_field_with_value(a_issue, mapping, "1", value, rpus, true)
-    
-    
+    a_issue=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), nil, "1", "ABC", nil, true)
+    assert_equal(Issue.find_by_id(11), a_issue, "Kein Issue 11 zurueckgeliefert!")
   end
   
   def test_update_attributes_for_map_needing1
