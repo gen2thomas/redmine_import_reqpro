@@ -264,7 +264,7 @@ class TcAttributesHelper < ActiveSupport::TestCase
     HelperClassForModules.class_eval{def caf(a,b,c) return collect_attributes_fast(a,b,c) end}
     hc=HelperClassForModules.new()
     attrs=hc.caf(sop, rts, used_attr_list)
-    assert_equal(2,attrs.count, "Es sollte genau 1 Attribute in der Liste stehen!")
+    assert_equal(2,attrs.count, "Es sollten genau 2 Attribute in der Liste stehen!")
     #attr1
     attr1=attrs["{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}"]
     assert_equal("",attr1[:default], ":default falsch")

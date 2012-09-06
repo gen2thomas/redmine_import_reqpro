@@ -13,8 +13,8 @@ class TcRequirementsIssuesHelper < ActiveSupport::TestCase
   self.fixture_path = File.dirname(__FILE__) + "/../fixtures/"
   fixtures :issues, :projects, :trackers, :projects_trackers, :issue_statuses, :enumerations, :custom_fields, :custom_values
   
-  def test_issue_prerequisites
-    puts "test_issue_prerequisites"
+  def test_requirements_issues_prerequisites
+    puts "test_requirements_issues_prerequisites"
     assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
     assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
     assert_equal(3,Tracker.find(:all).count, "Tracker nicht korrekt")

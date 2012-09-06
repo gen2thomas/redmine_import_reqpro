@@ -11,6 +11,14 @@ class MyTestHelper
     return versions_mapping
   end
   
+  def tracker_mapping
+    #rt_prefix=>attr_id
+    tracker_mapping=Hash.new
+    tracker_mapping["NEED"]=Hash.new
+    tracker_mapping["NEED"][:tr_name]="Defect"
+    return tracker_mapping
+  end
+  
   def attributes
     attributes=Hash.new
     #attr1
@@ -73,6 +81,15 @@ class MyTestHelper
     requirement_types["{5E748E74-15E9-454E-8ACD-6D263D08E00F}"][:name] = "Functionalities"
     requirement_types["{5E748E74-15E9-454E-8ACD-6D263D08E00F}"][:prefix] = "FUNC"
     requirement_types["{5E748E74-15E9-454E-8ACD-6D263D08E00F}"][:attrids] = used_attributes2
+    #RT "Need" of project2
+    used_attributes3 = Array.new
+    used_attributes3.push("{895997FA-1A89-4470-ABB9-90ED4645858E}") #Developer
+    used_attributes3.push("{04A20C42-647D-4F85-B803-474907FAE21A}") #Effort (days)
+    requirement_types["{135E694F-67E6-45B5-A1C9-58477F5BBE6A}"] = Hash.new
+    requirement_types["{135E694F-67E6-45B5-A1C9-58477F5BBE6A}"][:project] = "MSP"
+    requirement_types["{135E694F-67E6-45B5-A1C9-58477F5BBE6A}"][:name] = "User Need"
+    requirement_types["{135E694F-67E6-45B5-A1C9-58477F5BBE6A}"][:prefix] = "NEED"
+    requirement_types["{135E694F-67E6-45B5-A1C9-58477F5BBE6A}"][:attrids] = used_attributes3
     return requirement_types
   end
   

@@ -3,6 +3,7 @@
   'tc_projects_helper.rb',
   'tc_ext_projects_helper.rb',
   'tc_requirements_issues_helper.rb',
+  'tc_requirement_types_helper.rb',
   'tc_users_helper.rb',
   'tc_attributes_helper.rb'
 ].each do |file|
