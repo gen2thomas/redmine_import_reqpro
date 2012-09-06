@@ -33,7 +33,7 @@ module RequirementTypesHelper
   
   # call after manual mapping in view
   # delete not mapped (means not used) requirements
-  # add :mapping target if needed      
+  # add :mapping target if needed
   def update_requ_types_for_map_needing(requirement_types, tracker_mapping)
     requirement_types.each do |key,rq|
       if  tracker_mapping[rq[:prefix]] != nil
@@ -44,13 +44,15 @@ module RequirementTypesHelper
           rq[:mapping] = tracker_mapping[rq[:project].downcase + "_" + rq[:prefix]][:tr_name]
         end
       end
-      if rq[:mapping] == nil  
+      if rq[:mapping] == nil
         requirement_types.delete(key) # entry not used
       end
     end
     return requirement_types
   end
   
+  #make from list rt_key=>attrids[] a list
+  #attrid => rt_key
   def make_attr_list_from_requirement_types(requirement_types)
     attr_list = Hash.new
     requirement_types.each do |rt_key, rt_values|
@@ -75,7 +77,7 @@ private
         # collect used attributes
         used_attributes = Array.new
         if req_type.elements["Attributes"] != nil
-          req_type.elements["Attributes"].each do |attri|
+          req_type.elements["Attributes"].each_element("Attribute") do |attri|
             used_attributes.push(attri.attributes["ID"])
           end
         end
