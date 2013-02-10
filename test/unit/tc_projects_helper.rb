@@ -7,6 +7,15 @@ class HelperClassForModules
   include UsersHelper
   include FilesHelper
   include ExtProjectsHelper
+  def loglevel_none
+    return 0
+  end
+  def loglevel_medium
+    return 5
+  end
+  def loglevel_high
+    return 10
+  end
 end
 
 class TcProjectsHelper < ActiveSupport::TestCase
@@ -15,13 +24,33 @@ class TcProjectsHelper < ActiveSupport::TestCase
   
   def test_project_prerequisites
     puts "test_project_prerequisites"
-    assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
-    assert_equal(13,CustomValue.find(:all).count, "CustomValue nicht korrekt")
-    assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
+    assert_equal(3,Project.find(:all).count, "Project nicht korrekt")
+    assert_equal(14,Issue.find(:all).count, "Issue nicht korrekt")
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
     assert_equal(5,Role.find(:all).count, "Role nicht korrekt")
+    assert_equal(11,CustomField.find(:all).count, "CustomField nicht korrekt")
+    assert_equal(23,CustomValue.find(:all).count, "CustomValue nicht korrekt")
   end
     
+  def test_project_find_by_rpuid_or_identifier_or_name
+      puts "test_project_find_by_rpuid_or_identifier_or_name"
+      #prepare custom fields done by fixture
+      #prepare issues done by fixture
+      #prepare call
+      hc=HelperClassForModules.new()
+      #function call
+      proj_1=hc.project_find_by_rpuid_or_identifier_or_name("{RPUID10}", "unknown_id", "unknown_name") #known project by RPUID
+      proj_2=hc.project_find_by_rpuid_or_identifier_or_name("{RPUID01234}", "mpr2", "unknown_name") #by identifier
+      proj_3 = hc.project_find_by_rpuid_or_identifier_or_name("{RPUID01234}", "unknown_id", "MyProjectName3") #by name
+      proj_nil = hc.project_find_by_rpuid_or_identifier_or_name("{RPUID01234}", "unknown_id", "unknown_name") #all wrong
+      #test
+      assert_equal(true, (proj_1 != nil) && (proj_2 != nil) && (proj_3 != nil), "Kein Projekt darf nil sein!")
+      assert_equal(Project.find_by_id(1), proj_1, "Project 1 not found by RPUID!")
+      assert_equal(Project.find_by_id(2), proj_2, "Project 2 not found by identifier!")
+      assert_equal(Project.find_by_id(3), proj_3, "Project 3 not found by name!")
+      assert_nil(proj_nil, "proj_nil not nil!")
+    end
+  
   def test_project_find_by_rpuid
     puts "test_project_find_by_rpuid"
     #prepare custom fields done by fixture
@@ -29,13 +58,13 @@ class TcProjectsHelper < ActiveSupport::TestCase
     #prepare call
     hc=HelperClassForModules.new()
     #function call
-    proj_1=hc.project_find_by_rpuid("{10}") #known project
-    proj_2=hc.project_find_by_rpuid("{02}") #same ID also for an Issue
-    proj_nil = hc.project_find_by_rpuid("{01234}") #unknown rpuid
-    no_proj = hc.project_find_by_rpuid("{07}") #wrong customized_type
+    proj_1=hc.project_find_by_rpuid("{RPUID10}") #known project
+    proj_2=hc.project_find_by_rpuid("{RPUID02}") #same ID also for an Issue
+    proj_nil = hc.project_find_by_rpuid("{RPUID01234}") #unknown rpuid
+    no_proj = hc.project_find_by_rpuid("{RPUID07}") #wrong customized_type
     #test
-    assert_equal(Project.find_by_id(1), proj_1, "Project 1 not found by ID!")
-    assert_equal(Project.find_by_id(2), proj_2, "Project 2 not found by ID!")
+    assert_equal(Project.find_by_id(1), proj_1, "Project 1 not found by RPUID!")
+    assert_equal(Project.find_by_id(2), proj_2, "Project 2 not found by RPUID!")
     assert_nil(proj_nil, "proj_nil not nil!")
     assert_nil(no_proj, "no_proj not nil!")
   end
@@ -43,11 +72,12 @@ class TcProjectsHelper < ActiveSupport::TestCase
   def test_create_project_custom_field_for_rpuid
     puts "test_create_project_custom_field_for_rpuid"
     #prepare data
+    ProjectCustomField.find_by_id(4).delete #delete entry from fixture before test
     pcf_count=ProjectCustomField.find(:all).count
     #prepare call
     hc=HelperClassForModules.new()
     #call
-    pcf1 = hc.create_project_custom_field_for_rpuid(true)
+    pcf1 = hc.create_project_custom_field_for_rpuid(hc.loglevel_high())
     #test 1
     assert(pcf1!=nil, "pcf1 is nil!")
     if pcf1!=nil
@@ -57,7 +87,7 @@ class TcProjectsHelper < ActiveSupport::TestCase
     #prepare
     pcf1_id=pcf1.id
     #call
-    pcf2 = hc.create_project_custom_field_for_rpuid(true)
+    pcf2 = hc.create_project_custom_field_for_rpuid(hc.loglevel_high())
     #test 2
     assert(pcf_count+1 == ProjectCustomField.find(:all).count, "pcf2 has not to be added!")
     assert(pcf2[:id]==pcf1_id, "pcf1 id must be the same like pfc2!")
@@ -83,9 +113,73 @@ class TcProjectsHelper < ActiveSupport::TestCase
     fu= hc.find_project_rpmember("Egal", Hash.new, Project.find_by_id(1), true)
     assert_equal(nu, fu, "Mitglied nicht gefunden!")
   end
+   
+  def test_update_project_members_with_roles_bad01
+    puts "test_update_project_members_with_roles bad case 01"
+    #a_rpuser[:project] == nil
+    # each user should have at least one project
+    #prepare test
+    rpusers=Hash.new
+    rpusers["{xx}"]=Hash.new
+    rpusers["{xx}"][:login]="UserOhneProject"
+    mems=Member.find(:all)
+    #call
+    hc=HelperClassForModules.new()
+    hc.update_project_members_with_roles(nil, rpusers, nil, hc.loglevel_none())
+    assert_equal(mems, Member.find(:all), "Es darf kein neues Mitglied hinzugefuegt wurden sein!")
+  end
   
-  def test_update_project_members_with_roles
-    puts "test_update_project_members_with_roles"
+  def test_update_project_members_with_roles_bad02
+    puts "test_update_project_members_with_roles bad case 02"
+    #rmuser == nil (a_rpuser[:rmuser] == nil)
+    # each redmine user should have now an corresponding requpro user
+    # because the user import was located before project import
+    #prepare test
+    rpusers=Hash.new
+    rpusers["{yy}"]=Hash.new
+    rpusers["{yy}"][:login]="UserDesProjectsPR2"
+    rpusers["{yy}"][:project]="PR2"
+    rmproject=Hash.new
+    rmproject[:identifier]="pr2"
+    mems=Member.find(:all)
+    #call
+    hc=HelperClassForModules.new()
+    hc.update_project_members_with_roles(rmproject, rpusers, nil, hc.loglevel_none())
+    assert_equal(mems, Member.find(:all), "Es darf kein neues Mitglied hinzugefuegt wurden sein!")
+  end
+  
+  def test_update_project_members_with_roles_good03
+    puts "test_update_project_members_with_roles good case 03"
+    #a_rpuser[:project].downcase != rmproject[:identifier]
+    #this means the actual user in the list is not user inside this actual project
+    #prepare test
+    rpusers=Hash.new
+    rpusers["{yy}"]=Hash.new
+    rpusers["{yy}"][:login]="UserEinesProjectsPR2"
+    rpusers["{yy}"][:project]="PR2"
+    rmproject=Hash.new
+    rmproject[:identifier]="pr1"
+    mems=Member.find(:all)
+    #call
+    hc=HelperClassForModules.new()
+    hc.update_project_members_with_roles(rmproject, rpusers, nil, hc.loglevel_high())
+    assert_equal(mems, Member.find(:all), "Es darf kein neues Mitglied hinzugefuegt wurden sein!")
+  end
+  
+  def test_update_project_members_with_roles_good02
+    puts "test_update_project_members_with_roles good case 02"
+    #rpusers==nil 
+    #this means no redmine user is marked (or no user available) for import into redmine
+    #prepare test
+    mems=Member.find(:all)
+    #call
+    hc=HelperClassForModules.new()
+    hc.update_project_members_with_roles(nil, nil, nil, hc.loglevel_high())
+    assert_equal(mems, Member.find(:all), "Es darf kein neues Mitglied hinzugefuegt wurden sein!")    
+  end
+  
+  def test_update_project_members_with_roles_good01
+    puts "test_update_project_members_with_roles good case 01"
     #prepare data
     rmproject=Project.find_by_id(1)
     rmuser01=User.find_by_id(1)
@@ -104,12 +198,13 @@ class TcProjectsHelper < ActiveSupport::TestCase
     rpusers["{00}"]=Hash.new
     rpusers["{00}"][:project]=Project.find_by_id(2)[:identifier]
     rpusers["{00}"][:rmuser]=rmuser03
+    rpusers["{00}"][:login]="UserNotMemberOf_mpr1"
     #prepare test
     mems0=Member.find(:all, :conditions => {:project_id => 1})
     ### tests for a new member ###
     #call
     hc=HelperClassForModules.new()
-    hc.update_project_members_with_roles(rmproject, rpusers, "{xx}")
+    hc.update_project_members_with_roles(rmproject, rpusers, "{xx}", hc.loglevel_high())
     #test1
     mems1=Member.find(:all, :conditions => {:project_id => 1})
     assert_equal(mems0.count+2, mems1.count, "Es sind dem Projekt nicht genau 2 Mitglieder hinzugefügt wurden!")
@@ -127,7 +222,7 @@ class TcProjectsHelper < ActiveSupport::TestCase
     mem=Member.find(:all, :conditions => { :user_id => rmuser03[:id], :project_id => 1 })
     assert(mem.count==0, "User3 darf kein Mitglied vom Projekt sein!")
     ### tests for an existend member ###
-    hc.update_project_members_with_roles(rmproject, rpusers, "{xx}")
+    hc.update_project_members_with_roles(rmproject, rpusers, "{xx}", hc.loglevel_high())
     #test1b
     mems2=Member.find(:all, :conditions => {:project_id => 1})
     assert_equal(mems1.count, mems2.count, "Es sind dem Projekt unerlaubt neue Mitglieder hinzugefügt wurden!")
@@ -154,10 +249,10 @@ class TcProjectsHelper < ActiveSupport::TestCase
     data_pathes.push(path_to_samples + '/Baseline01_App')
     data_pathes.push(path_to_samples + '/Baseline02_Mlc')
     #prepare call of private function
-    HelperClassForModules.class_eval{def cap(a) return collect_available_projects(a) end}
+    HelperClassForModules.class_eval{def cap(a,b) return collect_available_projects(a,b) end}
     hc=HelperClassForModules.new()
     #call
-    ap=hc.cap(data_pathes)
+    ap=hc.cap(data_pathes,hc.loglevel_high())
     assert(ap.count==2, "Es sollten genau 2 Projekte sein!")
     p1=ap["{065CCCD0-4129-497C-8474-27EBCD96065D}"]
     assert(p1!=nil, "Falsches Projekt 1!")
@@ -203,7 +298,7 @@ class TcProjectsHelper < ActiveSupport::TestCase
     hc.stubs(:external_prefixes_to_string).returns("EP1STR*,EP2STR?")
     #external_prefixes = ExtProjectsHelper::external_prefixes_to_string(external_projects)
     #call the function
-    ap=hc.collect_projects(Array.new, false)
+    ap=hc.collect_projects(Array.new, false, hc.loglevel_high())
     #test
     p1=ap["{01}"]
     assert(p1[:extprefixes]=="EP1STR*,EP2STR?", "Falsche Prefixe bei p1!")

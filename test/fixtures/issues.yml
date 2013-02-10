@@ -3,11 +3,13 @@ issue_11:
     id: 11
     tracker_id: 1
     project_id: 1
-    subject: "MyTestIssue1_AtProject1"
+    subject: "MyTestIssue11_AtProject1"
     description: "MyDescription11"
     status_id: 1
     priority_id: 4
     author_id: 1
+    lft: 1
+    rgt: 2
     
 issue_12:
     id: 12
@@ -18,6 +20,8 @@ issue_12:
     status_id: 1
     priority_id: 4
     author_id: 1
+    lft: 1
+    rgt: 2
     
 issue_13:
     id: 13
@@ -28,7 +32,9 @@ issue_13:
     status_id: 1
     priority_id: 4
     author_id: 1
-    
+    lft: 1
+    rgt: 2
+  
 issue_14:
     id: 14
     tracker_id: 2
@@ -38,7 +44,9 @@ issue_14:
     status_id: 1
     priority_id: 4
     author_id: 1
-
+    lft: 1
+    rgt: 2
+  
 issue_15:
     id: 15
     tracker_id: 1
@@ -48,33 +56,113 @@ issue_15:
     status_id: 1
     priority_id: 1
     author_id: 1
+    lft: 1
+    rgt: 2
 
 issue_21:
     id: 21
     tracker_id: 2
     project_id: 2
-    subject: "MyTestIssue21"
+    subject: "MyTestIssue21_AtProject2"
     description: "MyDescription21"
     status_id: 1
     priority_id: 2
     author_id: 1
+    lft: 1
+    rgt: 2
     
 issue_22:
     id: 22
     tracker_id: 2
     project_id: 2
     subject: "MyTestIssue22"
-    description: "MyDescription22"
+    description: "MyDescription22_AtProject2"
     status_id: 1
     priority_id: 3
     author_id: 1
+    lft: 1
+    rgt: 2
     
 issue_31:
     id: 31
     tracker_id: 3
     project_id: 3
     subject: "MyTestIssue3"
-    description: "MyDescription3"
+    description: "MyDescription3_AtProject2"
     status_id: 1
     priority_id: 4
     author_id: 1
+    lft: 1
+    rgt: 2
+    
+issue_41:
+    id: 41
+    tracker_id: 2
+    project_id: 1
+    subject: "MyTestIssue41"
+    description: "MyDescription41_AtProject1"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    lft: 1
+    rgt: 2
+    
+issue_42:
+    id: 42
+    tracker_id: 3
+    project_id: 1
+    subject: "MyTestIssue42"
+    description: "MyDescription42_AtProject1"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    lft: 1
+    rgt: 2
+    
+issue_43:
+    id: 43
+    tracker_id: 3
+    project_id: 1
+    subject: "MyTestIssue43"
+    description: "MyDescription43_AtProject1"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    lft: 1
+    rgt: 2
+    
+issue_44:
+    id: 44
+    tracker_id: 4
+    project_id: 2
+    subject: "MyTestIssue44"
+    description: "MyDescription44_AtProject2"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    lft: 1
+    rgt: 2
+    
+issue_45:
+    id: 45
+    tracker_id: 4
+    project_id: 2
+    subject: "MyTestIssue45"
+    description: "MyDescription45_AtProject2"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    lft: 1
+    rgt: 2
+    
+issue_46:
+    id: 46
+    tracker_id: 3
+    project_id: 2
+    subject: "MyTestIssue46"
+    description: "MyDescription46_AtProject2"
+    status_id: 1
+    priority_id: 4
+    author_id: 1
+    lft: 1
+    rgt: 2

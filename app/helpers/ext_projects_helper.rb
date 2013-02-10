@@ -16,15 +16,15 @@ module ExtProjectsHelper
   # "available_projects" --> available (self and external) projects
   #check for external projects
   # --> known external projects, status = "?" means unknown
-  def collect_external_projects(filepath, deep_check_ext_projects, available_projects)
-    external_projects = collect_external_projects_fast(filepath)
+  def collect_external_projects(filepath, deep_check_ext_projects, available_projects, loglevel)
+    external_projects = collect_external_projects_fast(filepath, loglevel)
     if deep_check_ext_projects
       # --> update status of external projects
       # --> needed external projects
       # "-": needed but not available
       # "*": not needed
       #search inside the local project files for external traces (TTo.EPGUID, TFrom.EPGUID)
-      external_projects = update_status_for_needed_ext_projects(external_projects, filepath)
+      external_projects = update_status_for_needed_ext_projects(external_projects, filepath, loglevel)
       #modify status of known external projects
       # "+": needed and available
       external_projects.each do |proj_key,proj_value|
@@ -44,8 +44,8 @@ private
 
   #get an data path to open an external project file
   #collect all prefixes and guids to an array of hash
-  def collect_external_projects_fast(filepath)
-    xmldocexternal = open_xml_file(filepath,"ExternalProjects.XML")
+  def collect_external_projects_fast(filepath, loglevel)
+    xmldocexternal = open_xml_file(filepath,"ExternalProjects.XML", loglevel)
     external_projects = Hash.new
     xmldocexternal.elements.each("PROJECT/ExternalProject") do |ext_proj|
       hash_key =  ext_proj.attributes["GUID"]
@@ -59,10 +59,10 @@ private
   #search inside the files for external traces (TTo.EPGUID, TFrom.EPGUID)
   # change status for found GUID to "-" (needed but not available)
   # availability is checked later on
-  def update_status_for_needed_ext_projects(external_projects, filepath)
+  def update_status_for_needed_ext_projects(external_projects, filepath, loglevel)
     all_files = collect_all_data_files(filepath)
     all_files.each do |filename|
-      xmldoc = open_xml_file(filepath,filename)
+      xmldoc = open_xml_file(filepath,filename, loglevel)
       xmldoc.elements.each("PROJECT/Pkg/Requirements/Req/TFrom/TReq/EPGUID") do |e|
         if e.text != nil #not empty
           hash_key = e.text

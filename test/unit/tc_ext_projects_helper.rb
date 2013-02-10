@@ -5,6 +5,15 @@ require 'mocha'
 class HelperClassForModules
   include FilesHelper
   include ExtProjectsHelper
+  def loglevel_none
+    return 0
+  end
+  def loglevel_medium
+    return 5
+  end
+  def loglevel_high
+    return 10
+  end
 end
 
 class TcExtProjectsHelper < ActiveSupport::TestCase
@@ -15,10 +24,10 @@ class TcExtProjectsHelper < ActiveSupport::TestCase
     path_to_samples=Dir.pwd + '/' + File.dirname(__FILE__) + '/../samples'
     data_path=path_to_samples + '/Baseline01_App'
     #prepare call of private function
-    HelperClassForModules.class_eval{def cepf(a) return collect_external_projects_fast(a) end}
+    HelperClassForModules.class_eval{def cepf(a,b) return collect_external_projects_fast(a,b) end}
     hc=HelperClassForModules.new()
     #call return a hash
-    eps=hc.cepf(data_path)
+    eps=hc.cepf(data_path, hc.loglevel_high())
     assert(eps.count==2, "Es sollten genau 2 Projekte sein!")
     p1=eps["{D8365C50-839F-49A9-BC66-E400921E7D47}"]
     assert(p1!=nil, "Falsches Projekt 1!")
@@ -48,10 +57,10 @@ class TcExtProjectsHelper < ActiveSupport::TestCase
     path_to_samples=Dir.pwd + '/' + File.dirname(__FILE__) + '/../samples'
     data_path=path_to_samples + '/Baseline01_App'
     #prepare call of private function
-    HelperClassForModules.class_eval{def usfnep(a,b) return update_status_for_needed_ext_projects(a,b) end}
+    HelperClassForModules.class_eval{def usfnep(a,b,c) return update_status_for_needed_ext_projects(a,b,c) end}
     hc=HelperClassForModules.new()
     #call will return a hash
-    eps=hc.usfnep(eps,data_path)
+    eps=hc.usfnep(eps,data_path,hc.loglevel_high())
     #tests
     assert_equal("-",eps["{D8365C50-839F-49A9-BC66-E400921E7D47}"][:status], "Status von externem Projekt 1 nicht korrigiert!")
     assert_equal("-",eps["{BFCD0B9E-E4B5-4B0A-8C59-F568269DCCE3}"][:status], "Status von externem Projekt 2 nicht korrigiert!")
@@ -104,7 +113,7 @@ class TcExtProjectsHelper < ActiveSupport::TestCase
     #external_projects = update_status_for_needed_ext_projects(external_projects, filepath)
     hc.stubs(:update_status_for_needed_ext_projects).returns(eps2)
     #call
-    ep=hc.collect_external_projects("any_path", true, ap)
+    ep=hc.collect_external_projects("any_path", true, ap, hc.loglevel_high())
     assert_equal("+", ep["{D8}"][:status], "NFL muss verfügbar sein!")
     assert_equal("-", ep["{BF}"][:status], "MSP muss nicht verfügbar sein!")
     assert_equal("*", ep["{AF}"][:status], "AGR muss nicht benoetigt sein!")

@@ -5,12 +5,17 @@ trackers_001:
   is_in_chlog: true
   position: 1
 trackers_002: 
-  name: Feature
+  name: Story
   id: 2
   is_in_chlog: true
   position: 2
 trackers_003: 
-  name: Story
+  name: Need
   id: 3
   is_in_chlog: false
   position: 3
+trackers_004: 
+  name: Function
+  id: 4
+  is_in_chlog: false
+  position: 4

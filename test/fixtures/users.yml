@@ -4,7 +4,7 @@ user_01:
   firstname: "First1"
   lastname: "Last1"
   login: "User01"
-  mail: "user01@users.de"
+  mail: "user01@admin.de"
   admin: true
   status: 1
   type: User

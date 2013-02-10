@@ -21,7 +21,7 @@ class TcRequirementTypesHelper < ActiveSupport::TestCase
     hc.stubs(:collect_requirement_types_fast).returns(rts)
     hc.stubs(:update_requ_types_for_reqpro_needing).returns(rts)
     #call
-    rts2=hc.collect_requirement_types(nil,true)
+    rts2=hc.collect_requirement_types(nil,true, hc.loglevel_high())
     #test
     assert_equal(rts,rts2,"Uebergabe unsauber!")
   end
@@ -95,9 +95,9 @@ class TcRequirementTypesHelper < ActiveSupport::TestCase
     mth=MyTestHelper.new()
     sop=mth.some_projects()
     #prepare call of private function
-    HelperClassForModules.class_eval{def crtf(a) return collect_requirement_types_fast(a) end}
+    HelperClassForModules.class_eval{def crtf(a,b) return collect_requirement_types_fast(a,b) end}
     hc=HelperClassForModules.new()
-    retys=hc.crtf(sop)
+    retys=hc.crtf(sop, hc.loglevel_high())
     #test
     assert_equal(10, retys.count, "Es sollten genau 10 RequTypes in der Liste stehen!")
     #rety1 STP.NEED
@@ -107,7 +107,7 @@ class TcRequirementTypesHelper < ActiveSupport::TestCase
     assert_equal(8, rety1[:attrids].count, "STP.NEED hat genau 8 Attribute!")
     #rety2 MSP.TC
     rety2=retys["{2A6D0DFE-DD3D-4479-B4F2-04BE899B1D9B}"]
-    assert_equal("MSP", rety2[:project], "Project muss STP sein!")
+    assert_equal("MPR3", rety2[:project], "Project muss MPR3 sein!")
     assert_equal("TC", rety2[:prefix], "Prefix muss TC sein!")
     assert_equal(16, rety2[:attrids].count, "MSP.TC hat genau 16 Attribute!")
   end
@@ -119,9 +119,9 @@ class TcRequirementTypesHelper < ActiveSupport::TestCase
     sop=mth.some_projects()
     rety=mth.requirement_types()
     #prepare call of private function
-    HelperClassForModules.class_eval{def urtfrn(a,b) return update_requ_types_for_reqpro_needing(a,b) end}
+    HelperClassForModules.class_eval{def urtfrn(a,b,c) return update_requ_types_for_reqpro_needing(a,b,c) end}
     hc=HelperClassForModules.new()
-    retys=hc.urtfrn(rety, sop)
+    retys=hc.urtfrn(rety, sop, hc.loglevel_high())
     #test
     assert_equal(1, retys.count, "Genau ein RequType muss genutzt sein")
     assert_equal("NEED", retys["{022D080E-A80B-48F4-B573-8C57DE8F3860}"][:prefix], "Es muss der NEED sein!")

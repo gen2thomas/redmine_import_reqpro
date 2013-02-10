@@ -11,9 +11,9 @@ custom_field_01:
   is_required: false
   is_for_all: true
   is_filter: true
-  position: 1 
+  position: 1
   searchable: true
-  default_value: ""
+  default_value: "dd"
   editable: true
   visible: true
   
@@ -34,3 +34,169 @@ custom_field_02:
   default_value: "open"
   editable: true
   visible: true  
+  
+custom_field_03:
+  id: 3
+  type: "IssueCustomField"
+  name: "RPUID"
+  field_format: "string"
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: "0000"
+  editable: true
+  visible: true
+  
+custom_field_04:
+  id: 4
+  type: "ProjectCustomField"
+  name: "RPUID"
+  field_format: "string"
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1
+  searchable: true
+  default_value: "0000"
+  editable: true
+  visible: true
+  
+custom_field_05:
+  id: 5
+  type: "IssueCustomField"
+  name: "IntegerCuFi"
+  field_format: int
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: 123
+  editable: true
+  visible: true
+
+custom_field_06:
+  id: 6
+  type: "IssueCustomField"
+  name: "BoolCuFi"
+  field_format: bool
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: false
+  editable: true
+  visible: true
+  
+custom_field_07:
+  id: 7
+  type: "IssueCustomField"
+  name: "DateCuFi"
+  field_format: date
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: ""
+  editable: true
+  visible: true
+  
+custom_field_08:
+  id: 8
+  type: "IssueCustomField"
+  name: "FloatCuFi"
+  field_format: float
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: 0.345
+  editable: true
+  visible: true
+  
+custom_field_09:
+  id: 9
+  type: "IssueCustomField"
+  name: "ListCuFi"
+  field_format: list
+  possible_values:
+  - List Element 0 
+  - List Element 1
+  - List Element 2
+  - List Element 3
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: List Element 0
+  editable: true
+  visible: true
+  
+custom_field_10:
+  id: 10
+  type: "IssueCustomField"
+  name: "IntegerCuFi_Without_Value"
+  field_format: int
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: 237
+  editable: true
+  visible: true
+  
+custom_field_11:
+  id: 11
+  type: "IssueCustomField"
+  name: "CuFi_With_Unknown_Format"
+  field_format: string
+  possible_values: []
+  regexp: ""
+  min_length: 0
+  max_length: 0
+  is_required: false
+  is_for_all: true
+  is_filter: true
+  position: 1 
+  searchable: true
+  default_value: ""
+  editable: true
+  visible: true

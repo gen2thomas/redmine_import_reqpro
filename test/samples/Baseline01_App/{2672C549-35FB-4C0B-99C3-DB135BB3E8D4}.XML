@@ -28,16 +28,20 @@
         <RTID>{022D080E-A80B-48F4-B573-8C57DE8F3860}</RTID>
         <FVs>
           <FV>
-            <FGUID>{51E59074-F681-44CA-9888-561861D2EBC0}</FGUID>
-            <FLbl>Effort (days)</FLbl>
-            <FTxt>1</FTxt>
-            <FNumVal>0</FNumVal>
-          </FV>
-          <FV>
             <FGUID>{63765958-43FF-4FA2-BA21-257D03DFA2F0}</FGUID>
             <FLbl>Effort remaining (days)</FLbl>
             <FTxt>1.0</FTxt>
             <FNumVal>10</FNumVal>
+          </FV>
+          <FV>
+            <FGUID>{15765958-43FF-4FA2-BA21-257D03DFA2F0}</FGUID>
+            <FLbl>Start Datum</FLbl>
+            <FTxt>01.01.2010</FTxt>
+          </FV>
+          <FV>
+            <FGUID>{16765958-43F0-4FA3-BA22-257D03DFA2F1}</FGUID>
+            <FLbl>Ziel Datum</FLbl>
+            <FTxt>03.02.2011</FTxt>
           </FV>
         </FVs>
         <LVs>
@@ -260,6 +264,16 @@
             <FLbl>Effort remaining (days)</FLbl>
             <FTxt>14.0</FTxt>
             <FNumVal>140</FNumVal>
+          </FV>
+          <FV>
+            <FGUID>{15765958-43FF-4FA2-BA21-257D03DFA2F0}</FGUID>
+            <FLbl>Start Datum</FLbl>
+            <FTxt>12.02.2013</FTxt>
+          </FV>
+          <FV>
+            <FGUID>{16765958-43F0-4FA3-BA22-257D03DFA2F1}</FGUID>
+            <FLbl>Ziel Datum</FLbl>
+            <FTxt>02.01.2013</FTxt>
           </FV>
         </FVs>
         <LVs>
@@ -880,7 +894,7 @@
         <LTNum>0000000004</LTNum>
         <RPre>NEED4</RPre>
         <RText>Die Werte sollen einfach sein</RText>
-        <RName>einfache Werte</RName>
+        <RName>MyTestIssue46</RName>
         <Flags>0</Flags>
         <RTID>{022D080E-A80B-48F4-B573-8C57DE8F3860}</RTID>
         <FVs>
@@ -1091,12 +1105,6 @@
           </FV>
         </FVs>
         <LVs>
-          <LV>
-            <LGUID>{32828D18-4D39-4DF4-ADAC-A3FA35C94695}</LGUID>
-            <LLbl>Difficulty</LLbl>
-            <LITxt>High</LITxt>
-            <UDF>{40088819-36D5-4841-9B9D-707362EE37D4}</UDF>
-          </LV>
           <LV>
             <LGUID>{14D7BA02-6BA0-4AA3-A413-8C00B03E2D56}</LGUID>
             <LLbl>OODev</LLbl>
@@ -1867,7 +1875,7 @@
         <RText>(automatisch oder manuell erzwungen)</RText>
         <RName>evtl. wird Listbox durch Konfiguration festgelegt</RName>
         <Flags>0</Flags>
-        <RTID>{022D080E-A80B-48F4-B573-8C57DE8F3860}</RTID>
+        <RTID>{WRONG-022D080E-A80B-48F4-B573-8C57DE8F3860}</RTID>
         <FVs>
           <FV>
             <FGUID>{51E59074-F681-44CA-9888-561861D2EBC0}</FGUID>
@@ -4006,7 +4014,7 @@
         <RText>Nachteil werden</RText>
         <RName>Globale und Lokale unterscheiden</RName>
         <Flags>0</Flags>
-        <RTID>{022D080E-A80B-48F4-B573-8C57DE8F3860}</RTID>
+        <RTID>{NOTRACKER-022D080E-A80B-48F4-B573-8C57DE8F3860}</RTID>
         <FVs>
           <FV>
             <FGUID>{51E59074-F681-44CA-9888-561861D2EBC0}</FGUID>

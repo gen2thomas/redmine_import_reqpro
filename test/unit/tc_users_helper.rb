@@ -14,7 +14,7 @@ class TcUsersHelper < ActiveSupport::TestCase
   def test_user_prerequisites
     puts "test_user_prerequisites"
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
-    assert_equal(13,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(23,CustomValue.find(:all).count, "CustomValue nicht korrekt")
   end
 
   def test_collect_rpusers
@@ -24,7 +24,7 @@ class TcUsersHelper < ActiveSupport::TestCase
     #stub the not to test methode
     #users = collect_users_fast(some_projects, conflate_users)
     hc.stubs(:collect_users_fast).returns(User.find_by_id(1))
-    usr=hc.collect_rpusers(nil,nil)
+    usr=hc.collect_rpusers(nil,nil, hc.loglevel_high())
     assert_equal(User.find_by_id(1),usr)
   end
     
@@ -35,7 +35,7 @@ class TcUsersHelper < ActiveSupport::TestCase
     #available projects (only prefix and path needed)
     ap=mth.some_projects()
     #prepare call of private function
-    HelperClassForModules.class_eval{def cuf(a,b) return collect_users_fast(a,b) end}
+    HelperClassForModules.class_eval{def cuf(a,b,c) return collect_users_fast(a,b,c) end}
     hc=HelperClassForModules.new
     #stub the not to test methode
     #fullname = get_fullname(user.attributes["FullName"], users[hash_key] [:email], users[hash_key] [:login])
@@ -44,41 +44,41 @@ class TcUsersHelper < ActiveSupport::TestCase
     fn[:lastname]="Nachname"
     hc.stubs(:get_fullname).returns(fn)
     #test for conflation: "email"
-    su=hc.cuf(ap,"email")
+    su=hc.cuf(ap,"email", hc.loglevel_high())
     assert_equal(11,su.count,"Falsche Anzahl User!")
     u1=su["{DB0B60C4-70BE-4BD0-A55F-289CD21FAB3C}"]
     assert_equal("STP",u1[:project],"Falsches Projekt für user1")
     assert_equal("Vorname5Nachname5@supa-usr.de",u1[:conf_key],"Falscher conf_key -email- user1")
     u2=su["{0768C722-64AD-4AE3-884A-B39B97B19F29}"]
-    assert_equal("MSP",u2[:project],"Falsches Projekt für user2")
+    assert_equal("MPR3",u2[:project],"Falsches Projekt für user2")
     assert_equal("Vorname7Nachname7@supa-usr.de",u2[:conf_key],"Falscher conf_key -email- user2")
     #test for conflation: "login"
-    su=hc.cuf(ap,"login")
+    su=hc.cuf(ap,"login", hc.loglevel_high())
     assert_equal(11,su.count,"Falsche Anzahl User!")
     u1=su["{9FA86666-A3FF-453A-A066-EFA5CCA65AC4}"]
     assert_equal("STP",u1[:project],"Falsches Projekt für user1")
     assert_equal("Nachname6",u1[:conf_key],"Falscher conf_key -login- user1")
     u2=su["{0BEBBAEB-D9AC-4AD7-8291-A4E6291B83BC}"]
-    assert_equal("MSP",u2[:project],"Falsches Projekt für user2")
+    assert_equal("MPR3",u2[:project],"Falsches Projekt für user2")
     assert_equal("Nachname5",u2[:conf_key],"Falscher conf_key -login- user2")
     #test for conflation: "name"
-    su=hc.cuf(ap,"name")
+    su=hc.cuf(ap,"name", hc.loglevel_high())
     assert_equal(11,su.count,"Falsche Anzahl User!")
     u1=su["{16AA815A-4174-412A-947C-037F69A327B9}"]
     assert_equal("STP",u1[:project],"Falsches Projekt für user1")
     assert_equal("Vorname Nachname",u1[:conf_key],"Falscher conf_key -name- user1")
     u2=su["{3F7D2B87-D519-4BD9-AC5F-B931C5DE7801}"]
-    assert_equal("MSP",u2[:project],"Falsches Projekt für user2")
+    assert_equal("MPR3",u2[:project],"Falsches Projekt für user2")
     assert_equal("Vorname Nachname",u2[:conf_key],"Falscher conf_key -name- user2")
     #test for conflation: "none"
-    su=hc.cuf(ap,nil)
+    su=hc.cuf(ap,nil, hc.loglevel_high())
     assert_equal(11,su.count,"Falsche Anzahl User!")
     u1=su["{5481430E-6FF7-404F-AFF4-617D230937E3}"]
     assert_equal("STP",u1[:project],"Falsches Projekt für user1")
     assert_equal("STP.Nachname3.Vorname3Nachname3@upusr.de",u1[:conf_key],"Falscher conf_key user1")
     u2=su["{1BCB3BC3-3620-459F-89DE-6DB5402031EE}"]
-    assert_equal("MSP",u2[:project],"Falsches Projekt für user2")
-    assert_equal("MSP.Nachname1.Vorname1Nachname1@supa-usr.de",u2[:conf_key],"Falscher conf_key user2")
+    assert_equal("MPR3",u2[:project],"Falsches Projekt für user2")
+    assert_equal("MPR3.Nachname1.Vorname1Nachname1@supa-usr.de",u2[:conf_key],"Falscher conf_key user2")
   end
   
   def test_create_user_custom_field_for_rpuid
@@ -98,7 +98,7 @@ class TcUsersHelper < ActiveSupport::TestCase
     #prepare
     ucf1_id=ucf1.id
     #call
-    ucf2 = hc.create_user_custom_field_for_rpuid(true)
+    ucf2 = hc.create_user_custom_field_for_rpuid(hc.loglevel_high())
     #test 2
     assert(ucf_count+1 == UserCustomField.find(:all).count, "ucf2 must not be added!")
     assert(ucf2[:id]==ucf1_id, "ucf1 id must be the same like ucf2!")
@@ -177,7 +177,8 @@ class TcUsersHelper < ActiveSupport::TestCase
     rmusr=hc.find_user_by_string("Any", sus)
     assert_equal(User.find_by_id(6),rmusr, "Falscher Redmine-User gefunden!")
   end
-  
+
+  #ruby vendor/plugins/redmine_import_reqpro/test/unit/tc_users_helper.rb --name test_get_fullname
   def test_get_fullname()
     puts "test_get_fullname"
     #prepare call
@@ -202,18 +203,38 @@ class TcUsersHelper < ActiveSupport::TestCase
     fn=hc.get_fullname("fnln","fnmLnm@usr.de", "fnllnllogin")
     assert_equal("Fnm",fn[:firstname],"case3b Vorname falsch!")
     assert_equal("Lnm",fn[:lastname],"case3b Nachname falsch!")
-    #case 4: mail: login for lastname inside mail
+    #case 4a: mail: login for lastname inside mail
     fn=hc.get_fullname("fnln","fnmlnlogin@usr.de", "lnlogin")
-    assert_equal("Fnm",fn[:firstname],"case4 Vorname falsch!")
-    assert_equal("Lnlogin",fn[:lastname],"case4 Nachname falsch!")
-    #case 5: mail: login inside mail NOT found, firstname@lastname.de
-    fn=hc.get_fullname("fnln","fnm@lnm.de", "fnlnlogin")
-    assert_equal("Fnm",fn[:firstname],"case5 Vorname falsch!")
-    assert_equal("Lnm",fn[:lastname],"case5 Nachname falsch!")
-    #case 6: nothing else found
-    fn=hc.get_fullname("fnln","", "fnlnlogin")
-    assert_equal("Firstname",fn[:firstname],"case6 Vorname falsch!")
+    assert_equal("Fnm",fn[:firstname],"case4a Vorname falsch!")
+    assert_equal("Lnlogin",fn[:lastname],"case4a Nachname falsch!")
+    #case 4b: mail: login for lastname inside mail, fullname only with lastname
+    fn=hc.get_fullname("lnlogin","fnmlnlogin@usr.de", "Lnlogin")
+    assert_equal("Fnm",fn[:firstname],"case4b Vorname falsch!")
+    assert_equal("Lnlogin",fn[:lastname],"case4b Nachname falsch!")
+    #case 4c: mail: login for lastname inside mail, fullname only with firstname
+    fn=hc.get_fullname("Fnm","fnmlnlogin@usr2.de", "lnlogin")
+    assert_equal("Fnm",fn[:firstname],"case4c Vorname falsch!")
+    assert_equal("Lnlogin",fn[:lastname],"case4c Nachname falsch!")
+    #case 5a: login and fullname inside mail NOT found => longest is the firstname
+    fn=hc.get_fullname("fnlnfull","fnm@lnm.de", "fnlnverylonglogin")
+    assert_equal("Fnlnverylonglogin",fn[:firstname],"case5a Vorname falsch!")
+    assert_equal("Fnlnfull",fn[:lastname],"case5a Nachname falsch!")
+    #case 5b: login and fullname inside mail NOT found => longest is the firstname
+    fn=hc.get_fullname("fnlnverylongfull","fnm@lnm.de", "fnlnlogin")
+    assert_equal("Fnlnverylongfull",fn[:firstname],"case5b Vorname falsch!")
+    assert_equal("Fnlnlogin",fn[:lastname],"case5b Nachname falsch!")
+    #case 6: longest and short1 equal
+    fn=hc.get_fullname("fnln","fnm@lnm.de", "fnln")
+    assert_equal("Fnm",fn[:firstname],"case6 Vorname falsch!")
     assert_equal("Fnln",fn[:lastname],"case6 Nachname falsch!")
+    #case 7: short1 empty
+    fn=hc.get_fullname("fnln","fnm@lnm.de", "")
+    assert_equal("Fnm",fn[:firstname],"case7 Vorname falsch!")
+    assert_equal("Lnm",fn[:lastname],"case7 Nachname falsch!")
+    #case 8: nothing else found
+    fn=hc.get_fullname("fnln","", "fnln")
+    assert_equal("Firstname",fn[:firstname],"case8 Vorname falsch!")
+    assert_equal("Fnln",fn[:lastname],"case8 Nachname falsch!")
   end
   
   def test_update_rpusers_for_map_needing
@@ -252,7 +273,7 @@ class TcUsersHelper < ActiveSupport::TestCase
     umap["usr4_login"]="NotExistend"
     #prepare call
     hc=HelperClassForModules.new  
-    rpus_new=hc.update_rpusers_for_map_needing(rpus, rmus, umap, true)
+    rpus_new=hc.update_rpusers_for_map_needing(rpus, rmus, umap, hc.loglevel_high())
     #test
     assert_equal(3,rpus_new.count, "Ein User muss gelöscht sein!")
     assert_equal(nil, rpus_new["{03}"], "User3 muss gelöscht sein!")
@@ -270,7 +291,7 @@ class TcUsersHelper < ActiveSupport::TestCase
     hc=HelperClassForModules.new
     rpus_new=hc.remap_users_to_conflationkey(rpus)
     #test
-    assert_equal(2,rpus_new.count, "Zwei User müssen gefunden sein sein!")
+    assert_equal(4,rpus_new.count, "Zwei User müssen gefunden sein sein!")
     assert_equal(1, rpus_new["usr_loginA"][:logins].count, "1 login darf nur unter loginA sein!")
     assert_equal(1, rpus_new["usr_loginB"][:logins].count, "1 login darf nur unter loginB sein!")
     assert_equal(2, rpus_new["usr_loginA"][:names].count, "2 User-Namen müssen unter loginA sein!")
@@ -282,9 +303,9 @@ class TcUsersHelper < ActiveSupport::TestCase
     assert_equal(1, rpus_new["usr_loginA"][:groups].count, "1 Gruppen müssen unter loginA sein!")
     assert_equal(1, rpus_new["usr_loginB"][:groups].count, "1 Gruppen müssen unter loginB sein!")
     #test for sort
-    assert_equal("usr0_mail", rpus_new["usr_loginB"][:emails][0], "Mails müssen für loginB sortiert sein!")
-    assert_equal("usr2_mail", rpus_new["usr_loginB"][:emails][1], "Mails müssen für loginB sortiert sein!")
-    assert_equal("usr4_mail", rpus_new["usr_loginB"][:emails][2], "Mails müssen für loginB sortiert sein!")
+    assert_equal("usr0@mail.de", rpus_new["usr_loginB"][:emails][0], "Mails müssen für loginB sortiert sein!")
+    assert_equal("usr2@mail.de", rpus_new["usr_loginB"][:emails][1], "Mails müssen für loginB sortiert sein!")
+    assert_equal("usr4@mail.de", rpus_new["usr_loginB"][:emails][2], "Mails müssen für loginB sortiert sein!")
   end
   
 end

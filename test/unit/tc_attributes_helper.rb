@@ -6,21 +6,34 @@ require 'mocha'
 class HelperClassForModules
   include AttributesHelper
   include FilesHelper
+  include RequirementsIssuesHelper # for issue_save_with_assignee_restore
+  def loglevel_none
+    return 0
+  end
+  def loglevel_medium
+    return 5
+  end
+  def loglevel_high
+    return 10
+  end
 end
 
 class TcAttributesHelper < ActiveSupport::TestCase
   self.fixture_path = File.dirname(__FILE__) + "/../fixtures/"
-  fixtures :issues, :users, :custom_values, :issue_statuses, :issue_categories, :trackers, :projects
+  fixtures :issues, :users, :custom_values, :custom_fields, :issue_statuses, :issue_categories, :trackers, :projects
   
   def test_attributes_prerequisites
     puts "test_attributes_prerequisites"
-    assert_equal(8,Issue.find(:all).count, "Issue nicht korrekt")
+    assert_equal(14,Issue.find(:all).count, "Issue nicht korrekt")
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
-    assert_equal(13,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(23,CustomValue.find(:all).count, "CustomValue nicht korrekt")
+    assert_equal(11,CustomField.find(:all).count, "CustomField nicht korrekt")
+    assert_equal(10,IssueCustomField.find(:all).count, "IssueCustomField nicht korrekt")
+    assert_equal(1,ProjectCustomField.find(:all).count, "ProjectCustomField nicht korrekt")
     assert_equal(2,IssueStatus.find(:all).count, "IssueStatus nicht korrekt")
     assert_equal(3,IssueCategory.find(:all).count, "IssueCategory nicht korrekt")
-    assert_equal(3,Tracker.find(:all).count, "Tracker nicht korrekt")
-    assert_equal(2,Project.find(:all).count, "Project nicht korrekt")
+    assert_equal(4,Tracker.find(:all).count, "Tracker nicht korrekt")
+    assert_equal(3,Project.find(:all).count, "Project nicht korrekt")
   end
 
   def test_attribute_find_by_projectid_and_attrlabel
@@ -43,6 +56,8 @@ class TcAttributesHelper < ActiveSupport::TestCase
   def test_create_issue_custom_field_for_rpuid
     puts "test_create_issue_custom_field_for_rpuid"
     #prepare data
+    # delete RPUID if exist
+    IssueCustomField.find_by_name("RPUID").delete if IssueCustomField.find_by_name("RPUID")!=nil
     icf_count=IssueCustomField.find(:all).count
     #prepare call
     hc=HelperClassForModules.new()
@@ -57,7 +72,7 @@ class TcAttributesHelper < ActiveSupport::TestCase
     #prepare
     icf1_id=icf1.id
     #call
-    icf2 = hc.create_issue_custom_field_for_rpuid(true)
+    icf2 = hc.create_issue_custom_field_for_rpuid(hc.loglevel_high())
     #test 2
     assert(icf_count+1 == IssueCustomField.find(:all).count, "icf2 has not to be added!")
     assert(icf2[:id]==icf1_id, "icf1 id must be the same like icf2!")
@@ -110,13 +125,49 @@ class TcAttributesHelper < ActiveSupport::TestCase
   
   def test_update_custom_value_in_issue
     puts "test_update_custom_value_in_issue"
-    #prepare call
+    #prepare datas
+    the_project=Issue.find_by_id(11).project
+    the_tracker=Issue.find_by_id(11).tracker
+    IssueCustomField.find_by_id(2).projects.push(the_project)
+    IssueCustomField.find_by_id(2).trackers.push(the_tracker)
+    IssueCustomField.find_by_id(5).projects.push(the_project)
+    IssueCustomField.find_by_id(5).trackers.push(the_tracker)
+    IssueCustomField.find_by_id(6).projects.push(the_project)
+    IssueCustomField.find_by_id(6).trackers.push(the_tracker)
+    IssueCustomField.find_by_id(7).projects.push(the_project)
+    IssueCustomField.find_by_id(7).trackers.push(the_tracker)
+    IssueCustomField.find_by_id(8).projects.push(the_project)
+    IssueCustomField.find_by_id(8).trackers.push(the_tracker)
+    IssueCustomField.find_by_id(9).projects.push(the_project)
+    IssueCustomField.find_by_id(9).trackers.push(the_tracker)
+    IssueCustomField.find_by_id(10).projects.push(the_project)
+    IssueCustomField.find_by_id(10).trackers.push(the_tracker)
+    IssueCustomField.find_by_id(11).projects.push(the_project)
+    IssueCustomField.find_by_id(11).trackers.push(the_tracker)
+    #prepare call    
     hc=HelperClassForModules.new
-    #a_issue=issue_save_with_assignee_restore(a_issue)
-    hc.stubs(:issue_save_with_assignee_restore).returns(Issue.find_by_id(11))
     #call methode
-    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(2), "end_Work", true)
-    assert_equal("end_Work", aisu.custom_values.find_by_custom_field_id(2).value, "Wert nicht aktualisiert!")
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(2), "end_Work", hc.loglevel_high())
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(5), 555, hc.loglevel_high())
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(6), true, hc.loglevel_high())
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(7), "21.12.2012", hc.loglevel_high())
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(8), 15.107, hc.loglevel_high())
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(9), "List Element 3", hc.loglevel_high())
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(10), 577, hc.loglevel_high()) # no value available
+    icf_unknown = IssueCustomField.find_by_id(11)
+    icf_unknown.field_format = "unknownformat"
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), icf_unknown, 577, hc.loglevel_none()) # no value available
+    assert_equal("end_Work", aisu.custom_values.find_by_custom_field_id(2).value, "String Wert nicht aktualisiert!")
+    assert_equal("555", aisu.custom_values.find_by_custom_field_id(5).value, "Int Wert nicht aktualisiert!")
+    assert_equal("1", aisu.custom_values.find_by_custom_field_id(6).value, "Bool Wert nicht aktualisiert!")
+    assert_equal("2012-12-21", aisu.custom_values.find_by_custom_field_id(7).value, "Date Wert nicht aktualisiert!")
+    assert_equal("15.107", aisu.custom_values.find_by_custom_field_id(8).value, "Float Wert nicht aktualisiert!")
+    assert_equal("List Element 3", aisu.custom_values.find_by_custom_field_id(9).value, "List Wert nicht aktualisiert!")
+    assert_equal("577", aisu.custom_values.find_by_custom_field_id(10).value, "Int - neuer Wert nicht aktualisiert!")
+    
+    aisu=hc.update_custom_value_in_issue(Issue.find_by_id(11), IssueCustomField.find_by_id(9), "List Element 4", hc.loglevel_high()) #unknown element
+    assert_equal("List Element 0", aisu.custom_values.find_by_custom_field_id(9).value, "List Wert nicht auf Default aktualisiert!")
+   
   end
   
   def test_update_issue_custom_field
@@ -124,7 +175,7 @@ class TcAttributesHelper < ActiveSupport::TestCase
     #prepare call
     hc=HelperClassForModules.new
     #call methode
-    icf=hc.update_issue_custom_field(IssueCustomField.find_by_id(2), Tracker.find_by_id(3), Project.find_by_id(2), true)
+    icf=hc.update_issue_custom_field(IssueCustomField.find_by_id(2), Tracker.find_by_id(3), Project.find_by_id(2))
     #tests
     assert_equal(IssueCustomField.find_by_id(2), icf, "falsches ICF vorhanden!")
     assert_equal(Tracker.find_by_id(3), icf.trackers.find_by_id(3), "Tracker nicht aktualisiert!")
@@ -146,34 +197,34 @@ class TcAttributesHelper < ActiveSupport::TestCase
     hc.stubs(:find_project_rpmember).returns(User.find_by_id(1))
     #call methode for case custom_field_id = "" --> update attribute
     #case1 :assigned_to
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Assignee", "", "AUser", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Assignee", "", "AUser", Hash.new, hc.loglevel_high())
     assert_equal(1, nis[:assigned_to_id], "Assignee nicht richtig!")
     #case2 :author
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Author", "", "AUser", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Author", "", "AUser", Hash.new, hc.loglevel_high())
     assert_equal(1, nis[:author_id], "Autor nicht richtig!")
     #case3 :watchers
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Watchers", "", "AUser", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Watchers", "", "AUser", Hash.new, hc.loglevel_high())
     assert_equal(1, nis.watchers[0].user_id, "Watchers nicht richtig!")
     #case4 :category
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Category", "", "Proj01Cat02", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Category", "", "Proj01Cat02", Hash.new, hc.loglevel_high())
     assert_equal(2, nis[:category_id], "Category nicht richtig!")
     #case5 :priority
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Priority", "", "Medium", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Priority", "", "Medium", Hash.new, hc.loglevel_high())
     assert_equal(3, nis[:priority_id], "Priority nicht richtig!")
     #case6 :status
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Status", "", "Open", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Status", "", "Open", Hash.new, hc.loglevel_high())
     assert_equal(2, nis[:status_id], "Status nicht richtig!")
     #case7 :start_date
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Start date", "", "01.04.2012", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Start date", "", "01.04.2012", Hash.new, hc.loglevel_high())
     assert_equal("2012-04-01", nis[:start_date].to_s, "start_date nicht richtig!")
     #case8 :due_date
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Due date", "", "2012-04-02", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Due date", "", "2012-04-02", Hash.new, hc.loglevel_high())
     assert_equal("2012-04-02", nis[:due_date].to_s, "due_date nicht richtig!")
     #case9 :done_ratio (must be limited to 100%)
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "% Done", "", "150", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "% Done", "", "150", Hash.new, hc.loglevel_high())
     assert_equal(100, nis[:done_ratio], "done_ratio nicht richtig!")
     #case10 :estimated_hours
-    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Estimated time", "", "25", Hash.new, true)
+    nis=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), "Estimated time", "", "25", Hash.new, hc.loglevel_high())
     assert_equal(25, nis[:estimated_hours], "estimated_hours nicht richtig!")
   end
   
@@ -194,7 +245,7 @@ class TcAttributesHelper < ActiveSupport::TestCase
     hc.stubs(:update_issue_custom_field).returns(IssueCustomField.find_by_id(1))
     hc.stubs(:update_custom_value_in_issue).returns(Issue.find_by_id(11))
     #call methode for case custom_field_id != "" --> update custom field (simple test using mocks)
-    a_issue=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), nil, "1", "ABC", nil, true)
+    a_issue=hc.update_attribute_or_custom_field_with_value(Issue.find_by_id(11), nil, "1", "ABC", nil, hc.loglevel_high())
     assert_equal(Issue.find_by_id(11), a_issue, "Kein Issue 11 zurueckgeliefert!")
   end
   
@@ -241,10 +292,10 @@ class TcAttributesHelper < ActiveSupport::TestCase
     sop=mth.some_projects()
     ats=mth.attributes()
     #prepare call of private function
-    HelperClassForModules.class_eval{def uafrn(a,b) return update_attributes_for_reqpro_needing(a,b) end}
+    HelperClassForModules.class_eval{def uafrn(a,b,c) return update_attributes_for_reqpro_needing(a,b,c) end}
     hc=HelperClassForModules.new()
-    attrs=hc.uafrn(sop,ats)
-    assert_equal(1, attrs.count, "Genau ein Attribute muss genutzt sein")
+    attrs=hc.uafrn(sop,ats,hc.loglevel_high())
+    assert_equal(2, attrs.count, "Genau zwei Attribute müssen genutzt sein")
     assert_equal(nil, attrs["{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}"][:status], "Status muss geloescht sein!")
     assert_equal(nil, attrs["{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}"][:itemlist_used], ":itemlist_used muss geloescht sein!")
     assert_equal(10, attrs["{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}"][:itemlist].count, "Einträge müssen 10 sein!")    
@@ -261,9 +312,9 @@ class TcAttributesHelper < ActiveSupport::TestCase
     used_attr_list["{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}"]="{022D080E-A80B-48F4-B573-8C57DE8F3860}" #Developer
     used_attr_list["{0E8304EF-59BF-440D-9315-5E56E523A58C}"]="{5E748E74-15E9-454E-8ACD-6D263D08E00F}" #Actual Iteration
     #prepare call of private function
-    HelperClassForModules.class_eval{def caf(a,b,c) return collect_attributes_fast(a,b,c) end}
+    HelperClassForModules.class_eval{def caf(a,b,c,d) return collect_attributes_fast(a,b,c,d) end}
     hc=HelperClassForModules.new()
-    attrs=hc.caf(sop, rts, used_attr_list)
+    attrs=hc.caf(sop, rts, used_attr_list, hc.loglevel_high())
     assert_equal(2,attrs.count, "Es sollten genau 2 Attribute in der Liste stehen!")
     #attr1
     attr1=attrs["{4F29CB44-FBD9-4961-9BB2-0F64A3280EC8}"]
@@ -285,7 +336,7 @@ class TcAttributesHelper < ActiveSupport::TestCase
     assert_equal(0,attr2[:itemlist_used].count, ":itemlist_used count falsch")
     assert_equal("Actual Iteration",attr2[:attrlabel], ":attrlabel falsch")
     assert_equal("Integer",attr2[:datatype], ":datatype falsch")
-    assert_equal("MSP",attr2[:project], ":project falsch")
+    assert_equal("MPR3",attr2[:project], ":project falsch")
     assert_equal("{BFCD0B9E-E4B5-4B0A-8C59-F568269DCCE3}",attr2[:projectid], ":projectid falsch")
     assert_equal("{5E748E74-15E9-454E-8ACD-6D263D08E00F}",attr2[:rtid], ":rtid falsch")
     assert_equal("FUNC",attr2[:rtprefixes], ":rtprefixes falsch")
@@ -304,7 +355,7 @@ class TcAttributesHelper < ActiveSupport::TestCase
     hc.stubs(:collect_attributes_fast).returns(atts)
     hc.stubs(:update_attributes_for_reqpro_needing).returns(atts)
     #call
-    atts2=hc.collect_attributes(nil,nil,nil,true)
+    atts2=hc.collect_attributes(nil,nil,nil,true, hc.loglevel_high())
     #test
     assert_equal(atts,atts2,"Uebergabe unsauber!")
   end

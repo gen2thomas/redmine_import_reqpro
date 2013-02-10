@@ -5,7 +5,8 @@
   'tc_requirements_issues_helper.rb',
   'tc_requirement_types_helper.rb',
   'tc_users_helper.rb',
-  'tc_attributes_helper.rb'
+  'tc_attributes_helper.rb',
+  'tc_reqproimporter_controller_units.rb'
 ].each do |file|
   require File.dirname(__FILE__) + '/' + file
 end

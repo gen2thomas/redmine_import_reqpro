@@ -3,7 +3,7 @@ custom_value_01:
   id: 1
   customized_type: "Issue"
   customized_id: 11
-  custom_field_id: 1
+  custom_field_id: 3
   value: "{01}"
   
 custom_value_02:
@@ -51,7 +51,7 @@ custom_value_07:
 custom_value_08:
   id: 8
   customized_type: "Issue"
-  customized_id: 31
+  customized_id: 11
   custom_field_id: 2
   value: "in_work"
     
@@ -59,15 +59,15 @@ custom_value_10:
   id: 10
   customized_type: "Project"
   customized_id: 1
-  custom_field_id: 1
-  value: "{10}"
+  custom_field_id: 4
+  value: "{RPUID10}"
 
 custom_value_11:
   id: 11
   customized_type: "Project"
   customized_id: 2
-  custom_field_id: 1
-  value: "{02}"
+  custom_field_id: 4
+  value: "{RPUID02}"
   
 custom_value_20:
   id: 20
@@ -90,3 +90,72 @@ custom_value_31:
   custom_field_id: 1
   value: "{03}"
   
+custom_value_41:
+  id: 41
+  customized_type: "Issue"
+  customized_id: 41
+  custom_field_id: 3
+  value: "{RPUID01}"
+  
+custom_value_42:
+  id: 42
+  customized_type: "Issue"
+  customized_id: 42
+  custom_field_id: 3
+  value: "{RPUID02}"
+
+custom_value_43:
+  id: 43
+  customized_type: "Issue"
+  customized_id: 43
+  custom_field_id: 3
+  value: "{RPUID03}"
+  
+custom_value_44:
+  id: 44
+  customized_type: "Issue"
+  customized_id: 44
+  custom_field_id: 3
+  value: "{RPUID11}"
+
+custom_value_45:
+  id: 45
+  customized_type: "Issue"
+  customized_id: 45
+  custom_field_id: 3
+  value: "{RPUID12}"
+
+custom_value_46:
+  id: 46
+  customized_type: "Issue"
+  customized_id: 11
+  custom_field_id: 5
+  value: 987
+  
+custom_value_47:
+  id: 47
+  customized_type: "Issue"
+  customized_id: 11
+  custom_field_id: 6
+  value: "false"
+  
+custom_value_48:
+  id: 48
+  customized_type: "Issue"
+  customized_id: 11
+  custom_field_id: 7
+  value: 11.11.2011
+  
+custom_value_49:
+  id: 49
+  customized_type: "Issue"
+  customized_id: 11
+  custom_field_id: 8
+  value: 5.4321
+  
+custom_value_50:
+  id: 50
+  customized_type: "Issue"
+  customized_id: 11
+  custom_field_id: 9
+  value: List Element 1

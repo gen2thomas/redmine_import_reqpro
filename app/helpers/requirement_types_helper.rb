@@ -1,9 +1,9 @@
 module RequirementTypesHelper
   
-  def collect_requirement_types(some_projects, deep_check_req_types)
-    requirement_types = collect_requirement_types_fast(some_projects)
+  def collect_requirement_types(some_projects, deep_check_req_types, loglevel)
+    requirement_types = collect_requirement_types_fast(some_projects, loglevel)
     if deep_check_req_types
-      requirement_types = update_requ_types_for_reqpro_needing(requirement_types, some_projects)
+      requirement_types = update_requ_types_for_reqpro_needing(requirement_types, some_projects, loglevel)
     end
     return requirement_types
   end
@@ -69,37 +69,39 @@ private
 
   #get an data path to open an ProjectStructure file
   #collect all prefixes and guids to an array of hash
-  def collect_requirement_types_fast(some_projects)
+  def collect_requirement_types_fast(some_projects, loglevel)
     requirement_types = Hash.new
     some_projects.each_value do |a_project|
-      xmldoc = open_xml_file(a_project[:path],"ProjectStructure.XML")  
-      xmldoc.elements.each("PROJECT/RequirementTypes/RequirementType") do |req_type|
-        # collect used attributes
-        used_attributes = Array.new
-        if req_type.elements["Attributes"] != nil
-          req_type.elements["Attributes"].each_element("Attribute") do |attri|
-            used_attributes.push(attri.attributes["ID"])
+      xmldoc = open_xml_file(a_project[:path],"ProjectStructure.XML", loglevel)  
+      if xmldoc!= nil
+        xmldoc.elements.each("PROJECT/RequirementTypes/RequirementType") do |req_type|
+          # collect used attributes
+          used_attributes = Array.new
+          if req_type.elements["Attributes"] != nil
+            req_type.elements["Attributes"].each_element("Attribute") do |attri|
+              used_attributes.push(attri.attributes["ID"])
+            end
           end
+          hash_key = req_type.attributes["ID"]
+          if requirement_types[hash_key] == nil #not known
+            requirement_types[hash_key] = Hash.new
+            requirement_types[hash_key] [:project] = a_project[:prefix] 
+            requirement_types[hash_key] [:name] = req_type.attributes["Name"]
+            requirement_types[hash_key] [:prefix] = req_type.attributes["RequirementPrefix"]
+            requirement_types[hash_key] [:attrids] = used_attributes
+          else
+            #this should never be the case --> better is to raise an error in that case 
+            #make an array and add the next project
+            requirement_types[hash_key] [:project] = requirement_types[hash_key] [:project].to_a 
+            requirement_types[hash_key] [:project].push(a_project[:prefix])
+            requirement_types[hash_key] [:project].uniq!
+            requirement_types[hash_key] [:project].sort!
+            #make an array and add the next attrs  
+            requirement_types[hash_key] [:attrids].push(used_attributes)
+          end
+          requirement_types[hash_key] [:attrids].uniq!
+          requirement_types[hash_key] [:attrids].sort!
         end
-        hash_key = req_type.attributes["ID"]
-        if requirement_types[hash_key] == nil #not known
-          requirement_types[hash_key] = Hash.new
-          requirement_types[hash_key] [:project] = a_project[:prefix] 
-          requirement_types[hash_key] [:name] = req_type.attributes["Name"]
-          requirement_types[hash_key] [:prefix] = req_type.attributes["RequirementPrefix"]
-          requirement_types[hash_key] [:attrids] = used_attributes
-        else
-          #this should never be the case --> better is to raise an error in that case 
-          #make an array and add the next project
-          requirement_types[hash_key] [:project] = requirement_types[hash_key] [:project].to_a 
-          requirement_types[hash_key] [:project].push(a_project[:prefix])
-          requirement_types[hash_key] [:project].uniq!
-          requirement_types[hash_key] [:project].sort!
-          #make an array and add the next attrs  
-          requirement_types[hash_key] [:attrids].push(used_attributes)
-        end
-        requirement_types[hash_key] [:attrids].uniq!
-        requirement_types[hash_key] [:attrids].sort!
       end
     end
     return requirement_types
@@ -107,20 +109,26 @@ private
   
   # search inside all files of all projects for using of requ types
   # change status for found req type to "+" (needed and available)
-  def update_requ_types_for_reqpro_needing(requirement_types, some_projects)  
+  def update_requ_types_for_reqpro_needing(requirement_types, some_projects, loglevel)  
     some_projects.each_value do |a_project|
       filepath = a_project[:path] # this is the main path of project
       all_files = collect_all_data_files(filepath)
-      all_files.each do |filename|
-        xmldoc = open_xml_file(filepath,filename)
-        xmldoc.elements.each("PROJECT/Pkg/Requirements/Req/RTID") do |e|
-          if e.text != nil #not empty
-            hash_key = e.text
-            requirement_types[hash_key][:status] = "+"
-          end
-        end
-      end
-    end
+      if all_files!=nil
+        all_files.each do |filename|
+          xmldoc = open_xml_file(filepath,filename, loglevel)
+          if xmldoc!=nil
+            xmldoc.elements.each("PROJECT/Pkg/Requirements/Req/RTID") do |e|
+              if e.text != nil #not empty
+                hash_key = e.text
+                if requirement_types[hash_key] != nil
+                  requirement_types[hash_key][:status] = "+"
+                end #rtid in hash
+              end #rtid not empty
+            end #each rtid
+          end #xmldoc available
+        end #each files
+      end #some files available
+    end #each project
     requirement_types.each do |key,rq|
       if rq[:status] != "+"
         requirement_types.delete(key) # entry not used 

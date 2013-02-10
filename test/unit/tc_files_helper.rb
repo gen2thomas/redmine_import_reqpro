@@ -3,6 +3,15 @@ require File.dirname(__FILE__) + '/../../app/helpers/files_helper'
 
 class HelperClassForModules
   include FilesHelper
+  def loglevel_none
+    return 0
+  end
+  def loglevel_medium
+    return 5
+  end
+  def loglevel_high
+    return 10
+  end
 end
 
 class TcFilesHelper < ActiveSupport::TestCase 
@@ -17,6 +26,22 @@ class TcFilesHelper < ActiveSupport::TestCase
     assert(cf.include?("Baseline01_App/Project.XML"), "Datei fehlt")
   end
   
+  def test_collect_all_data_files_bad02
+    puts "test_collect_all_data_files bad case02"
+    #prepare call
+    hc=HelperClassForModules.new()
+    cf= hc.collect_all_data_files(File.dirname(__FILE__) + '/../samples/NotExistendPath')
+    assert_equal(nil, cf, "Es sollte nil zurueck gegeben werden!")
+  end
+  
+  def test_collect_all_data_files_bad01
+    puts "test_collect_all_data_files bad case01"
+    #prepare call
+    hc=HelperClassForModules.new()
+    cf= hc.collect_all_data_files(nil)
+    assert_equal(nil, cf, "Es sollte nil zurueck gegeben werden!")
+  end
+  
   def test_string_data_pathes_to_array
     puts "test_string_data_pathes_to_array"
     #prepare call
@@ -28,11 +53,31 @@ class TcFilesHelper < ActiveSupport::TestCase
     assert(cdp.include?("/d3/f31"), "Pfad fehlt: /d3/f31")
   end
   
+  def test_open_xml_file_bad02
+    puts "test_open_xml_file bad case 02"
+    #prepare call
+    hc=HelperClassForModules.new()
+    xd=hc.open_xml_file(File.dirname(__FILE__) + '/../samples/Baseline02_Mlc/', "NotExistendFile.XML", hc.loglevel_high())
+    assert_equal(nil, xd, "Es sollte nil zurueck gegeben werden!")
+    xd=hc.open_xml_file(File.dirname(__FILE__) + '/../samples/NotExistendPath/', "Project.XML", hc.loglevel_high())
+    assert_equal(nil, xd, "Es sollte nil zurueck gegeben werden!")
+  end
+  
+  def test_open_xml_file_bad01
+    puts "test_open_xml_file bad case 01"
+    #prepare call
+    hc=HelperClassForModules.new()
+    xd=hc.open_xml_file(File.dirname(__FILE__) + '/../samples/Baseline02_Mlc/', nil, hc.loglevel_high())
+    assert_equal(nil, xd, "Es sollte nil zurueck gegeben werden!")
+    xd=hc.open_xml_file(nil, "Project.XML", hc.loglevel_high())
+    assert_equal(nil, xd, "Es sollte nil zurueck gegeben werden!")
+  end
+  
   def test_open_xml_file
     puts "test_open_xml_file"
     #prepare call
     hc=HelperClassForModules.new()
-    xd=hc.open_xml_file(File.dirname(__FILE__) + '/../samples/Baseline02_Mlc/', "Project.XML")
+    xd=hc.open_xml_file(File.dirname(__FILE__) + '/../samples/Baseline02_Mlc/', "Project.XML", hc.loglevel_high())
     assert(xd!=nil, "XDocument ist nicht vorhanden!")
     assert_equal("Multisprayer-Painting-Entwicklung", xd.elements["Project"].attributes["Description"], "Inhalt stimmt nicht!")
   end  
