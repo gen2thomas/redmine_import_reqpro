@@ -9,14 +9,14 @@ class TcRedmineDefect13119 < ActiveSupport::TestCase
     #create the custom field for the project (optional)
     new_project_custom_field = th.create_project_custom_field("RPUID_for_bugfixtest")
     assert_not_nil(new_project_custom_field, "new_project_custom_field not saved correctly!")
-    new_project = th.create_project("Project for test defect 13119", new_project_custom_field)
+    new_project = th.create_project("pft", "Project for test defect 13119", Tracker.find(:all), new_project_custom_field)
     assert_not_nil(new_project, "new_project not saved correctly!")
     new_user = th.create_user("Login13119")
     assert_not_nil(new_user, "new_user not saved correctly!")
     new_issue = th.create_issue("Issue for test the defect 13119", new_tracker, new_project, new_user)
     assert_not_nil(new_issue, "new_issue not saved correctly!")
     #create the custom field for the issue
-    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", new_issue)
+    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", "string", new_issue)
     assert_not_nil(new_issue_custom_field, "new_issue_custom_field not saved correctly!")
     #set the value
     the_value = "RPUID"
@@ -35,14 +35,14 @@ class TcRedmineDefect13119 < ActiveSupport::TestCase
     #create the custom field for the project (optional)
     new_project_custom_field = th.create_project_custom_field("RPUID_for_bugfixtest")
     assert_not_nil(new_project_custom_field, "new_project_custom_field not saved correctly!")
-    new_project = th.create_project("Project for test defect 13119", new_project_custom_field)
+    new_project = th.create_project("pft", "Project for test defect 13119", Tracker.find(:all), new_project_custom_field)
     assert_not_nil(new_project, "new_project not saved correctly!")
     new_user = th.create_user("Login13119")
     assert_not_nil(new_user, "new_user not saved correctly!")
     new_issue = th.create_issue("Issue for test the defect 13119", new_tracker, new_project, new_user)
     assert_not_nil(new_issue, "new_issue not saved correctly!")
     #create the custom field for the issue
-    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", new_issue)
+    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", "string", new_issue)
     assert_not_nil(new_issue_custom_field, "new_issue_custom_field not saved correctly!")
     #set the value
     the_value = "RPUID"
@@ -61,14 +61,14 @@ class TcRedmineDefect13119 < ActiveSupport::TestCase
     #create the custom field for the project (optional)
     new_project_custom_field = th.create_project_custom_field("RPUID_for_bugfixtest")
     assert_not_nil(new_project_custom_field, "new_project_custom_field not saved correctly!")
-    new_project = th.create_project("Project for test defect 13119", new_project_custom_field)
+    new_project = th.create_project("pft", "Project for test defect 13119", Tracker.find(:all), new_project_custom_field)
     assert_not_nil(new_project, "new_project not saved correctly!")
     new_user = th.create_user("Login13119")
     assert_not_nil(new_user, "new_user not saved correctly!")
     new_issue = th.create_issue("Issue for test the defect 13119", new_tracker, new_project, new_user)
     assert_not_nil(new_issue, "new_issue not saved correctly!")
     #create the custom field for the issue
-    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", new_issue)
+    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", "string", new_issue)
     assert_not_nil(new_issue_custom_field, "new_issue_custom_field not saved correctly!")
     #set the value
     new_issue.reset_custom_values!
@@ -88,14 +88,14 @@ class TcRedmineDefect13119 < ActiveSupport::TestCase
     #create the custom field for the project (optional)
     new_project_custom_field = th.create_project_custom_field("RPUID_for_bugfixtest")
     assert_not_nil(new_project_custom_field, "new_project_custom_field not saved correctly!")
-    new_project = th.create_project("Project for test defect 13119", new_project_custom_field)
+    new_project = th.create_project("pft", "Project for test defect 13119", Tracker.find(:all), new_project_custom_field)
     assert_not_nil(new_project, "new_project not saved correctly!")
     new_user = th.create_user("Login13119")
     assert_not_nil(new_user, "new_user not saved correctly!")
     new_issue = th.create_issue("Issue for test the defect 13119", new_tracker, new_project, new_user)
     assert_not_nil(new_issue, "new_issue not saved correctly!")
     #create the custom field for the issue
-    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", new_issue)
+    new_issue_custom_field = th.create_issue_custom_field("RPUID_for_bugfixtest", "string", new_issue)
     assert_not_nil(new_issue_custom_field, "new_issue_custom_field not saved correctly!")
     #set the value
     new_issue.reset_custom_values!

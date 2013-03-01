@@ -20,3 +20,8 @@ require File.dirname(__FILE__) + '/unit/ts_all_unittests.rb'
 #].each do |file|
 #  File.dirname(__FILE__) + '/integration/' + file
 #end
+
+#http://guides.rubyonrails.org/testing.html
+#It is a good idea to run the following commands before testing:
+# rake db:test:purge
+# rake db:test:prepare

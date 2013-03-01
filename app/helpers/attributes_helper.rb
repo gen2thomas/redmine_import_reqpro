@@ -264,7 +264,7 @@ puts "Stop2 for debug"
     else
       puts "Issue custom field for RPUID already exist." if loglevel > 5
     end
-    return new_issue_custom_field
+    return new_issue_custom_field.reload
   end
   
   # check for customfield id to update
@@ -337,7 +337,8 @@ puts "Stop2 for debug"
         end
       end
     end
-    return a_issue
+    a_issue.save
+    return a_issue.reload
   end
   
 private

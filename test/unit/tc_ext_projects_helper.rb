@@ -40,7 +40,7 @@ class TcExtProjectsHelper < ActiveSupport::TestCase
     assert(p2!=nil, "Falsches Projekt 2!")
     if p2!= nil
       assert(p2[:prefix]=="MSP", "Falscher Prefix Projekt 2!")
-      assert(p2[:status]=="?", "Falsches Status Projekt 2!")
+      assert(p2[:status]=="?", "Falscher Status Projekt 2!")
     end
   end 
   

@@ -2,6 +2,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../../../test/test_helper')
 
 class TestHelperForRedmineDefects
+     
   def create_tracker(the_name)
     new_tracker = Tracker.find_by_name(the_name)
     if new_tracker!=nil
@@ -39,22 +40,21 @@ class TestHelperForRedmineDefects
     
   end
   
-  def create_project(the_description, new_project_custom_field)
+  def create_project(the_identifier, the_description, the_trackers, new_project_custom_field)
     #prepare the project
     enabled_module_names = Array.new
     EnabledModule.find(:all).each {|m| enabled_module_names.push(m[:name])}
     enabled_module_names.uniq!
-    trackers = Tracker.find(:all)
     #the project itself
-    new_project = Project.find_by_description(the_description)
+    new_project = Project.find_by_identifier(the_identifier)
     if new_project != nil
       Project.find_by_id(new_project.id).delete
     end      
     new_project = Project.new
     new_project.description=the_description
-    new_project.identifier = "pft"
+    new_project.identifier = the_identifier
     new_project.name = "Pft name"
-    new_project.trackers = trackers
+    new_project.trackers = the_trackers if the_trackers != nil
     new_project.enabled_module_names = enabled_module_names
     new_project.issue_custom_field_ids= [""]
     new_project.is_public = "0"
@@ -106,14 +106,14 @@ class TestHelperForRedmineDefects
     end
   end
   
-  def create_issue_custom_field(the_name, new_issue)
+  def create_issue_custom_field(the_name, the_fieldformat, new_issue)
     new_issue_custom_field = IssueCustomField.find_by_name(the_name)
     if new_issue_custom_field != nil
       IssueCustomField.find_by_id(new_issue_custom_field.id).delete
     end
     new_issue_custom_field = IssueCustomField.new 
     new_issue_custom_field.name = the_name
-    new_issue_custom_field.field_format = "string"
+    new_issue_custom_field.field_format = the_fieldformat
     new_issue_custom_field.default_value = ""
     new_issue_custom_field.min_length = "0"
     new_issue_custom_field.max_length = "0"
@@ -125,14 +125,17 @@ class TestHelperForRedmineDefects
     new_issue_custom_field.is_for_all = "0"
     new_issue_custom_field.is_filter = "1"
     return nil if !new_issue_custom_field.save
-    if !new_issue_custom_field.trackers.include?(new_issue.tracker)
-      new_issue_custom_field.trackers.push(new_issue.tracker)
-      return nil if !new_issue_custom_field.save
-    end
-    if !new_issue_custom_field.projects.include?(new_issue.project)
-      new_issue_custom_field.projects.push(new_issue.project)
-      return nil if !new_issue_custom_field.save
+    if new_issue!=nil
+      if !new_issue_custom_field.trackers.include?(new_issue.tracker)
+        new_issue_custom_field.trackers.push(new_issue.tracker)
+        return nil if !new_issue_custom_field.save
+      end
+      if !new_issue_custom_field.projects.include?(new_issue.project)
+        new_issue_custom_field.projects.push(new_issue.project)
+        return nil if !new_issue_custom_field.save
+      end
     end
     return new_issue_custom_field
   end
+ 
 end

@@ -25,10 +25,12 @@ module RequirementsIssuesHelper
     end
     if !a_issue.save
       puts "Error: save of the issue failed! Try save! for more information:"
+      debugger
       a_issue.save!
       debugger
       a_issue = nil
     else
+      #a_issue.reload
       if a_issue.assigned_to != tmp_a_to
         debugger if stop_on_found_bug
         if tmp_a_to != nil
@@ -38,9 +40,10 @@ module RequirementsIssuesHelper
         end
       end
       a_issue.assigned_to = tmp_a_to
+      a_issue.save
     end
     
-    return a_issue
+    return a_issue.reload
   end
     
   private

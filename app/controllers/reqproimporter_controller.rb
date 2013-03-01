@@ -718,7 +718,7 @@ private
           new_issue.author = User.current # default, can be overriden by "update_attribute_or_custom_field_with_value"
           new_issue.done_ratio = 0
           # try to save because set of id is needed for custom fields
-          new_issue=issue_save_with_assignee_restore(new_issue, false)
+          new_issue=issue_save_with_assignee_restore(new_issue, false)          
           if attributes != nil
             # import attributes:
             if req.elements["FVs"] != nil
@@ -869,7 +869,7 @@ private
             puts "Error: RPUID for issue is empty!"
             debugger
           end
-          # try to save
+          # try to save          
           new_issue=issue_save_with_assignee_restore(new_issue, false)
           if new_issue==nil
             @import_results[:issues][:failed] += 1

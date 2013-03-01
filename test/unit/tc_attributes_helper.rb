@@ -20,10 +20,11 @@ end
 
 class TcAttributesHelper < ActiveSupport::TestCase
   self.fixture_path = File.dirname(__FILE__) + "/../fixtures/"
-  fixtures :issues, :users, :custom_values, :custom_fields, :issue_statuses, :issue_categories, :trackers, :projects
+  fixtures :enumerations, :issues, :users, :custom_values, :custom_fields, :issue_statuses, :issue_categories, :trackers, :projects
   
   def test_attributes_prerequisites
     puts "test_attributes_prerequisites"
+    assert_equal(4,Enumeration.find(:all).count, "Enumeration nicht korrekt")
     assert_equal(14,Issue.find(:all).count, "Issue nicht korrekt")
     assert_equal(6,User.find(:all).count, "User nicht korrekt")
     assert_equal(23,CustomValue.find(:all).count, "CustomValue nicht korrekt")
