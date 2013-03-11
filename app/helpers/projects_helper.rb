@@ -185,6 +185,7 @@ private
     data_pathes.each do |data_path|
     (
       xmldocmain = open_xml_file(data_path,"Project.XML", loglevel)
+      next if xmldocmain == nil
       hash_key = xmldocmain.elements["Project"].attributes["ID"]
       if available_projects[hash_key] == nil # not already known
         available_projects[hash_key] = Hash.new

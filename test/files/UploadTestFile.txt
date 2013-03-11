@@ -1,0 +1,2 @@
+vendor/plugins/redmine_import_reqpro/test/samples/Baseline01_App
+vendor/plugins/redmine_import_reqpro/test/samples/Baseline02_Mlc

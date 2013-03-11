@@ -22,22 +22,48 @@ class ReqproimporterController < ApplicationController
     
   ISSUE_ATTRS = [:assigned_to, :author, :category, :priority, :status,
       :start_date, :due_date, :done_ratio, :estimated_hours, :watchers]  
+  
+  LOGLEVEL = 5
+  
+  class << self
+    def original_filename; @@original_filename; end #getter
+    def original_filename=(wert); @@original_filename=wert; end #setter
       
-  # initialize the class requproimportercontroller
-  def initialize
-    @loglevel = loglevel_medium()    
+    def some_projects; @@some_projects; end #getter
+    def some_projects=(wert); @@some_projects=wert; end #setter
+      
+    def rpusers; @@rpusers; end #getter
+    def rpusers=(wert); @@rpusers=wert; end #setter
     
-    @import_results = {:users => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :projects => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :trackers => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :versions => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :attributes => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :issues => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :issue_internal_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :issue_external_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
-                              :sum => {:imported => 0, :updated => 0, :failed => 0, :sum =>0}
-                       }
+    def redmine_users; @@redmine_users; end #getter
+    def redmine_users=(wert); @@redmine_users=wert; end #setter
+     
+    def requirement_types; @@requirement_types; end #getter
+    def requirement_types=(wert); @@requirement_types=wert; end #setter    
+      
+    def tracker_mapping; @@tracker_mapping; end #getter
+    def tracker_mapping=(wert); @@tracker_mapping=wert; end #setter
+          
+    def attributes; @@attributes; end #getter
+    def attributes=(wert); @@attributes=wert; end #setter
+    
+    def known_attributes; @@known_attributes; end #getter
+    def known_attributes=(wert); @@known_attributes=wert; end #setter
+      
+    def versions_mapping; @@versions_mapping; end #getter
+    def versions_mapping=(wert); @@versions_mapping=wert; end #setter
+      
+    def version_update_allowed; @@version_update_allowed; end #getter
+    def version_update_allowed=(wert); @@version_update_allowed=wert; end #setter
+      
+    def user_update_allowed; @@user_update_allowed; end #getter
+    def user_update_allowed=(wert); @@user_update_allowed=wert; end #setter      
+      
   end
+      
+  #def initialize
+    # inside an controller will be done before each call of one methods below
+  #end
   
   def index
     @progress_percent = [0,0]
@@ -64,8 +90,8 @@ class ReqproimporterController < ApplicationController
     @headers = ["label_import", "label_prefix", "label_projectname", "label_description", "label_date", "label_extproj_prefixes"]
     #--------------------
     # generate the projects content
-    @@some_projects = collect_projects(collected_data_pathes, deep_check_ext_projects, @loglevel)
-    if @@some_projects == nil
+    @@some_projects = collect_projects(collected_data_pathes, deep_check_ext_projects, LOGLEVEL)
+    if @@some_projects == nil or @@some_projects.count == 0 
       flash.now[:error] = l_or_humanize("label_no_project")
       return false
     end
@@ -75,7 +101,6 @@ class ReqproimporterController < ApplicationController
   end
   
   def matchusers
-    @original_filename = @@original_filename # need for view
     # collect users of all available projects and add conflation key
     if @@some_projects == nil # need this test because browser back key
       flash.now[:error] = l_or_humanize("label_no_project_to_import_go_to_file_dialog")
@@ -89,7 +114,8 @@ class ReqproimporterController < ApplicationController
     # generate the default header for view
     @headers = Array.new
     @headers = ["label_prefixed_login", "label_user_email", "label_mapped_user_email", "label_more_info"]
-    @@rpusers = collect_rpusers(@@some_projects, params[:conflate_users], @loglevel)
+    @conflate_users = params[:conflate_users] #also used for view
+    @@rpusers = collect_rpusers(@@some_projects, @conflate_users, LOGLEVEL)
     # remap used users to :conf_key (conflation key)
     @rpusers_for_view = remap_users_to_conflationkey(@@rpusers)
     if @rpusers_for_view != nil
@@ -100,7 +126,6 @@ class ReqproimporterController < ApplicationController
     @@redmine_users = Hash.new
     @@redmine_users[:rmusers] = Array.new
     @@redmine_users[:key_for_view] = Array.new
-    @conflate_users = params[:conflate_users] #used for view
     User.find(:all).each do |usr|
       case @conflate_users
       when "login"
@@ -124,19 +149,19 @@ class ReqproimporterController < ApplicationController
       end
     end
     @rmusers_for_view = @@redmine_users[:key_for_view]
+    @original_filename = @@original_filename # need for view
     @progress_percent = [0, 40]
     #mapping now in variable "params[:fields_map_user]"
   end
   
   def matchtrackers
-    @original_filename = @@original_filename # need for view
     @@user_update_allowed = params[:user_update_allowed]
     deep_check_req_types = params[:deep_check_req_types]
     conflate_req_types = params[:conflate_req_types]
     # delete unused rpusers, add equivalent rmuser  
-    @@rpusers = update_rpusers_for_map_needing(@@rpusers, @@redmine_users, params[:fields_map_user], @loglevel)
+    @@rpusers = update_rpusers_for_map_needing(@@rpusers, @@redmine_users, params[:fields_map_user], LOGLEVEL)
     # collect req types of all available projects
-    @@requirement_types = collect_requirement_types(@@some_projects, deep_check_req_types, @loglevel)
+    @@requirement_types = collect_requirement_types(@@some_projects, deep_check_req_types, LOGLEVEL)
     # generate the header for view
     @headers = Array.new
     @headers = ["label_prefixed_reqtype", "label_mapped_reqtype", "label_reqname"]
@@ -152,12 +177,12 @@ class ReqproimporterController < ApplicationController
     Tracker.find(:all).each do |tr|
       @trackers.push(tr[:name])
     end
-    #mapping now in variable "params[:fields_map_tracker]"
+    @original_filename = @@original_filename # need for view
     @progress_percent = [0, 60]
+    #mapping now in variable "params[:fields_map_tracker]"
   end
   
   def matchversions
-    @original_filename = @@original_filename # need for view
     @@tracker_mapping = set_tracker_mapping(params[:fields_map_tracker])
     if @@tracker_mapping.empty?
       flash.now[:error] = l_or_humanize("label_no_trackermapping")
@@ -168,7 +193,7 @@ class ReqproimporterController < ApplicationController
     # make a list of used attributes in requirement types
     used_attributes_in_rts = make_attr_list_from_requirement_types(@@requirement_types)
     # collect attributes of all available projects
-    @@attributes = collect_attributes(@@some_projects, @@requirement_types, used_attributes_in_rts, deep_check_attributes, @loglevel)
+    @@attributes = collect_attributes(@@some_projects, @@requirement_types, used_attributes_in_rts, deep_check_attributes, LOGLEVEL)
     # prepare header for view
     @headers = Array.new
     @headers = ["label_prefixed_projects", "label_used_attribute_for_version"]
@@ -176,12 +201,12 @@ class ReqproimporterController < ApplicationController
     @projects_with_versionattributes_for_view = remap_listattrlabels_to_projectid(@@attributes)
     @projects_for_view = @@some_projects
     @attrs_for_view = @@attributes
-    #mapping now in variable "params[:fields_map_version]"
+    @original_filename = @@original_filename # need for view
     @progress_percent = [0, 70]
+    #mapping now in variable "params[:fields_map_version]"
   end
   
   def matchattributes
-    @original_filename = @@original_filename # need for view
     @@versions_mapping = set_versions_mapping(params[:fields_map_version], @@attributes)
     @@version_update_allowed = params[:version_update_allowed]
     conflate_attributes = params[:conflate_attributes]
@@ -213,12 +238,23 @@ class ReqproimporterController < ApplicationController
     end
     @attrs.uniq!
     @attrs.sort!
-    #mapping now in variable "params[:fields_map_attribute]"
+    @original_filename = @@original_filename # need for view
     @progress_percent = [0, 80]
+    #mapping now in variable "params[:fields_map_attribute]"
   end
   
   def do_import_and_result
-    @original_filename = @@original_filename # need for view
+    # make the content for table
+    @import_results = {:users => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :projects => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :trackers => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :versions => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :attributes => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :issues => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :issue_internal_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :issue_external_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                                  :sum => {:imported => 0, :updated => 0, :failed => 0, :sum =>0}
+                           }
     attributes_mapping = set_attributes_mapping(params[:fields_map_attribute])
     issue_update_allowed = params[:issue_update_allowed]
     import_parent_relation = params[:import_parent_relation_allowed]
@@ -227,31 +263,31 @@ class ReqproimporterController < ApplicationController
     #delete unused attributes
     @@attributes = update_attributes_for_map_needing(@@attributes, @@versions_mapping, attributes_mapping)
     # users
-    @@rpusers = create_all_users_and_update(@@rpusers, @@user_update_allowed, @loglevel)
+    @@rpusers = create_all_users_and_update(@@rpusers, @@user_update_allowed, LOGLEVEL)
     # new requirement types (key is the ID):
     #@@requirement_types, @@tracker_mapping (:rt_prefix=> {:tr_name, :trid})
-    @@tracker_mapping = create_all_trackers_and_update_mapping(@@tracker_mapping, @loglevel)
+    @@tracker_mapping = create_all_trackers_and_update_mapping(@@tracker_mapping, LOGLEVEL)
     # add all needed attributes as custom fields
     # new attributes for requirements (Key is the ID): #@@attributes
     #new attributes for requirements - remapped to key = :project+:attrlabel+:status (or without :project):
-    @@known_attributes = create_all_customfields(@@known_attributes, @@attributes, @@versions_mapping, @@tracker_mapping, @loglevel)
+    @@known_attributes = create_all_customfields(@@known_attributes, @@attributes, @@versions_mapping, @@tracker_mapping, LOGLEVEL)
     # new projects: @@some_projects[:rpid][:rmid] => Project id inside redmine
-    @@some_projects = create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers, @loglevel)
+    @@some_projects = create_all_projects(@@some_projects, @@tracker_mapping, @@rpusers, LOGLEVEL)
     # create all versions
-    new_versions_mapping = create_all_versions(@@versions_mapping, @@attributes, @@version_update_allowed, @loglevel)
+    new_versions_mapping = create_all_versions(@@versions_mapping, @@attributes, @@version_update_allowed, LOGLEVEL)
     # now import all issues from each ReqPro project 
-    return_hash_from_issues = create_all_issues(@@some_projects, @@requirement_types, @@attributes, new_versions_mapping, @@known_attributes, @@rpusers, issue_update_allowed, @loglevel)
+    return_hash_from_issues = create_all_issues(@@some_projects, @@requirement_types, @@attributes, new_versions_mapping, @@known_attributes, @@rpusers, issue_update_allowed, LOGLEVEL)
     # update parents
     if import_parent_relation
-      puts "Wait for update parents" if @loglevel > loglevel_none()
-      update_issue_parents(return_hash_from_issues[:rp_req_unique_names], @loglevel)
+      puts "Wait for update parents" if LOGLEVEL > loglevel_none()
+      update_issue_parents(return_hash_from_issues[:rp_req_unique_names], LOGLEVEL)
     end
     #update internal and/or external traces
     if (import_internal_relations or import_external_relations)
-      puts "Wait for create issue relations from traces" if @loglevel > loglevel_none()
-      create_all_issuerelations(return_hash_from_issues[:rp_relation_list], import_internal_relations, import_external_relations, @loglevel)
+      puts "Wait for create issue relations from traces" if LOGLEVEL > loglevel_none()
+      create_all_issuerelations(return_hash_from_issues[:rp_relation_list], import_internal_relations, import_external_relations, LOGLEVEL)
     end
-    # make the content for table
+    
     @imp_res_header = [:imported, :updated, :failed]
     @imp_res_first_column = [:projects, :users, :trackers, :versions, :attributes, :issues, :issue_internal_relations, :issue_external_relations]
     @imp_res_header.each do |column|
@@ -261,6 +297,7 @@ class ReqproimporterController < ApplicationController
       end
     end
     @imp_res = @import_results
+    @original_filename = @@original_filename # need for view
     @progress_percent = [100, 100]
   end
    
@@ -309,7 +346,7 @@ private
   # create new redmine users from rp-users
   def create_all_users_and_update(rp_users, update_allowed, loglevel)
     # looking for existend users because while importing multiple projects
-    # can cause double users which will cause an error while save the user
+    # can cause double users which will cause an error while save the user    
     if rp_users != nil
       #TODO: koennen das nicht auch mehrere admins sein?
       admin_user = User.find_by_admin(true) #new user modifications forbidden for admin users

@@ -2,15 +2,7 @@
 require File.dirname(__FILE__) + '/unit/ts_all_unittests.rb'
 
 # Require the functional tests
-#['application_controller_test.rb',
-#'feeds_controller_test.rb',
-#'my_controller_test.rb',
-#'projects_controller_test.rb',
-#'search_controller_test.rb',
-#'timelog_controller_test.rb'
-#].each do |file|
-#  File.dirname(__FILE__) + '/functional/' + file
-#end
+require File.dirname(__FILE__) + '/functional/ts_all_functionaltests.rb'
 
 # Require the integration tests
 #['account_test.rb',

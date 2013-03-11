@@ -3,6 +3,23 @@ require File.expand_path(File.dirname(__FILE__) + '/../../../../test/test_helper
 
 class MyTestHelper
   
+  def import_results
+    return {:users => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :projects => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :trackers => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :versions => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :attributes => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :issues => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :issue_internal_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :issue_external_relations => {:imported => 0, :updated => 0, :failed => 0, :sum =>0},
+                  :sum => {:imported => 0, :updated => 0, :failed => 0, :sum =>0}
+           }
+  end
+  
+  def uploaded_test_file(name, mime)
+    ActionController::TestUploadedFile.new(File.dirname(__FILE__) + "/files/#{name}", mime)
+  end
+  
   def known_attributes
     known_attributes = Hash.new
     #Issue attribute

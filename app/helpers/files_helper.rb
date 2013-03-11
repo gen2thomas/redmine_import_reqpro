@@ -34,6 +34,11 @@ module FilesHelper
   
   def open_xml_file(filepath, filename, loglevel)
     if filepath!= nil && filename != nil
+      # check for relative path
+      if !File.directory?(filepath)
+        filepath = File.join(Dir.pwd, filepath)
+      end
+      
       if File.directory?(filepath)
         oldpath=Dir.pwd
         #change to the right data directory

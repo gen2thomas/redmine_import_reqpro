@@ -11,7 +11,7 @@ class TcRedmineDefect13118 < ActiveSupport::TestCase
     if !new_project.trackers.include?(new_tracker)
       new_project.trackers.push(new_tracker)
     end
-    new_user=th.create_user("usr4defect13118")
+    new_user=th.create_user("usr4defect13118", "usr4test@test.de")
     new_issue=th.create_issue("issue4defect13118",new_tracker,new_project,new_user)
     a_issue_custom_field1=th.create_issue_custom_field("EffortRemaining2","int",new_issue)
     new_issue = update_custom_value_in_issue_intern1(new_issue, a_issue_custom_field1, "1.0")
@@ -30,7 +30,7 @@ class TcRedmineDefect13118 < ActiveSupport::TestCase
       if !new_project.trackers.include?(new_tracker)
         new_project.trackers.push(new_tracker)
       end
-      new_user=th.create_user("usr4defect13118")
+      new_user=th.create_user("usr4defect13118", "usr4test@test.de")
       new_issue=th.create_issue("issue4defect13118",new_tracker,new_project,new_user)
       a_issue_custom_field1=th.create_issue_custom_field("EffortRemaining2","int",new_issue)
       new_issue = update_custom_value_in_issue_intern2(new_issue, a_issue_custom_field1, "1.0")
@@ -49,7 +49,7 @@ class TcRedmineDefect13118 < ActiveSupport::TestCase
       if !new_project.trackers.include?(new_tracker)
         new_project.trackers.push(new_tracker)
       end
-      new_user=th.create_user("usr4defect13118")
+      new_user=th.create_user("usr4defect13118", "usr4test@test.de")
       new_issue=th.create_issue("issue4defect13118",new_tracker,new_project,new_user)
       a_issue_custom_field1=th.create_issue_custom_field("EffortRemaining2","int",new_issue)
       new_issue = update_custom_value_in_issue_intern1(new_issue, a_issue_custom_field1, "1.0")

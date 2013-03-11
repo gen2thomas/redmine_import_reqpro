@@ -47,11 +47,13 @@ private
   def collect_external_projects_fast(filepath, loglevel)
     xmldocexternal = open_xml_file(filepath,"ExternalProjects.XML", loglevel)
     external_projects = Hash.new
-    xmldocexternal.elements.each("PROJECT/ExternalProject") do |ext_proj|
-      hash_key =  ext_proj.attributes["GUID"]
-      external_projects[hash_key] = Hash.new
-      external_projects[hash_key] [:prefix] = ext_proj.attributes["Prefix"] 
-      external_projects[hash_key] [:status] = "?"
+    if xmldocexternal != nil
+      xmldocexternal.elements.each("PROJECT/ExternalProject") do |ext_proj|
+        hash_key =  ext_proj.attributes["GUID"]
+        external_projects[hash_key] = Hash.new
+        external_projects[hash_key] [:prefix] = ext_proj.attributes["Prefix"] 
+        external_projects[hash_key] [:status] = "?"
+      end
     end
     return external_projects
   end

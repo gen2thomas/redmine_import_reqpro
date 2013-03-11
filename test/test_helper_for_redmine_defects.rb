@@ -66,14 +66,14 @@ class TestHelperForRedmineDefects
     end
   end
   
-  def create_user(the_login)
+  def create_user(the_login, the_mail)
     new_user = User.find_by_login(the_login)
     if new_user!=nil
       User.find_by_id(new_user.id).delete
     end
     new_user = User.new()
     new_user[:login] = the_login
-    new_user[:mail] = "usr4test@test.de"
+    new_user[:mail] = the_mail
     new_user[:admin] = false
     new_user[:firstname] = "Firstname4Test"
     new_user[:lastname] = "Lastname4Test"

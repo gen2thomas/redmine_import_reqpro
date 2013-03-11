@@ -61,6 +61,7 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #return_hash_from_issues = create_all_issues(some_projects, requirement_types, attributes, new_versions_mapping, known_attributes, rpusers, issue_update_allowed, debug)
     ReqproimporterController.class_eval{def cai(a,b,c,d,e,f,g,h) return create_all_issues(a,b,c,d,e,f,g,h) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     #prepare datas
     sop=th.some_projects()
     sop["{065CCCD0-4129-497C-8474-27EBCD96065D}"][:prefix]="MPR2"  #was "STP"
@@ -148,6 +149,7 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     end
     #function call
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     return_hash_from_issues =rc.cai(sop,rts,attrs,newVerMapping,knattrs,rpusrs,false,hc.loglevel_high())
     ##### prepare test against new values ########
@@ -213,6 +215,7 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #some_projects = create_all_projects(some_projects, tracker_mapping, rpusers, debug)
     ReqproimporterController.class_eval{def cap(a,b,c,d) return create_all_projects(a,b,c,d) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     #prepare datas
     pr_count_old=Project.find(:all).count
     mb_count_old=Member.find(:all).count
@@ -230,6 +233,7 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     sop_count_old=sop.count
     #function call
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     some_projects=rc.cap(sop, tm, rpusers, hc.loglevel_high())
     #test
@@ -248,11 +252,13 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #rp_users = create_all_users_and_update(rp_users, update_allowed, debug)
     ReqproimporterController.class_eval{def cauau(a,b,c) return create_all_users_and_update(a,b,c) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     #prepare datas
     usr_count_old=User.find(:all).count
     rpu_count_old=th.rpusers().count
     #function call
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     rp_users=rc.cauau(th.rpusers(), true, hc.loglevel_high())
     #test
@@ -268,8 +274,10 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #rp_users = create_all_users_and_update(rp_users, update_allowed, debug)
     ReqproimporterController.class_eval{def cauau(a,b,c) return create_all_users_and_update(a,b,c) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     #function call
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     usr_count_old=User.find(:all).count
     rpu_count_old=th.rpusers().count
@@ -287,8 +295,10 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #tracker_mapping = create_all_trackers_and_update_mapping(tracker_mapping, debug)
     ReqproimporterController.class_eval{def cataum(a,b) return create_all_trackers_and_update_mapping(a,b) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     #function call
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     tm_old=th.tracker_mapping()
     tm_old_count=tm_old.count
@@ -307,8 +317,10 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #def create_all_customfields(known_attributes, attributes, versions_mapping, tracker_mapping, debug)
     ReqproimporterController.class_eval{def cac(a,b,c,d,e) return create_all_customfields(a,b,c,d,e) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     #function call
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     ka=th.known_attributes()
     ka_count=ka.count
@@ -327,8 +339,10 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #def create_all_versions(versions_mapping, attributes, version_update_allowed, debug)
     ReqproimporterController.class_eval{def cav(a,b,c,d) return create_all_versions(a,b,c,d) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     #function call
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     #stub the not to test methodes
     #rm_project =  project_find_by_rpuid(rp_project_id)
@@ -388,6 +402,7 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
        
   def test_create_all_issuerelations
     puts "test_create_all_issuerelations"
+    th=MyTestHelper.new
     # internal relations p1 --> p1, i_pid1 --> [i_pid2, i_pid3]
     rp_relation_list = Hash.new
     rp_relation_list["{01}"] = Hash.new # project 1
@@ -406,7 +421,9 @@ class TcReqproimporterControllerUnits < ActiveSupport::TestCase
     #prepare call of private function
     #create_all_issuerelations(rp_relation_list, import_intern_relation_allowed, import_extern_relation_allowed, debug)
     ReqproimporterController.class_eval{def cai(a,b,c,d) return create_all_issuerelations(a,b,c,d) end}
+    ReqproimporterController.class_eval{def set_import_results(wert) @import_results = wert end}
     rc=ReqproimporterController.new()
+    rc.set_import_results(th.import_results())
     hc=HelperClassForModules.new()
     #function call for internal relation
     rc.cai(rp_relation_list, true, true, hc.loglevel_high())
